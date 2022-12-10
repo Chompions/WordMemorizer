@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">WordMemorizer</string>
+    <string name="add_button">Add button</string>
+    <string name="remember_button">Remember button</string>
+    <string name="forgot_button">Forgot button</string>
+    <string name="kanji_word">Kanji word</string>
+    <string name="hiragana_word">Hiragana word</string>
+    <string name="definition">Definition</string>
+    <string name="add_word">Add word</string>
+    <string name="forgot">Forgot</string>
+    <string name="hide">Hide</string>
+</resources>
