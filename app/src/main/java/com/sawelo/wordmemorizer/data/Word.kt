@@ -5,9 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Word(
-    @PrimaryKey val kanjiText: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val kanjiText: String,
     val hiraganaText: String,
     val definitionText: String,
     val forgotCount: Int = 0,
-    val rememberCount: Int = 0,
 )

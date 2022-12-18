@@ -9,4 +9,7 @@
     <string name="add_word">Add word</string>
     <string name="forgot">Forgot</string>
     <string name="hide">Hide</string>
+    <string name="reload">Reload</string>
+    <string name="different">Different</string>
+    <string name="dialog_text">We found similar words. \nPlease select the same word if any</string>
 </resources>
