@@ -16,4 +16,8 @@
     <string name="addWord_noSimilarWords">There are no similar words to this word</string>
     <string name="furigana">Furigana</string>
     <string name="toolbar_title">memorize your words</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="header_title">Category list</string>
+    <string name="header_text">set your categories</string>
 </resources>

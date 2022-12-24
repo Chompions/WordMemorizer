@@ -17,8 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.atilika.kuromoji.jumandic.Token
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.utils.WordCommand
-import com.sawelo.wordmemorizer.activity.MainActivity
 import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
@@ -80,7 +78,7 @@ class AddDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                     viewModel.addWord(word) {
                         addWordDialog.dismiss()
                         viewModel.clearSimilarWordList()
-                        (activity as MainActivity).scrollRecyclerView(it, WordCommand.INSERT_WORD)
+//                        (activity as MainActivity).scrollRecyclerView(it, WordCommand.INSERT_WORD)
 
                         Toast.makeText(
                             activity,
@@ -98,7 +96,7 @@ class AddDialogFragment : DialogFragment(), ItemWordAdapterCallback {
     override fun onItemClickListener(word: Word) {
         addWordDialog.dismiss()
         viewModel.clearSimilarWordList()
-        (activity as MainActivity).scrollRecyclerView(word.id, WordCommand.FORGOT_WORD)
+//        (activity as MainActivity).scrollRecyclerView(word.id, WordCommand.FORGOT_WORD)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
