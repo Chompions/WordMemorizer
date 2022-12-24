@@ -23,6 +23,7 @@ data class Word(
 data class WordInfo(
     val isCommon: Boolean? = null,
     val jlptLevel: Int? = null,
+    val categoryList: List<String>? = null,
     val charList: List<WordInfoChar>? = null
 )
 

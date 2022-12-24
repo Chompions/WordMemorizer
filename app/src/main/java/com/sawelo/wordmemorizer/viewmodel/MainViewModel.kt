@@ -20,16 +20,8 @@ class MainViewModel @Inject constructor(
 
     private var _allWordListLiveData = MutableLiveData<List<Word>>()
     val allWordListLiveData: LiveData<List<Word>> = _allWordListLiveData
-
-    private var _currentWordStringLiveData = MutableLiveData<String>()
-    val currentWordStringLiveData: LiveData<String> = _currentWordStringLiveData
-    private var _currentFuriganaStringLiveData = MutableLiveData<String>()
-    val currentFuriganaStringLiveData: LiveData<String> = _currentFuriganaStringLiveData
-
     private var _similarWordListLiveData = MutableLiveData<List<Word>>()
     val similarWordListLiveData: LiveData<List<Word>> = _similarWordListLiveData
-
-//    private var searchSimilarWordsJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -70,11 +62,5 @@ class MainViewModel @Inject constructor(
     fun clearSimilarWordList() {
         _similarWordListLiveData.value = emptyList()
     }
-
-//
-//    fun stopCollectingSimilarWords() {
-//        searchSimilarWordsJob?.cancel(null)
-//        _similarWordsLiveData.postValue(emptyList())
-//    }
 
 }
