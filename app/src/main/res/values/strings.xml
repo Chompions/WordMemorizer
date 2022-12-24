@@ -12,4 +12,8 @@
     <string name="reload">Reload</string>
     <string name="different">Different</string>
     <string name="dialog_text">We found similar words. \nPlease select the same word if any</string>
+    <string name="word">Word</string>
+    <string name="addWord_noSimilarWords">There are no similar words to this word</string>
+    <string name="furigana">Furigana</string>
+    <string name="toolbar_title">memorize your words</string>
 </resources>

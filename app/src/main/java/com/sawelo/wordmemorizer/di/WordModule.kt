@@ -19,7 +19,8 @@ object WordModule {
             context,
             AppDatabase::class.java,
             "word-memorizer-database"
-        ).build()
+        )
+            .build()
         return db.wordDao()
     }
 }
