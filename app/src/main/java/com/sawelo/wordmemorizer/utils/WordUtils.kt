@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import com.sawelo.wordmemorizer.data.Category
 
 object WordUtils {
 
@@ -16,6 +17,10 @@ object WordUtils {
         theme.resolveAttribute(attrColor, typedValue, resolveRefs)
         return typedValue.data
     }
+
+    fun Category.isAll(): Boolean = this.categoryName == defaultCategoryList.first()
+
+    val defaultCategoryList = listOf("All", "Important", "Names")
 
     val hiraganaTable = listOf(
         'あ', 'い', 'う', 'え', 'お',

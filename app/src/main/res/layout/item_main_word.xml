@@ -21,13 +21,14 @@
 
             <TextView
                 android:id="@+id/itemWord_similarWord_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 style="@style/TextAppearance.Material3.DisplaySmall"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="今日" />
+                app:layout_constraintEnd_toStartOf="@id/itemWord_forgotCount_tv"
+                tools:text="@tools:sample/lorem" />
 
             <TextView
                 android:id="@+id/itemWord_forgotCount_tv"
@@ -35,6 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:textSize="16sp"
+                app:layout_constraintStart_toEndOf="@id/itemWord_similarWord_tv"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/itemWord_forgot_btn"
                 app:layout_constraintTop_toTopOf="parent"
@@ -68,22 +70,24 @@
 
             <TextView
                 android:id="@+id/itemWord_hiraganaWord_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 style="@style/TextAppearance.Material3.TitleLarge"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/itemWord_line_view"
-                tools:text="きょう" />
+                app:layout_constraintEnd_toStartOf="@id/itemWord_hide_btn"
+                tools:text="@tools:sample/lorem" />
 
             <TextView
                 android:id="@+id/itemWord_definitionWord_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 style="@style/TextAppearance.Material3.BodyLarge"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/itemWord_hiraganaWord_tv"
-                tools:text="Today" />
+                app:layout_constraintEnd_toStartOf="@id/itemWord_hide_btn"
+                tools:text="@tools:sample/lorem" />
 
             <Button
                 android:id="@+id/itemWord_hide_btn"

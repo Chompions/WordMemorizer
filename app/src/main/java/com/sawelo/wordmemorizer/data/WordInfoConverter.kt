@@ -20,4 +20,5 @@ class WordInfoConverter {
             Json.decodeFromString(json)
         } else null
     }
+
 }

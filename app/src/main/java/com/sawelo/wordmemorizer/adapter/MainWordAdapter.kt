@@ -9,11 +9,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.material.card.MaterialCardView
+import com.sawelo.wordmemorizer.R
+import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.utils.DiffUtilCallback
 import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
-import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.utils.WordUtils.getColorFromAttr
-import com.sawelo.wordmemorizer.data.Word
 
 class MainWordAdapter(
     private val itemCallback: ItemWordAdapterCallback
@@ -39,8 +39,6 @@ class MainWordAdapter(
         val itemWord = getItem(position)
         with(holder) {
             kanjiWord.text = itemWord.wordText
-            hiraganaWord.text = itemWord.furiganaText
-            definitionWord.text = itemWord.definitionText
             forgotCount.text = itemWord.forgotCount.toString()
 
             if (itemWord.isForgotten) {
@@ -50,6 +48,8 @@ class MainWordAdapter(
                     (this as MaterialCardView).strokeColor = color
                 }
                 detailLayout.visibility = View.VISIBLE
+                hiraganaWord.text = itemWord.furiganaText
+                definitionWord.text = itemWord.definitionText
                 forgotBtn.isEnabled = false
             } else {
                 with(itemView) {
@@ -77,5 +77,12 @@ class MainWordAdapter(
                 true
             }
         }
+    }
+
+    override fun onCurrentListChanged(
+        previousList: MutableList<Word>,
+        currentList: MutableList<Word>
+    ) {
+        itemCallback.onItemListChangedListener(previousList, currentList)
     }
 }

@@ -20,4 +20,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="header_title">Category list</string>
     <string name="header_text">set your categories</string>
+    <string name="add_category">Add category</string>
+    <string name="category">Category</string>
 </resources>

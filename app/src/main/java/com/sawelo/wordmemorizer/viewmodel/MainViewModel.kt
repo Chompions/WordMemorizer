@@ -1,66 +1,75 @@
 package com.sawelo.wordmemorizer.viewmodel
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.atilika.kuromoji.jumandic.Tokenizer
+import com.sawelo.wordmemorizer.data.Category
 import com.sawelo.wordmemorizer.data.Word
-import com.sawelo.wordmemorizer.data.WordDao
+import com.sawelo.wordmemorizer.data.WordRepository
+import com.sawelo.wordmemorizer.utils.WordUtils.isAll
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val wordDao: WordDao
+    private val wordRepository: WordRepository
 ) : ViewModel() {
     val tokenizer = Tokenizer()
+    var currentCategoryFragmentTag: String? = null
 
-    private var _allWordListLiveData = MutableLiveData<List<Word>>()
-    val allWordListLiveData: LiveData<List<Word>> = _allWordListLiveData
-    private var _similarWordListLiveData = MutableLiveData<List<Word>>()
-    val similarWordListLiveData: LiveData<List<Word>> = _similarWordListLiveData
+    fun getAllCategories(): LiveData<List<Category>> =
+        wordRepository.getAllCategories().asLiveData()
+    fun getAllWordsByCategory(category: Category? = null): LiveData<List<Word>> {
+        return when {
+            category?.isAll() == true -> wordRepository.getAllWordsByAll().asLiveData()
+            category == null -> wordRepository.getAllWordsByAll().asLiveData()
+            else -> wordRepository.getAllWordsByCategory(category).asLiveData()
+        }
+    }
+    fun getAllWordsByWord(inputString: String): LiveData<List<Word>> =
+        wordRepository.getAllWordsByWord(inputString).asLiveData()
 
-    init {
+    fun addWord(word: Word, callback: ((Int) -> Unit)) {
         viewModelScope.launch {
-            wordDao.getWords().collectLatest {
-                _allWordListLiveData.value = it
-            }
+            wordRepository.addWord(word, callback)
+        }
+    }
+    fun addCategory(category: Category, callback: ((Int) -> Unit)) {
+        viewModelScope.launch {
+            wordRepository.addCategory(category, callback)
         }
     }
 
-    suspend fun setIsForgottenWord(word: Word, isForgotten: Boolean) {
-        wordDao.updateIsForgottenById(word.id, isForgotten)
+    fun updateForgotCountWord(word: Word, callback: () -> Unit) {
+        viewModelScope.launch {
+            wordRepository.updateForgotCountWord(word, callback)
+        }
+    }
+    fun updateIsForgottenWord(word: Word, isForgotten: Boolean, callback: () -> Unit) {
+        viewModelScope.launch {
+            wordRepository.updateIsForgottenWord(word, isForgotten, callback)
+        }
     }
 
-    suspend fun setForgotCountIncreaseWord(word: Word, callback: () -> Unit) {
-        wordDao.updateForgotCountById(word.id)
-        callback.invoke()
+    fun resetAllForgotCount(callback: () -> Unit) {
+        viewModelScope.launch {
+            wordRepository.resetAllForgotCount(callback)
+        }
     }
 
-    suspend fun deleteWord(word: Word, callback: () -> Unit) {
-        wordDao.deleteWord(word)
-        callback.invoke()
+    fun deleteWord(word: Word, callback: () -> Unit) {
+        viewModelScope.launch {
+            wordRepository.deleteWord(word, callback)
+        }
     }
 
-    suspend fun resetCount(callback: () -> Unit) {
-        wordDao.deleteForgotCount()
-        callback.invoke()
-    }
-
-    suspend fun searchSimilarWords(wordString: String) {
-        _similarWordListLiveData.value = wordDao.getWordsByKanji(wordString)
-    }
-
-    suspend fun addWord(word: Word, callback: (id: Int) -> Unit) {
-        val id = wordDao.insertWord(word)
-        callback.invoke(id.toInt())
-    }
-
-    fun clearSimilarWordList() {
-        _similarWordListLiveData.value = emptyList()
+    fun deleteCategory(category: Category, callback: () -> Unit) {
+        viewModelScope.launch {
+            wordRepository.deleteCategory(category, callback)
+        }
     }
 
 }
