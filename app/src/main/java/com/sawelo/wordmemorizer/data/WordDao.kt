@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.data
 
+import androidx.paging.PagingData
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
@@ -7,6 +8,10 @@ import kotlinx.coroutines.flow.Flow
 interface WordDao {
     @Query ("SELECT * FROM word ORDER BY createdTimeMillis DESC")
     fun getWords(): Flow<List<Word>>
+
+    @Query ("SELECT * FROM (SELECT * FROM word ORDER BY RANDOM()) " +
+            "UNION SELECT * FROM (SELECT * FROM word WHERE (:id IS NULL OR id = :id))")
+    fun getWordsPagingData(id: Int? = null): PagingData<List<Word>>
 
 //    @Query ("SELECT * FROM word WHERE categoryList LIKE '%' || :category || '%'")
 //    fun getWordsByCategory(category: Category): Flow<List<Word>>
