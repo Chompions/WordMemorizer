@@ -4,12 +4,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.atilika.kuromoji.jumandic.Tokenizer
 import com.sawelo.wordmemorizer.data.Category
 import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.utils.WordUtils.isAll
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +22,10 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     val tokenizer = Tokenizer()
     var currentCategoryFragmentTag: String? = null
+
+    fun getAllWordsPagingData(id: Int? = null): Flow<PagingData<Word>> {
+        return wordRepository.getAllWordsPagingData(id).cachedIn(viewModelScope)
+    }
 
     fun getAllCategories(): LiveData<List<Category>> =
         wordRepository.getAllCategories().asLiveData()

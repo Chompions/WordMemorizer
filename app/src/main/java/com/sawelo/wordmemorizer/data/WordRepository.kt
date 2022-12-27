@@ -1,5 +1,8 @@
 package com.sawelo.wordmemorizer.data
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -7,6 +10,14 @@ import kotlinx.coroutines.flow.mapLatest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WordRepository(private val database: AppDatabase) {
+
+    fun getAllWordsPagingData(id: Int? = null): Flow<PagingData<Word>> {
+        return Pager(
+            PagingConfig(pageSize = 20)
+        ) {
+            database.wordDao().getWordsPagingData(id)
+        }.flow
+    }
 
     private val allWords = database.wordDao().getWords()
     private val allCategories = database.categoryDao().getCategories()

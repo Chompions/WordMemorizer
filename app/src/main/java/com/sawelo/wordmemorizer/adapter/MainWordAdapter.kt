@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.recyclerview.widget.ListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.material.card.MaterialCardView
 import com.sawelo.wordmemorizer.R
@@ -17,7 +17,7 @@ import com.sawelo.wordmemorizer.utils.WordUtils.getColorFromAttr
 
 class MainWordAdapter(
     private val itemCallback: ItemWordAdapterCallback
-) : ListAdapter<Word, MainWordAdapter.WordViewHolder>(DiffUtilCallback) {
+) : PagingDataAdapter<Word, MainWordAdapter.WordViewHolder>(DiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
         val kanjiWord: TextView = itemView.findViewById(R.id.itemWord_similarWord_tv)
@@ -36,53 +36,54 @@ class MainWordAdapter(
     }
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
-        val itemWord = getItem(position)
-        with(holder) {
-            kanjiWord.text = itemWord.wordText
-            forgotCount.text = itemWord.forgotCount.toString()
+        getItem(position)?.let { itemWord ->
+            with(holder) {
+                kanjiWord.text = itemWord.wordText
+                forgotCount.text = itemWord.forgotCount.toString()
 
-            if (itemWord.isForgotten) {
-                with(itemView) {
-                    val color =
-                        context.getColorFromAttr(com.google.android.material.R.attr.colorError)
-                    (this as MaterialCardView).strokeColor = color
+                if (itemWord.isForgotten) {
+                    with(itemView) {
+                        val color =
+                            context.getColorFromAttr(com.google.android.material.R.attr.colorError)
+                        (this as MaterialCardView).strokeColor = color
+                    }
+                    detailLayout.visibility = View.VISIBLE
+                    hiraganaWord.text = itemWord.furiganaText
+                    definitionWord.text = itemWord.definitionText
+                    forgotBtn.isEnabled = false
+                } else {
+                    with(itemView) {
+                        val color = context.getColor(android.R.color.transparent)
+                        (this as MaterialCardView).strokeColor = color
+                    }
+                    detailLayout.visibility = View.GONE
+                    forgotBtn.isEnabled = true
                 }
-                detailLayout.visibility = View.VISIBLE
-                hiraganaWord.text = itemWord.furiganaText
-                definitionWord.text = itemWord.definitionText
-                forgotBtn.isEnabled = false
-            } else {
-                with(itemView) {
-                    val color = context.getColor(android.R.color.transparent)
-                    (this as MaterialCardView).strokeColor = color
+
+                forgotBtn.setOnClickListener {
+                    itemCallback.onItemForgotBtnClickListener(itemWord)
                 }
-                detailLayout.visibility = View.GONE
-                forgotBtn.isEnabled = true
-            }
 
-            forgotBtn.setOnClickListener {
-                itemCallback.onItemForgotBtnClickListener(itemWord)
-            }
+                hideBtn.setOnClickListener {
+                    itemCallback.onItemHideBtnClickListener(itemWord)
+                }
 
-            hideBtn.setOnClickListener {
-                itemCallback.onItemHideBtnClickListener(itemWord)
-            }
+                itemView.setOnClickListener {
+                    itemCallback.onItemClickListener(itemWord)
+                }
 
-            itemView.setOnClickListener {
-                itemCallback.onItemClickListener(itemWord)
-            }
-
-            itemView.setOnLongClickListener {
-                itemCallback.onItemLongClickListener(itemWord)
-                true
+                itemView.setOnLongClickListener {
+                    itemCallback.onItemLongClickListener(itemWord)
+                    true
+                }
             }
         }
     }
 
-    override fun onCurrentListChanged(
-        previousList: MutableList<Word>,
-        currentList: MutableList<Word>
-    ) {
-        itemCallback.onItemListChangedListener(previousList, currentList)
-    }
+//    override fun onCurrentListChanged(
+//        previousList: MutableList<Word>,
+//        currentList: MutableList<Word>
+//    ) {
+//        itemCallback.onItemListChangedListener(previousList, currentList)
+//    }
 }

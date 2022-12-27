@@ -25,7 +25,7 @@ import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.utils.WordCommand
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class CategoryFragment : Fragment(), ItemWordAdapterCallback {
@@ -121,9 +121,15 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         }
 
         parcelable?.let { category ->
-            viewModel.getAllWordsByCategory(category).observe(viewLifecycleOwner) {
-                adapter?.submitList(it)
+            lifecycleScope.launch {
+                viewModel.getAllWordsPagingData().collectLatest {
+                    adapter?.submitData(it)
+                }
             }
+
+//            viewModel.getAllWordsByCategory(category).observe(viewLifecycleOwner) {
+//                adapter?.submitList(it)
+//            }
         }
     }
 
@@ -212,57 +218,4 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
 //            }
 //        }
 //    }
-
-    private fun scrollToWordInserted(
-        wordId: Int,
-        adapter: MainWordAdapter,
-        recyclerView: RecyclerView
-    ) {
-        lifecycleScope.launch {
-            do {
-                println("DELAYING IN INSERTED")
-                delay(200L)
-            } while (recyclerView.hasPendingAdapterUpdates())
-
-            println("CHECK DATA ${adapter.currentList}")
-            val wordIndex = adapter.currentList.indexOfFirst { it.id == wordId }
-
-            recyclerView.clearOnScrollListeners()
-            recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(
-                    recyclerView: RecyclerView,
-                    newState: Int
-                ) {
-                    if (newState == SCROLL_STATE_IDLE) {
-                        val viewHolder = recyclerView.findViewHolderForLayoutPosition(wordIndex)
-                                as? MainWordAdapter.WordViewHolder
-                        viewHolder?.itemView?.startAnimation(animation)
-                        recyclerView.removeOnScrollListener(this)
-                    }
-                }
-            })
-
-            println("SCROLLING TO $wordIndex")
-            recyclerView.smoothScrollToPosition(wordIndex)
-        }
-    }
-
-    private fun scrollToWordChanged(
-        wordId: Int,
-        adapter: MainWordAdapter,
-        recyclerView: RecyclerView
-    ) {
-        lifecycleScope.launch {
-            do {
-                println("DELAYING IN INSERTED")
-                delay(200L)
-            } while (recyclerView.hasPendingAdapterUpdates())
-
-            println("CHECK DATA ${adapter.currentList}")
-            val wordIndex = adapter.currentList.indexOfFirst { it.id == wordId }
-
-            println("SCROLLING TO $wordIndex")
-            recyclerView.smoothScrollToPosition(wordIndex)
-        }
-    }
 }
