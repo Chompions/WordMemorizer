@@ -86,9 +86,10 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
 
                 val item = menu.findItem(category.id)
                 item.setOnMenuItemClickListener {
-//                                val mainFragment = supportFragmentManager
-//                                    .findFragmentByTag(MainFragment.MAIN_FRAGMENT_TAG) as? MainFragment
-//                                mainFragment?.viewPager?.setCurrentItem(index, true)
+                    val mainFragment = supportFragmentManager
+                        .findFragmentByTag(MainFragment.MAIN_FRAGMENT_TAG) as? MainFragment
+                    println(perPosition)
+                    mainFragment?.setCurrentTab(perPosition)
                     binding.activityMainDrawerLayout.close()
                     true
                 }

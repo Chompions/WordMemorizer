@@ -5,6 +5,12 @@
     android:layout_height="match_parent"
     tools:context=".fragment.CategoryFragment">
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/fragmentCategory_progressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/fragmentCategory_rv"
         android:layout_width="match_parent"

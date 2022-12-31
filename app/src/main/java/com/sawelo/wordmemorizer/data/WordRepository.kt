@@ -13,7 +13,7 @@ class WordRepository(private val database: AppDatabase) {
         return Pager(
             PagingConfig(pageSize = 20)
         ) {
-            database.wordDao().getAllWordsByCategoryPagingData(category)
+            database.wordDao().getAllWordsByCategoryPagingData(category.copy(wordCount = 0))
         }.flow
     }
 
@@ -33,19 +33,15 @@ class WordRepository(private val database: AppDatabase) {
         }.flow
     }
 
-    suspend fun getAllWordsSizeByCategory(category: Category): Int {
-        return database.wordDao().getAllWordsSizeByCategory(category)
-    }
-
     suspend fun getAllWordsByWord(wordText: String): List<Word> {
         return database.wordDao().getWordsByWord(wordText)
     }
 
     suspend fun addWord(word: Word) {
         database.wordDao().insertWord(word)
-        // Add wordCount for 'All' category
+        // Increase wordCount for 'All' category
         database.categoryDao().updateWordCountById(1, 1)
-        // Add wordCount for every chosen category
+        // Increase wordCount for every chosen category
         word.categoryList.forEach {
             database.categoryDao().updateWordCountById(it.id, 1)
         }
@@ -69,6 +65,9 @@ class WordRepository(private val database: AppDatabase) {
 
     suspend fun deleteWord(word: Word) {
         database.wordDao().deleteWord(word)
+        // Decrease wordCount for 'All' category
+        database.categoryDao().updateWordCountById(1, -1)
+        // Decrease wordCount for every chosen category
         word.categoryList.forEach {
             database.categoryDao().updateWordCountById(it.id, -1)
         }

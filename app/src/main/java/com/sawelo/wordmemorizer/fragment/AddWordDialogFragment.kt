@@ -26,7 +26,6 @@ import com.sawelo.wordmemorizer.data.Category
 import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.utils.MaterialToggleButton
-import com.sawelo.wordmemorizer.utils.WordCommand
 import com.sawelo.wordmemorizer.utils.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dev.esnault.wanakana.core.Wanakana
@@ -112,8 +111,11 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
 
                     categoryList.filter {
                         it.id in addCategoryGroup.checkedButtonIds
-                    }.also {
-                        word.categoryList = it
+                    }.map {
+                        it.wordCount = 0
+                        it
+                    }.also { newList ->
+                        word.categoryList = newList
                     }
 
                     when {
@@ -121,7 +123,7 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                         word.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
                         word.definitionText.isBlank() -> showToast("Definition cannot be empty")
                         else -> {
-                            categoryFragment?.setWordCommand(WordCommand.INSERT_WORD)
+//                            categoryFragment?.setWordCommand(WordCommand.INSERT_WORD)
                             viewModel.addWord(word)
                             addWordDialog.dismiss()
                         }
@@ -186,7 +188,7 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
     }
 
     override fun onItemClickListener(word: Word) {
-        categoryFragment?.setWordCommand(WordCommand.FORGOT_WORD)
+//        categoryFragment?.setWordCommand(WordCommand.FORGOT_WORD)
         viewModel.updateIsForgottenWord(word, true)
         addWordDialog.dismiss()
     }

@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Parcelize
 data class Category(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val categoryName: String,
-    val wordCount: Int = 0,
+    var id: Int = 0,
+    var categoryName: String,
+    var wordCount: Int = 0,
 ): Parcelable

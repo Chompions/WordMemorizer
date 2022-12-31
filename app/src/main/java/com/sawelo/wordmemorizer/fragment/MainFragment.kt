@@ -12,7 +12,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
 import androidx.viewpager2.widget.ViewPager2
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.data.Category
 import com.sawelo.wordmemorizer.databinding.FragmentMainBinding
@@ -20,7 +22,7 @@ import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class MainFragment : Fragment(), ListUpdateCallback {
+class MainFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
     private val viewModel: MainViewModel by activityViewModels()
     private var binding: FragmentMainBinding? = null
     private var asyncDiffer: AsyncListDiffer<Category>? = null
@@ -48,9 +50,17 @@ class MainFragment : Fragment(), ListUpdateCallback {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.getAllCategories().collectLatest { categories ->
                     asyncDiffer?.submitList(categories)
+                    viewPager?.offscreenPageLimit = categories.size - 1
                 }
             }
         }
+
+        tabLayout?.addOnTabSelectedListener(this)
+        viewPager?.registerOnPageChangeCallback(object : OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                tabLayout?.selectTab(tabLayout?.getTabAt(position))
+            }
+        })
 
         binding?.fragmentMainFab?.setOnClickListener {
             if (asyncDiffer != null) {
@@ -68,10 +78,6 @@ class MainFragment : Fragment(), ListUpdateCallback {
         adapter = null
         tabLayout = null
         viewPager = null
-    }
-
-    companion object {
-        const val MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG"
     }
 
     override fun onInserted(position: Int, count: Int) {
@@ -97,4 +103,19 @@ class MainFragment : Fragment(), ListUpdateCallback {
 
     override fun onMoved(fromPosition: Int, toPosition: Int) {}
     override fun onChanged(position: Int, count: Int, payload: Any?) {}
+
+    override fun onTabSelected(tab: TabLayout.Tab) {
+        viewPager?.currentItem = tab.position
+    }
+
+    override fun onTabUnselected(tab: TabLayout.Tab?) {}
+    override fun onTabReselected(tab: TabLayout.Tab?) {}
+
+    fun setCurrentTab(index: Int) {
+        viewPager?.currentItem = index
+    }
+
+    companion object {
+        const val MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG"
+    }
 }

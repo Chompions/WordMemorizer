@@ -17,8 +17,8 @@ interface WordDao {
     @Query ("SELECT * FROM word WHERE isForgotten = 1")
     fun getForgottenWordsPagingData(): PagingSource<Int, Word>
 
-    @Query ("SELECT COUNT(id) FROM word WHERE categoryList LIKE '%' || :category || '%'")
-    suspend fun getAllWordsSizeByCategory(category: Category): Int
+//    @Query ("SELECT COUNT(id) FROM word WHERE categoryList LIKE '%' || :category || '%'")
+//    suspend fun getAllWordsSizeByCategory(category: Category): Int
 
     @Query ("SELECT * FROM word WHERE wordText LIKE '%' || :wordText || '%'")
     suspend fun getWordsByWord(wordText: String): List<Word>
