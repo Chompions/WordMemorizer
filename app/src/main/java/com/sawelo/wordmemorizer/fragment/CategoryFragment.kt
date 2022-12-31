@@ -47,26 +47,26 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         return binding?.root
     }
 
-    override fun onItemForgotBtnClickListener(word: Word) {
-        viewModel.updateIsForgottenWord(word, true) {
-            println("You forgot this word")
-        }
-    }
-
-    override fun onItemHideBtnClickListener(word: Word) {
-        viewModel.updateIsForgottenWord(word, false) {
-            println("You remember this word")
-        }
-        viewModel.updateForgotCountWord(word) {
-            println("Increase forgot count")
-        }
-    }
-
-    override fun onItemLongClickListener(word: Word) {
-        viewModel.deleteWord(word) {
-            showToast("Word deleted: ${word.wordText}")
-        }
-    }
+//    override fun onItemForgotBtnClickListener(word: Word) {
+//        viewModel.updateIsForgottenWord(word, true) {
+//            println("You forgot this word")
+//        }
+//    }
+//
+//    override fun onItemHideBtnClickListener(word: Word) {
+//        viewModel.updateIsForgottenWord(word, false) {
+//            println("You remember this word")
+//        }
+//        viewModel.updateForgotCountWord(word) {
+//            println("Increase forgot count")
+//        }
+//    }
+//
+//    override fun onItemLongClickListener(word: Word) {
+//        viewModel.deleteWord(word) {
+//            showToast("Word deleted: ${word.wordText}")
+//        }
+//    }
 
     override fun onItemClickListener(word: Word) {
         println("You're pressing ${word.wordText}")

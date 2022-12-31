@@ -6,14 +6,14 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.sawelo.wordmemorizer.utils.DiffUtilCallback
+import com.sawelo.wordmemorizer.utils.WordDiffUtilCallback
 import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.Word
 
 class SimilarWordAdapter(
     private val itemCallback: ItemWordAdapterCallback
-) : ListAdapter<Word, SimilarWordAdapter.WordViewHolder>(DiffUtilCallback) {
+) : ListAdapter<Word, SimilarWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
         val similarWord: TextView = itemView.findViewById(R.id.itemWord_similarWord_tv)

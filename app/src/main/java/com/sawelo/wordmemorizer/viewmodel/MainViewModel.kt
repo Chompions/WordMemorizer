@@ -1,16 +1,15 @@
 package com.sawelo.wordmemorizer.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.recyclerview.widget.AsyncDifferConfig
 import com.atilika.kuromoji.jumandic.Tokenizer
 import com.sawelo.wordmemorizer.data.Category
 import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.utils.WordUtils.isAll
+import com.sawelo.wordmemorizer.utils.CategoryDiffUtilCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -21,62 +20,101 @@ class MainViewModel @Inject constructor(
     private val wordRepository: WordRepository
 ) : ViewModel() {
     val tokenizer = Tokenizer()
+    val asyncDifferConfig = AsyncDifferConfig.Builder(CategoryDiffUtilCallback).build()
     var currentCategoryFragmentTag: String? = null
 
-    fun getAllWordsPagingData(id: Int? = null): Flow<PagingData<Word>> {
-        return wordRepository.getAllWordsPagingData(id).cachedIn(viewModelScope)
+    fun getAllWordsPagingData(): Flow<PagingData<Word>> {
+        return wordRepository.getAllWordsPagingData().cachedIn(viewModelScope)
     }
 
-    fun getAllCategories(): LiveData<List<Category>> =
-        wordRepository.getAllCategories().asLiveData()
-    fun getAllWordsByCategory(category: Category? = null): LiveData<List<Word>> {
-        return when {
-            category?.isAll() == true -> wordRepository.getAllWordsByAll().asLiveData()
-            category == null -> wordRepository.getAllWordsByAll().asLiveData()
-            else -> wordRepository.getAllWordsByCategory(category).asLiveData()
-        }
-    }
-    fun getAllWordsByWord(inputString: String): LiveData<List<Word>> =
-        wordRepository.getAllWordsByWord(inputString).asLiveData()
-
-    fun addWord(word: Word, callback: ((Int) -> Unit)) {
-        viewModelScope.launch {
-            wordRepository.addWord(word, callback)
-        }
-    }
-    fun addCategory(category: Category, callback: ((Int) -> Unit)) {
-        viewModelScope.launch {
-            wordRepository.addCategory(category, callback)
-        }
+    fun getAllWordsByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
+        return wordRepository.getAllWordsByCategoryPagingData(category).cachedIn(viewModelScope)
     }
 
-    fun updateForgotCountWord(word: Word, callback: () -> Unit) {
-        viewModelScope.launch {
-            wordRepository.updateForgotCountWord(word, callback)
-        }
+    fun getAllForgottenWordsPagingData(): Flow<PagingData<Word>> {
+        return wordRepository.getAllForgottenWordsPagingData().cachedIn(viewModelScope)
     }
-    fun updateIsForgottenWord(word: Word, isForgotten: Boolean, callback: () -> Unit) {
+
+    fun getAllCategories(): Flow<List<Category>> {
+        return wordRepository.getAllCategories()
+    }
+
+//    fun getAllWordsSizeByCategory(category: Category, result: (Int) -> Unit) {
+//        viewModelScope.launch {
+//            result.invoke(wordRepository.getAllWordsSizeByCategory(category))
+//        }
+//    }
+
+    fun getAllWordsByWord(wordText: String, result: (List<Word>) -> Unit) {
         viewModelScope.launch {
-            wordRepository.updateIsForgottenWord(word, isForgotten, callback)
+            result.invoke(wordRepository.getAllWordsByWord(wordText))
         }
     }
 
-    fun resetAllForgotCount(callback: () -> Unit) {
+    fun addWord(word: Word) {
         viewModelScope.launch {
-            wordRepository.resetAllForgotCount(callback)
+            wordRepository.addWord(word)
         }
     }
 
-    fun deleteWord(word: Word, callback: () -> Unit) {
+    fun addCategory(category: Category) {
         viewModelScope.launch {
-            wordRepository.deleteWord(word, callback)
+            wordRepository.addCategory(category)
         }
     }
 
-    fun deleteCategory(category: Category, callback: () -> Unit) {
+    fun updateForgotCountWord(word: Word) {
         viewModelScope.launch {
-            wordRepository.deleteCategory(category, callback)
+            wordRepository.updateForgotCountWord(word)
         }
     }
+
+    fun updateIsForgottenWord(word: Word, isForgotten: Boolean) {
+        viewModelScope.launch {
+            wordRepository.updateIsForgottenWord(word, isForgotten)
+        }
+    }
+
+    fun resetAllForgotCount() {
+        viewModelScope.launch {
+            wordRepository.resetAllForgotCount()
+        }
+    }
+
+    fun deleteWord(word: Word) {
+        viewModelScope.launch {
+            wordRepository.deleteWord(word)
+        }
+    }
+
+    fun deleteCategory(category: Category) {
+        viewModelScope.launch {
+            wordRepository.deleteCategory(category)
+        }
+    }
+
+
+//    fun getAllWordsByCategory(category: Category? = null): LiveData<List<Word>> {
+//        return when {
+//            category?.isAll() == true -> wordRepository.getAllWordsByAll().asLiveData()
+//            category == null -> wordRepository.getAllWordsByAll().asLiveData()
+//            else -> wordRepository.getAllWordsByCategory(category).asLiveData()
+//        }
+//    }
+//    fun getAllWordsByWord(inputString: String): LiveData<List<Word>> =
+//        wordRepository.getAllWordsByWord(inputString).asLiveData()
+//
+
+//    }
+
+//
+
+
+//
+
+//
+
+//
+
 
 }

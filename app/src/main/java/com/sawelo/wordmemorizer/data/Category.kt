@@ -13,4 +13,5 @@ data class Category(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val categoryName: String,
+    val wordCount: Int = 0,
 ): Parcelable

@@ -32,10 +32,10 @@ class AddCategoryDialogFragment : DialogFragment() {
                 when {
                     category.categoryName.isBlank() -> showToast("Category name cannot be empty")
                     else -> {
-                        viewModel.addCategory(category) {
-                            addCategoryDialog.dismiss()
-                            showToast("You created ${category.categoryName} category")
-                        }
+                        println(category)
+                        viewModel.addCategory(category)
+                        addCategoryDialog.dismiss()
+                        showToast("You created ${category.categoryName} category")
                     }
                 }
             }

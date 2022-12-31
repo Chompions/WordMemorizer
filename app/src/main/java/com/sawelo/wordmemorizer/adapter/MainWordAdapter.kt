@@ -11,13 +11,13 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.google.android.material.card.MaterialCardView
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.Word
-import com.sawelo.wordmemorizer.utils.DiffUtilCallback
 import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
+import com.sawelo.wordmemorizer.utils.WordDiffUtilCallback
 import com.sawelo.wordmemorizer.utils.WordUtils.getColorFromAttr
 
 class MainWordAdapter(
     private val itemCallback: ItemWordAdapterCallback
-) : PagingDataAdapter<Word, MainWordAdapter.WordViewHolder>(DiffUtilCallback) {
+) : PagingDataAdapter<Word, MainWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
         val kanjiWord: TextView = itemView.findViewById(R.id.itemWord_similarWord_tv)

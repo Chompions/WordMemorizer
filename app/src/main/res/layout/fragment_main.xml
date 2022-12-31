@@ -10,6 +10,7 @@
         android:id="@+id/fragmentMain_tabsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:tabMode="scrollable"
         app:layout_constraintTop_toTopOf="parent"
         />
 

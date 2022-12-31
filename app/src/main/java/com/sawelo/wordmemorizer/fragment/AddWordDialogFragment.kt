@@ -1,6 +1,7 @@
 package com.sawelo.wordmemorizer.fragment
 
 import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.Button
@@ -12,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.atilika.kuromoji.jumandic.Token
@@ -20,6 +22,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.activity.MainActivity
 import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
+import com.sawelo.wordmemorizer.data.Category
 import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.utils.MaterialToggleButton
@@ -27,6 +30,7 @@ import com.sawelo.wordmemorizer.utils.WordCommand
 import com.sawelo.wordmemorizer.utils.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dev.esnault.wanakana.core.Wanakana
+import kotlinx.coroutines.launch
 
 class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
     private val viewModel: MainViewModel by activityViewModels()
@@ -58,21 +62,29 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                 ?.findFragmentByTag(viewModel.currentCategoryFragmentTag) as CategoryFragment?
 
             wordEt.doOnTextChanged { text, _, _, _ ->
-                val wordString = text.toString()
-                if (Wanakana.isJapanese(wordString)) {
-                    val tokens: List<Token> = viewModel.tokenizer.tokenize(wordString)
-                    val hiraganaTokens = tokens.map {
-                        Wanakana.toHiragana(it.reading)
+                lifecycleScope.launch {
+                    val wordString = text.toString()
+                    if (Wanakana.isJapanese(wordString)) {
+                        val tokens: List<Token> = viewModel.tokenizer.tokenize(wordString)
+                        val hiraganaTokens = tokens.map {
+                            Wanakana.toHiragana(it.reading)
+                        }
+                        furiganaEt.setText(hiraganaTokens.joinToString())
                     }
-                    furiganaEt.setText(hiraganaTokens.joinToString())
-                }
-                viewModel.getAllWordsByWord(wordString).observe(this) {
-                    similarWordTv.isVisible = it.isEmpty()
-                    adapter.submitList(it)
+                    viewModel.getAllWordsByWord(wordString) {
+                        similarWordTv.isVisible = it.isEmpty()
+                        adapter.submitList(it)
+                    }
                 }
             }
 
-            viewModel.getAllCategories().observe(activity) { categoryList ->
+            val categoryList = if (Build.VERSION.SDK_INT >= 33) {
+                arguments?.getParcelableArrayList(ADD_DIALOG_FRAGMENT_ARGS, Category::class.java)
+            } else {
+                arguments?.getParcelableArrayList(ADD_DIALOG_FRAGMENT_ARGS)
+            }
+
+            if (categoryList != null) {
                 for (category in categoryList) {
                     if (!category.isAll()) {
                         val button = MaterialToggleButton(
@@ -89,24 +101,20 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                         (addCategoryGroup as ViewGroup).addView(button)
                     }
                 }
-            }
 
-            addBtn.setOnClickListener {
-                val word = Word(
-                    wordText = wordEt.text.toString(),
-                    furiganaText = furiganaEt.text.toString(),
-                    definitionText = definitionEt.text.toString(),
-                    createdTimeMillis = System.currentTimeMillis(),
-                )
+                addBtn.setOnClickListener {
+                    val word = Word(
+                        wordText = wordEt.text.toString(),
+                        furiganaText = furiganaEt.text.toString(),
+                        definitionText = definitionEt.text.toString(),
+                        createdTimeMillis = System.currentTimeMillis(),
+                    )
 
-                viewModel.getAllCategories().observe(activity) { categoryList ->
-                    println("CATEGORY LIST $categoryList")
                     categoryList.filter {
                         it.id in addCategoryGroup.checkedButtonIds
                     }.also {
                         word.categoryList = it
                     }
-                    println("CATEGORY IN WORD ${word.categoryList}")
 
                     when {
                         word.wordText.isBlank() -> showToast("Word cannot be empty")
@@ -114,15 +122,64 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                         word.definitionText.isBlank() -> showToast("Definition cannot be empty")
                         else -> {
                             categoryFragment?.setWordCommand(WordCommand.INSERT_WORD)
-                            viewModel.addWord(word) { wordId ->
-                                addWordDialog.dismiss()
-
-//                                categoryFragment?.scrollRecyclerView(wordId, WordCommand.INSERT_WORD)
-                            }
+                            viewModel.addWord(word)
+                            addWordDialog.dismiss()
                         }
                     }
                 }
             }
+
+
+//
+//            lifecycleScope.launch {
+//                repeatOnLifecycle(Lifecycle.State.STARTED) {
+//                    viewModel.getAllCategories().collectLatest { categoryList ->
+//                        for (category in categoryList) {
+//                            if (!category.isAll()) {
+//                                val button = MaterialToggleButton(
+//                                    activity, null,
+//                                    com.google.android.material.R.attr.materialButtonOutlinedStyle
+//                                ).apply {
+//                                    layoutParams = ViewGroup.LayoutParams(
+//                                        ViewGroup.LayoutParams.WRAP_CONTENT,
+//                                        ViewGroup.LayoutParams.WRAP_CONTENT
+//                                    )
+//                                    text = category.categoryName
+//                                    id = category.id
+//                                }
+//                                (addCategoryGroup as ViewGroup).addView(button)
+//                            }
+//                        }
+//
+//                        addBtn.setOnClickListener {
+//                            val word = Word(
+//                                wordText = wordEt.text.toString(),
+//                                furiganaText = furiganaEt.text.toString(),
+//                                definitionText = definitionEt.text.toString(),
+//                                createdTimeMillis = System.currentTimeMillis(),
+//                            )
+//
+//                            categoryList.filter {
+//                                it.id in addCategoryGroup.checkedButtonIds
+//                            }.also {
+//                                word.categoryList = it
+//                            }
+//
+//                            when {
+//                                word.wordText.isBlank() -> showToast("Word cannot be empty")
+//                                word.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
+//                                word.definitionText.isBlank() -> showToast("Definition cannot be empty")
+//                                else -> {
+//                                    categoryFragment?.setWordCommand(WordCommand.INSERT_WORD)
+//                                    viewModel.addWord(word)
+//                                    addWordDialog.dismiss()
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//                }
+//            }
 
             addWordDialog
         } ?: throw IllegalStateException("Activity cannot be null")
@@ -130,17 +187,26 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
 
     override fun onItemClickListener(word: Word) {
         categoryFragment?.setWordCommand(WordCommand.FORGOT_WORD)
-        viewModel.updateIsForgottenWord(word, true) {
-            addWordDialog.dismiss()
-
-//            categoryFragment?.scrollRecyclerView(word.id, WordCommand.FORGOT_WORD)
-        }
+        viewModel.updateIsForgottenWord(word, true)
+        addWordDialog.dismiss()
     }
 
     private fun showToast(text: String) {
         Toast
             .makeText(activity, text, Toast.LENGTH_SHORT)
             .show()
+    }
+
+    companion object {
+        fun newInstance(categoryList: List<Category>): AddWordDialogFragment {
+            val dialogFragment = AddWordDialogFragment()
+            dialogFragment.arguments = Bundle().apply {
+                putParcelableArrayList(ADD_DIALOG_FRAGMENT_ARGS, ArrayList(categoryList))
+            }
+            return dialogFragment
+        }
+
+        const val ADD_DIALOG_FRAGMENT_ARGS = "ADD_DIALOG_FRAGMENT_ARGS"
     }
 
 }
