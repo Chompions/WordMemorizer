@@ -3,19 +3,13 @@ package com.sawelo.wordmemorizer.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.Word
 import kotlinx.coroutines.flow.Flow
 
 class WordRepository(private val database: AppDatabase) {
 
     fun getAllCategories(): Flow<List<Category>> = database.categoryDao().getCategories()
-
-    fun getAllWordsByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
-        return Pager(
-            PagingConfig(pageSize = 20)
-        ) {
-            database.wordDao().getAllWordsByCategoryPagingData(category.copy(wordCount = 0))
-        }.flow
-    }
 
     fun getAllWordsPagingData(): Flow<PagingData<Word>> {
         return Pager(
@@ -25,11 +19,27 @@ class WordRepository(private val database: AppDatabase) {
         }.flow
     }
 
+    fun getAllWordsByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
+        return Pager(
+            PagingConfig(pageSize = 20)
+        ) {
+            database.wordDao().getAllWordsByCategoryPagingData(category.copy(wordCount = 0))
+        }.flow
+    }
+
     fun getAllForgottenWordsPagingData(): Flow<PagingData<Word>> {
         return Pager(
             PagingConfig(pageSize = 20)
         ) {
             database.wordDao().getForgottenWordsPagingData()
+        }.flow
+    }
+
+    fun getAllForgottenWordByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
+        return Pager(
+            PagingConfig(pageSize = 20)
+        ) {
+            database.wordDao().getForgottenWordsByCategoryPagingData(category.copy(wordCount = 0))
         }.flow
     }
 
@@ -76,23 +86,4 @@ class WordRepository(private val database: AppDatabase) {
     suspend fun deleteCategory(category: Category) {
         database.categoryDao().deleteCategory(category)
     }
-
-
-
-//    private val allWords = database.wordDao().getWords()
-//    private val allCategories =
-//
-//    allCategories
-//    fun getAllWordsByAll(): Flow<List<Word>> = allWords
-//    fun getAllWordsByCategory(category: Category): Flow<List<Word>> =
-//        allWords.mapLatest { words ->
-//            words.filter { word -> category in word.categoryList }
-//        }
-//    fun getAllWordsByWord(inputString: String): Flow<List<Word>> =
-//        allWords.mapLatest { words ->
-//            words.filter { word -> if (inputString.isNotBlank())
-//                inputString in word.wordText else false }
-//        }
-
-
 }

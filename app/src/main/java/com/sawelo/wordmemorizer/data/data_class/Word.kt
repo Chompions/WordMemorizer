@@ -1,8 +1,7 @@
-package com.sawelo.wordmemorizer.data
+package com.sawelo.wordmemorizer.data.data_class
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
 
 @Entity
 data class Word(
@@ -16,17 +15,4 @@ data class Word(
     var createdTimeMillis: Long,
     var categoryList: List<Category> = emptyList(),
     var wordInfo: WordInfo? = null
-)
-
-@Serializable
-data class WordInfo(
-    val isCommon: Boolean? = null,
-    val jlptLevel: Int? = null,
-    val charList: List<WordInfoChar>? = null
-)
-
-@Serializable
-data class WordInfoChar(
-    val char: Char? = null,
-    val strokeCount: Int? = null
 )

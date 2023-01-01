@@ -6,7 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.sawelo.wordmemorizer.utils.WordUtils
+import com.sawelo.wordmemorizer.data.converter.CategoryConverter
+import com.sawelo.wordmemorizer.data.converter.WordInfoConverter
+import com.sawelo.wordmemorizer.data.dao.CategoryDao
+import com.sawelo.wordmemorizer.data.dao.WordDao
+import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.util.WordUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

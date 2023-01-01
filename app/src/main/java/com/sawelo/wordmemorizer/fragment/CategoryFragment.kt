@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -15,17 +13,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.adapter.MainWordAdapter
-import com.sawelo.wordmemorizer.data.Category
-import com.sawelo.wordmemorizer.data.Word
+import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
+import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.databinding.FragmentCategoryBinding
-import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
-import com.sawelo.wordmemorizer.utils.WordCommand
-import com.sawelo.wordmemorizer.utils.WordUtils.isAll
+import com.sawelo.wordmemorizer.util.WordUtils.isAll
+import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -33,93 +29,57 @@ import kotlinx.coroutines.launch
 class CategoryFragment : Fragment(), ItemWordAdapterCallback {
     private val viewModel: MainViewModel by activityViewModels()
     private var binding: FragmentCategoryBinding? = null
-    private var adapter: MainWordAdapter? = null
-    private var recyclerView: RecyclerView? = null
-    private var animation: Animation? = null
-
-    private var currentWordCommand: WordCommand? = null
-    private var currentWordJob: Job? = null
+    private var mainWordAdapter: MainWordAdapter? = null
+    private var mainWordRv: RecyclerView? = null
+    private var similarWordAdapter: SimilarWordAdapter? = null
+    private var similarWordRv: RecyclerView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        animation = AnimationUtils.loadAnimation(requireContext(), R.anim.blink_animation)
         binding = FragmentCategoryBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
-    //    override fun onItemForgotBtnClickListener(word: Word) {
-//        viewModel.updateIsForgottenWord(word, true) {
-//            println("You forgot this word")
-//        }
-//    }
-//
-//    override fun onItemHideBtnClickListener(word: Word) {
-//        viewModel.updateIsForgottenWord(word, false) {
-//            println("You remember this word")
-//        }
-//        viewModel.updateForgotCountWord(word) {
-//            println("Increase forgot count")
-//        }
-//    }
-//
+    override fun onItemHideBtnClickListener(word: Word) {
+        viewModel.updateIsForgottenWord(word, false)
+    }
+
+    override fun onItemForgotBtnClickListener(word: Word) {
+        viewModel.updateIsForgottenWord(word, true)
+        viewModel.updateForgotCountWord(word)
+    }
+
     override fun onItemLongClickListener(word: Word) {
         viewModel.deleteWord(word)
-        showToast("Word deleted: ${word.wordText}")
+        showToast("$word word deleted")
     }
-
-    override fun onItemClickListener(word: Word) {
-        println("You're pressing ${word.wordText}")
-    }
-
-//    override fun onItemListChangedListener(
-//        previousList: MutableList<Word>,
-//        currentList: MutableList<Word>
-//    ) {
-//
-//    }
-//        val smoothScroller = object : LinearSmoothScroller(context) {
-//            override fun getVerticalSnapPreference(): Int = SNAP_TO_START
-//        }
-//
-//        currentWordJob?.cancel()
-//        currentWordJob = lifecycleScope.launch {
-//            val wordList = currentList.minus(previousList.toSet())
-//            val wordListPosition = currentList.indexOf(wordList.firstOrNull())
-//            if (wordListPosition != -1 && currentWordCommand != null) {
-//                recyclerView?.clearOnScrollListeners()
-//                recyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//                    override fun onScrollStateChanged(
-//                        recyclerView: RecyclerView,
-//                        newState: Int
-//                    ) {
-//                        if (newState == SCROLL_STATE_IDLE) {
-//                            val viewHolder =
-//                                recyclerView.findViewHolderForLayoutPosition(wordListPosition)
-//                                        as? MainWordAdapter.WordViewHolder
-//                            viewHolder?.itemView?.startAnimation(animation)
-//                            recyclerView.removeOnScrollListener(this)
-//                        }
-//                    }
-//                })
-//                smoothScroller.targetPosition = wordListPosition
-//                recyclerView?.layoutManager?.startSmoothScroll(smoothScroller)
-//                currentWordCommand = null
-//            }
-//        }
-//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        recyclerView = binding?.fragmentCategoryRv
-        adapter = MainWordAdapter(this)
-        adapter?.addOnPagesUpdatedListener {
-            binding?.fragmentCategoryProgressIndicator?.hide()
+        // Setting adapters
+        mainWordAdapter = MainWordAdapter(this).apply {
+            addOnPagesUpdatedListener {
+                binding?.fragmentCategoryMainWordsProgressIndicator?.hide()
+            }
+        }
+        similarWordAdapter = SimilarWordAdapter(this).apply {
+            addOnPagesUpdatedListener {
+                binding?.fragmentCategorySimilarWordsProgressIndicator?.hide()
+            }
         }
 
-        recyclerView?.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView?.adapter = adapter
+        // Setting recycler views
+        mainWordRv = binding?.fragmentCategoryMainWordsRv?.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = mainWordAdapter
+        }
+        similarWordRv = binding?.fragmentCategorySimilarWordsRv?.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = similarWordAdapter
+        }
 
+        // Get arguments
         @Suppress("DEPRECATION") val parcelable = if (Build.VERSION.SDK_INT >= 33) {
             arguments?.getParcelable(CategoryAdapter.CATEGORY_ARGS, Category::class.java)
         } else {
@@ -127,23 +87,49 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         }
 
         parcelable?.let { category ->
+            // Collect all main words
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    // Check to collect all data or category based data
                     if (category.isAll()) {
                         viewModel.getAllWordsPagingData()
                             .onEach {
-                                binding?.fragmentCategoryProgressIndicator?.show()
+                                binding?.fragmentCategoryMainWordsProgressIndicator?.show()
                             }
                             .collectLatest {
-                                adapter?.submitData(it)
+                                mainWordAdapter?.submitData(it)
                             }
                     } else {
                         viewModel.getAllWordsByCategoryPagingData(category)
                             .onEach {
-                                binding?.fragmentCategoryProgressIndicator?.show()
+                                binding?.fragmentCategoryMainWordsProgressIndicator?.show()
                             }
                             .collectLatest {
-                                adapter?.submitData(it)
+                                mainWordAdapter?.submitData(it)
+                            }
+                    }
+                }
+            }
+
+            // Collect all forgotten words
+            viewLifecycleOwner.lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    // Check to collect all data or category based data
+                    if (category.isAll()) {
+                        viewModel.getAllForgottenWordsPagingData()
+                            .onEach {
+                                binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                            }
+                            .collectLatest {
+                                similarWordAdapter?.submitData(it)
+                            }
+                    } else {
+                        viewModel.getAllForgottenWordsByCategoryPagingData(category)
+                            .onEach {
+                                binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                            }
+                            .collectLatest {
+                                similarWordAdapter?.submitData(it)
                             }
                     }
                 }
@@ -159,9 +145,10 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
-        adapter = null
-        recyclerView = null
-        animation = null
+        mainWordAdapter = null
+        mainWordRv= null
+        similarWordAdapter = null
+        similarWordRv = null
     }
 
     private fun showToast(text: String) {
@@ -169,71 +156,4 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
             .makeText(requireContext(), text, Toast.LENGTH_SHORT)
             .show()
     }
-
-//    fun setWordCommand(wordCommand: WordCommand) {
-//        currentWordCommand = wordCommand
-//    }
-
-//    fun observeAdapter(wordCommand: WordCommand) {
-//        when (wordCommand) {
-//            WordCommand.FORGOT_WORD -> {
-//                if (wordId != null && adapter != null && recyclerView != null)
-//                    scrollToWordChanged(wordId, adapter!!, recyclerView!!)
-//            }
-//            WordCommand.INSERT_WORD -> {
-//                if (wordId != null && adapter != null && recyclerView != null)
-//                    scrollToWordInserted(wordId, adapter!!, recyclerView!!)
-//            }
-//        }
-//
-//        adapter.onCurrentListChanged()
-//
-//        var observer: AdapterDataObserver? = null
-//        observer = object : AdapterDataObserver() {
-//            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-//                lifecycleScope.launch {
-//                    while (recyclerView?.hasPendingAdapterUpdates() == true) {
-//                        delay(200L)
-//                    }
-//
-
-//
-//                    println("SCROLLING TO $positionStart")
-//
-//                }
-//            }
-//
-//            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-//                lifecycleScope.launch {
-//                    while (recyclerView?.hasPendingAdapterUpdates() == true) {
-//                        println("DELAYING IN CHANGED")
-//                        delay(200L)
-//                    }
-//
-//                    recyclerView?.smoothScrollToPosition(positionStart)
-//                    if (adapter?.hasObservers() == true && observer != null) {
-//                        println("REMOVING OBSERVER")
-//                        adapter?.unregisterAdapterDataObserver(observer!!)
-//                    }
-//                }
-//            }
-//        }
-//
-//        adapter?.registerAdapterDataObserver(observer)
-//    }
-//
-//    fun scrollRecyclerView(wordId: Int?, wordCommand: WordCommand?) {
-//        if (wordCommand != null) {
-//            when (wordCommand) {
-//                WordCommand.FORGOT_WORD -> {
-//                    if (wordId != null && adapter != null && recyclerView != null)
-//                        scrollToWordChanged(wordId, adapter!!, recyclerView!!)
-//                }
-//                WordCommand.INSERT_WORD -> {
-//                    if (wordId != null && adapter != null && recyclerView != null)
-//                        scrollToWordInserted(wordId, adapter!!, recyclerView!!)
-//                }
-//            }
-//        }
-//    }
 }

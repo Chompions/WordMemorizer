@@ -3,7 +3,7 @@ package com.sawelo.wordmemorizer.adapter
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.sawelo.wordmemorizer.data.Category
+import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.fragment.CategoryFragment
 
 class CategoryAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {

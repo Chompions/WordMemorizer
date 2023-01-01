@@ -1,6 +1,7 @@
-package com.sawelo.wordmemorizer.data
+package com.sawelo.wordmemorizer.data.dao
 
 import androidx.room.*
+import com.sawelo.wordmemorizer.data.data_class.Category
 import kotlinx.coroutines.flow.Flow
 
 @Dao

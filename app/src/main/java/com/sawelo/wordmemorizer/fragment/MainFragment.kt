@@ -16,8 +16,9 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
-import com.sawelo.wordmemorizer.data.Category
+import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.FragmentMainBinding
+import com.sawelo.wordmemorizer.fragment.dialog.AddWordDialogFragment
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

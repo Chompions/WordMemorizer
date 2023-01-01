@@ -16,11 +16,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.Category
+import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
-import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.MainFragment
-import com.sawelo.wordmemorizer.utils.WordUtils.isAll
+import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
+import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest

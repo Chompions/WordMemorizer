@@ -1,6 +1,7 @@
-package com.sawelo.wordmemorizer.data
+package com.sawelo.wordmemorizer.data.converter
 
 import androidx.room.TypeConverter
+import com.sawelo.wordmemorizer.data.data_class.WordInfo
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

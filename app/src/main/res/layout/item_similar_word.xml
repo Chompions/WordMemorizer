@@ -18,37 +18,48 @@
             android:id="@+id/itemWord_mainWord_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
             android:textSize="28sp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/itemWord_forgotCount_tv"
+            app:layout_constraintEnd_toStartOf="@id/itemWord_hide_btn"
             tools:text="@tools:sample/lorem" />
 
         <TextView
-            android:id="@+id/itemWord_forgotCount_tv"
-            android:layout_width="wrap_content"
+            android:id="@+id/itemWord_furiganaWord_tv"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:textSize="16sp"
-            app:layout_constraintStart_toEndOf="@id/itemWord_mainWord_tv"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/itemWord_forgot_btn"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="2" />
+            android:layout_marginEnd="16dp"
+            android:textSize="24sp"
+            android:alpha=".8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/itemWord_mainWord_tv"
+            app:layout_constraintEnd_toStartOf="@id/itemWord_hide_btn"
+            tools:text="@tools:sample/lorem" />
+
+        <TextView
+            android:id="@+id/itemWord_definitionWord_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:textSize="18sp"
+            android:alpha=".6"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/itemWord_furiganaWord_tv"
+            app:layout_constraintEnd_toStartOf="@id/itemWord_hide_btn"
+            tools:text="@tools:sample/lorem" />
 
         <Button
-            android:id="@+id/itemWord_forgot_btn"
+            android:id="@+id/itemWord_hide_btn"
             android:layout_width="95dp"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/forgot_button"
-            android:text="@string/forgot"
+            android:contentDescription="@string/remember_button"
+            android:text="@string/hide"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
 
 </com.google.android.material.card.MaterialCardView>

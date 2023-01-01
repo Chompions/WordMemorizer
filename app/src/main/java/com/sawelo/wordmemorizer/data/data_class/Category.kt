@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.data
+package com.sawelo.wordmemorizer.data.data_class
 
 import android.os.Parcelable
 import androidx.room.Entity

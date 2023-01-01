@@ -1,10 +1,13 @@
-package com.sawelo.wordmemorizer.utils
+package com.sawelo.wordmemorizer.util
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.util.TypedValue
+import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
-import com.sawelo.wordmemorizer.data.Category
+import androidx.core.view.isVisible
+import com.sawelo.wordmemorizer.data.data_class.Category
 
 object WordUtils {
 
@@ -16,6 +19,19 @@ object WordUtils {
     ): Int {
         theme.resolveAttribute(attrColor, typedValue, resolveRefs)
         return typedValue.data
+    }
+
+    fun View.animateHeightFromTo(initialHeight: Int, finalHeight: Int) {
+        val animator = ValueAnimator.ofInt(initialHeight, finalHeight)
+        animator.duration = 250
+        animator.addUpdateListener {
+            val value = it.animatedValue as Int
+            val lp = this.layoutParams
+            lp.height = value
+            this.layoutParams = lp
+            isVisible = value != 0
+        }
+        animator.start()
     }
 
     fun Category.isAll(): Boolean = this.categoryName == defaultCategoryList.first()

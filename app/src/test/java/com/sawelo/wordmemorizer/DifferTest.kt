@@ -4,8 +4,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
-import com.sawelo.wordmemorizer.data.Category
-import com.sawelo.wordmemorizer.utils.CategoryDiffUtilCallback
+import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.util.callback.CategoryDiffUtilCallback
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow

@@ -3,41 +3,50 @@ package com.sawelo.wordmemorizer.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
-import androidx.recyclerview.widget.ListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.sawelo.wordmemorizer.utils.WordDiffUtilCallback
-import com.sawelo.wordmemorizer.utils.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.Word
+import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
+import com.sawelo.wordmemorizer.util.callback.WordDiffUtilCallback
 
 class SimilarWordAdapter(
     private val itemCallback: ItemWordAdapterCallback
-) : ListAdapter<Word, SimilarWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
+) : PagingDataAdapter<Word, SimilarWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
-        val similarWord: TextView = itemView.findViewById(R.id.itemWord_similarWord_tv)
-        val forgotCount: TextView = itemView.findViewById(R.id.itemWord_forgotCount_tv)
+        val mainWord: TextView = itemView.findViewById(R.id.itemWord_mainWord_tv)
+        val furiganaWord: TextView = itemView.findViewById(R.id.itemWord_furiganaWord_tv)
+        val definitionWord: TextView = itemView.findViewById(R.id.itemWord_definitionWord_tv)
+        val hideBtn: Button = itemView.findViewById(R.id.itemWord_hide_btn)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_add_word, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_similar_word, parent, false)
         return WordViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
-        val itemWord = getItem(position)
-        with(holder) {
-            similarWord.text = itemWord.wordText
-            forgotCount.text = itemWord.forgotCount.toString()
+        getItem(position)?.let { itemWord ->
+            with(holder) {
+                mainWord.text = itemWord.wordText
+                furiganaWord.text = itemWord.furiganaText
+                definitionWord.text = itemWord.definitionText
 
-            itemView.setOnClickListener {
-                itemCallback.onItemClickListener(itemWord)
-            }
+                hideBtn.setOnClickListener {
+                    itemCallback.onItemHideBtnClickListener(itemWord)
+                }
 
-            itemView.setOnLongClickListener {
-                itemCallback.onItemLongClickListener(itemWord)
-                true
+                itemView.setOnClickListener {
+                    itemCallback.onItemClickListener(itemWord)
+                }
+
+                itemView.setOnLongClickListener {
+                    itemCallback.onItemLongClickListener(itemWord)
+                    true
+                }
             }
         }
     }

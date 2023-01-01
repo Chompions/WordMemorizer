@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.fragment
+package com.sawelo.wordmemorizer.fragment.dialog
 
 import android.app.Dialog
 import android.os.Bundle
@@ -10,7 +10,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.Category
+import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 
 class AddCategoryDialogFragment : DialogFragment() {
@@ -32,7 +32,6 @@ class AddCategoryDialogFragment : DialogFragment() {
                 when {
                     category.categoryName.isBlank() -> showToast("Category name cannot be empty")
                     else -> {
-                        println(category)
                         viewModel.addCategory(category)
                         addCategoryDialog.dismiss()
                         showToast("You created ${category.categoryName} category")

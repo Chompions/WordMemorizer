@@ -6,10 +6,10 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.recyclerview.widget.AsyncDifferConfig
 import com.atilika.kuromoji.jumandic.Tokenizer
-import com.sawelo.wordmemorizer.data.Category
-import com.sawelo.wordmemorizer.data.Word
 import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.utils.CategoryDiffUtilCallback
+import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.util.callback.CategoryDiffUtilCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -23,6 +23,10 @@ class MainViewModel @Inject constructor(
     val asyncDifferConfig = AsyncDifferConfig.Builder(CategoryDiffUtilCallback).build()
     var currentCategoryFragmentTag: String? = null
 
+    fun getAllCategories(): Flow<List<Category>> {
+        return wordRepository.getAllCategories()
+    }
+
     fun getAllWordsPagingData(): Flow<PagingData<Word>> {
         return wordRepository.getAllWordsPagingData().cachedIn(viewModelScope)
     }
@@ -35,15 +39,9 @@ class MainViewModel @Inject constructor(
         return wordRepository.getAllForgottenWordsPagingData().cachedIn(viewModelScope)
     }
 
-    fun getAllCategories(): Flow<List<Category>> {
-        return wordRepository.getAllCategories()
+    fun getAllForgottenWordsByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
+        return wordRepository.getAllForgottenWordByCategoryPagingData(category).cachedIn(viewModelScope)
     }
-
-//    fun getAllWordsSizeByCategory(category: Category, result: (Int) -> Unit) {
-//        viewModelScope.launch {
-//            result.invoke(wordRepository.getAllWordsSizeByCategory(category))
-//        }
-//    }
 
     fun getAllWordsByWord(wordText: String, result: (List<Word>) -> Unit) {
         viewModelScope.launch {
@@ -92,29 +90,5 @@ class MainViewModel @Inject constructor(
             wordRepository.deleteCategory(category)
         }
     }
-
-
-//    fun getAllWordsByCategory(category: Category? = null): LiveData<List<Word>> {
-//        return when {
-//            category?.isAll() == true -> wordRepository.getAllWordsByAll().asLiveData()
-//            category == null -> wordRepository.getAllWordsByAll().asLiveData()
-//            else -> wordRepository.getAllWordsByCategory(category).asLiveData()
-//        }
-//    }
-//    fun getAllWordsByWord(inputString: String): LiveData<List<Word>> =
-//        wordRepository.getAllWordsByWord(inputString).asLiveData()
-//
-
-//    }
-
-//
-
-
-//
-
-//
-
-//
-
 
 }
