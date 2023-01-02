@@ -20,6 +20,7 @@ import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.MainFragment
 import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
+import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,6 +50,10 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 R.id.menuOptions_reload -> {
                     viewModel.resetAllForgotCount()
                     showToast("Word count reset")
+                    true
+                }
+                R.id.menuOptions_sort -> {
+                    SortingSettingsDialogFragment().show(supportFragmentManager, null)
                     true
                 }
                 else -> false

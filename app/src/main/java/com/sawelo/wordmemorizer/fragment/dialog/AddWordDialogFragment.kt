@@ -73,8 +73,13 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                         furiganaEt.setText(hiraganaTokens.joinToString())
                     }
                     viewModel.getAllWordsByWord(wordString) {
-                        similarWordTv.isVisible = it.isEmpty()
-                        adapter.submitList(it)
+                        if (wordString.isNotBlank() && it.isNotEmpty()) {
+                            similarWordTv.isVisible = false
+                            adapter.submitList(it)
+                        } else {
+                            similarWordTv.isVisible = true
+                            adapter.submitList(emptyList())
+                        }
                     }
                 }
             }
@@ -138,6 +143,7 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
 
     override fun onItemClickListener(word: Word) {
         viewModel.updateIsForgottenWord(word, true)
+        viewModel.updateForgotCountWord(word)
         addWordDialog.dismiss()
     }
 

@@ -27,12 +27,8 @@ class MainViewModel @Inject constructor(
         return wordRepository.getAllCategories()
     }
 
-    fun getAllWordsPagingData(): Flow<PagingData<Word>> {
-        return wordRepository.getAllWordsPagingData().cachedIn(viewModelScope)
-    }
-
-    fun getAllWordsByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
-        return wordRepository.getAllWordsByCategoryPagingData(category).cachedIn(viewModelScope)
+    fun getAllWordsPagingData(category: Category): Flow<PagingData<Word>> {
+        return wordRepository.getAllWordsPagingData(category).cachedIn(viewModelScope)
     }
 
     fun getAllForgottenWordsPagingData(): Flow<PagingData<Word>> {

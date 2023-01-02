@@ -87,27 +87,15 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         }
 
         parcelable?.let { category ->
-            // Collect all main words
+
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    // Check to collect all data or category based data
-                    if (category.isAll()) {
-                        viewModel.getAllWordsPagingData()
-                            .onEach {
-                                binding?.fragmentCategoryMainWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                mainWordAdapter?.submitData(it)
-                            }
-                    } else {
-                        viewModel.getAllWordsByCategoryPagingData(category)
-                            .onEach {
-                                binding?.fragmentCategoryMainWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                mainWordAdapter?.submitData(it)
-                            }
-                    }
+                    viewModel.getAllWordsPagingData(category)
+                        .onEach {
+                            binding?.fragmentCategoryMainWordsProgressIndicator?.show()
+                        }.collectLatest {
+                            mainWordAdapter?.submitData(it)
+                        }
                 }
             }
 
@@ -146,7 +134,7 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         super.onDestroyView()
         binding = null
         mainWordAdapter = null
-        mainWordRv= null
+        mainWordRv = null
         similarWordAdapter = null
         similarWordRv = null
     }
