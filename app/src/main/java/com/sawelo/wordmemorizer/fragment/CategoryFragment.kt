@@ -19,7 +19,6 @@ import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.databinding.FragmentCategoryBinding
-import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -86,8 +85,7 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
             arguments?.getParcelable(CategoryAdapter.CATEGORY_ARGS)
         }
 
-        parcelable?.let { category ->
-
+        parcelable?.also { category ->
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     viewModel.getAllWordsPagingData(category)
@@ -102,24 +100,13 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
             // Collect all forgotten words
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    // Check to collect all data or category based data
-                    if (category.isAll()) {
-                        viewModel.getAllForgottenWordsPagingData()
-                            .onEach {
-                                binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                similarWordAdapter?.submitData(it)
-                            }
-                    } else {
-                        viewModel.getAllForgottenWordsByCategoryPagingData(category)
-                            .onEach {
-                                binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                similarWordAdapter?.submitData(it)
-                            }
-                    }
+                    viewModel.getAllForgottenWordsPagingData(category)
+                        .onEach {
+                            binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                        }
+                        .collectLatest {
+                            similarWordAdapter?.submitData(it)
+                        }
                 }
             }
         }

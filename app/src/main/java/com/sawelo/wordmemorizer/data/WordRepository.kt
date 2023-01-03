@@ -9,6 +9,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import com.sawelo.wordmemorizer.data.converter.CategoryConverter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.util.PreferencesUtil
 import com.sawelo.wordmemorizer.util.SortingAnchor
 import com.sawelo.wordmemorizer.util.SortingOrder
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
@@ -30,13 +31,8 @@ class WordRepository(
         category: Category
     ): Flow<PagingData<Word>> = callbackFlow {
         dataStore.data.cancellable().collectLatest { preferences ->
-            val sortingAnchorName = preferences[SortingAnchor.obtainPreferencesKey]
-                ?: SortingAnchor.RANDOM.name
-            val sortingOrderName = preferences[SortingOrder.obtainPreferencesKey]
-                ?: SortingOrder.ASCENDING.name
-
-            val sortingAnchorEnum = SortingAnchor.valueOf(sortingAnchorName)
-            val sortingOrderEnum = SortingOrder.valueOf(sortingOrderName)
+            val sortingAnchorEnum = PreferencesUtil.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
+            val sortingOrderEnum = PreferencesUtil.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
 
             val getAllWordsQuery = SimpleSQLiteQuery(
                 "SELECT * FROM word ORDER BY " +
@@ -65,20 +61,21 @@ class WordRepository(
         awaitClose { cancel() }
     }
 
-    fun getAllForgottenWordsPagingData(): Flow<PagingData<Word>> {
-        return Pager(
+    fun getAllForgottenWordsPagingData(
+        category: Category
+    ): Flow<PagingData<Word>> = callbackFlow {
+        Pager(
             PagingConfig(pageSize = 20)
         ) {
-            database.wordDao().getForgottenWordsPagingData()
-        }.flow
-    }
-
-    fun getAllForgottenWordByCategoryPagingData(category: Category): Flow<PagingData<Word>> {
-        return Pager(
-            PagingConfig(pageSize = 20)
-        ) {
-            database.wordDao().getForgottenWordsByCategoryPagingData(category.copy(wordCount = 0))
-        }.flow
+            if (category.isAll()) {
+                database.wordDao().getForgottenWordsPagingData()
+            } else {
+                database.wordDao().getForgottenWordsByCategoryPagingData(category.copy(wordCount = 0))
+            }
+        }.flow.cancellable().collectLatest {
+            send(it)
+        }
+        awaitClose { cancel() }
     }
 
     suspend fun getAllWordsByWord(wordText: String): List<Word> {
