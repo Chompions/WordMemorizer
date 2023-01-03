@@ -19,7 +19,10 @@ An android app to memorize words with emphasize on Japanese kanji
 
 ## Upcoming features
 
+* Press item to edit words (yes, this is not implemented yet)
 * Save more information per words, such as radical count, is-common check, JLPT level, etc. 
+* Automatically find meaning/definition of a word while typing
+* Floating bubble to add word entry wherever you are on screen just by copy/paste
 * More features 
 
 **Note**: If you have any ideas on what other features I should add, feel free to contact me or file an issue
