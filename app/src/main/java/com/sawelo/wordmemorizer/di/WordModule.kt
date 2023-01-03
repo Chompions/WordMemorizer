@@ -3,6 +3,7 @@ package com.sawelo.wordmemorizer.di
 import android.content.Context
 import com.sawelo.wordmemorizer.data.AppDatabase
 import com.sawelo.wordmemorizer.data.WordRepository
+import com.sawelo.wordmemorizer.dataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,7 +19,8 @@ object WordModule {
         @ApplicationContext context: Context
     ): WordRepository {
         val appDatabase = AppDatabase.getInstance(context)
-        return WordRepository(appDatabase)
+        val dataStore = context.dataStore
+        return WordRepository(appDatabase, dataStore)
     }
 
 }

@@ -20,4 +20,9 @@
     <string name="header_text">set your categories</string>
     <string name="add_category">Add category</string>
     <string name="category">Category</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="forgot_count">Forgot Count</string>
+    <string name="created_time">Created Time</string>
+    <string name="random">Random</string>
 </resources>

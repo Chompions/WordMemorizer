@@ -21,12 +21,9 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.activity.MainActivity
 import com.sawelo.wordmemorizer.adapter.AddWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.fragment.CategoryFragment
-import com.sawelo.wordmemorizer.fragment.MainFragment
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
@@ -36,7 +33,6 @@ import kotlinx.coroutines.launch
 class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
     private val viewModel: MainViewModel by activityViewModels()
     private lateinit var addWordDialog: AlertDialog
-    private var categoryFragment: CategoryFragment? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let { activity ->
@@ -57,11 +53,6 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
             similarWordRv.adapter = adapter
             similarWordRv.layoutManager = LinearLayoutManager(activity)
 
-            val mainFragment = (activity as MainActivity)
-                .supportFragmentManager.findFragmentByTag(MainFragment.MAIN_FRAGMENT_TAG)
-            categoryFragment = mainFragment?.childFragmentManager
-                ?.findFragmentByTag(viewModel.currentCategoryFragmentTag) as CategoryFragment?
-
             wordEt.doOnTextChanged { text, _, _, _ ->
                 lifecycleScope.launch {
                     val wordString = text.toString()
@@ -73,8 +64,13 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                         furiganaEt.setText(hiraganaTokens.joinToString())
                     }
                     viewModel.getAllWordsByWord(wordString) {
-                        similarWordTv.isVisible = it.isEmpty()
-                        adapter.submitList(it)
+                        if (wordString.isNotBlank() && it.isNotEmpty()) {
+                            similarWordTv.isVisible = false
+                            adapter.submitList(it)
+                        } else {
+                            similarWordTv.isVisible = true
+                            adapter.submitList(emptyList())
+                        }
                     }
                 }
             }
@@ -138,6 +134,7 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
 
     override fun onItemClickListener(word: Word) {
         viewModel.updateIsForgottenWord(word, true)
+        viewModel.updateForgotCountWord(word)
         addWordDialog.dismiss()
     }
 

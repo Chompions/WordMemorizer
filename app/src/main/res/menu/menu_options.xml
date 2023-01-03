@@ -2,8 +2,13 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/menuOptions_sort"
+        android:icon="@drawable/ic_baseline_sort_24"
+        android:title="@string/reload"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/menuOptions_reload"
         android:icon="@drawable/ic_baseline_change_circle_24"
         android:title="@string/reload"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 </menu>

@@ -19,7 +19,6 @@ import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.databinding.FragmentCategoryBinding
-import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -53,7 +52,7 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
 
     override fun onItemLongClickListener(word: Word) {
         viewModel.deleteWord(word)
-        showToast("$word word deleted")
+        showToast("You deleted ${word.wordText}")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -86,52 +85,28 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
             arguments?.getParcelable(CategoryAdapter.CATEGORY_ARGS)
         }
 
-        parcelable?.let { category ->
-            // Collect all main words
+        parcelable?.also { category ->
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    // Check to collect all data or category based data
-                    if (category.isAll()) {
-                        viewModel.getAllWordsPagingData()
-                            .onEach {
-                                binding?.fragmentCategoryMainWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                mainWordAdapter?.submitData(it)
-                            }
-                    } else {
-                        viewModel.getAllWordsByCategoryPagingData(category)
-                            .onEach {
-                                binding?.fragmentCategoryMainWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                mainWordAdapter?.submitData(it)
-                            }
-                    }
+                    viewModel.getAllWordsPagingData(category)
+                        .onEach {
+                            binding?.fragmentCategoryMainWordsProgressIndicator?.show()
+                        }.collectLatest {
+                            mainWordAdapter?.submitData(it)
+                        }
                 }
             }
 
             // Collect all forgotten words
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    // Check to collect all data or category based data
-                    if (category.isAll()) {
-                        viewModel.getAllForgottenWordsPagingData()
-                            .onEach {
-                                binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                similarWordAdapter?.submitData(it)
-                            }
-                    } else {
-                        viewModel.getAllForgottenWordsByCategoryPagingData(category)
-                            .onEach {
-                                binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
-                            }
-                            .collectLatest {
-                                similarWordAdapter?.submitData(it)
-                            }
-                    }
+                    viewModel.getAllForgottenWordsPagingData(category)
+                        .onEach {
+                            binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                        }
+                        .collectLatest {
+                            similarWordAdapter?.submitData(it)
+                        }
                 }
             }
         }
@@ -146,7 +121,7 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         super.onDestroyView()
         binding = null
         mainWordAdapter = null
-        mainWordRv= null
+        mainWordRv = null
         similarWordAdapter = null
         similarWordRv = null
     }
