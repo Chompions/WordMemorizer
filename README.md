@@ -1,6 +1,6 @@
 # WordMemorizer Android App
 
-An app to memorize words with emphasize on Japanese kanji 
+An android app to memorize words with emphasize on Japanese kanji 
 
 ## Features
 
