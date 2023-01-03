@@ -52,7 +52,7 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
 
     override fun onItemLongClickListener(word: Word) {
         viewModel.deleteWord(word)
-        showToast("$word word deleted")
+        showToast("You deleted ${word.wordText}")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
