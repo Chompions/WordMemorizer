@@ -9,7 +9,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import com.sawelo.wordmemorizer.data.converter.CategoryConverter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.util.PreferencesUtil
+import com.sawelo.wordmemorizer.util.PreferencesUtils
 import com.sawelo.wordmemorizer.util.SortingAnchor
 import com.sawelo.wordmemorizer.util.SortingOrder
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
@@ -31,8 +31,8 @@ class WordRepository(
         category: Category
     ): Flow<PagingData<Word>> = callbackFlow {
         dataStore.data.cancellable().collectLatest { preferences ->
-            val sortingAnchorEnum = PreferencesUtil.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
-            val sortingOrderEnum = PreferencesUtil.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
+            val sortingAnchorEnum = PreferencesUtils.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
+            val sortingOrderEnum = PreferencesUtils.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
 
             val getAllWordsQuery = SimpleSQLiteQuery(
                 "SELECT * FROM word ORDER BY " +

@@ -4,7 +4,7 @@ import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 
-object PreferencesUtil {
+object PreferencesUtils {
 
     fun setCurrentSortingToPreferences(settings: MutablePreferences, enum: Sorting) {
         return when(enum) {

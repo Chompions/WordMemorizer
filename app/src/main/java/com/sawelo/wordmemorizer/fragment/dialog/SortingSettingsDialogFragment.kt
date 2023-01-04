@@ -12,7 +12,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.dataStore
-import com.sawelo.wordmemorizer.util.PreferencesUtil
+import com.sawelo.wordmemorizer.util.PreferencesUtils
 import com.sawelo.wordmemorizer.util.Sorting
 import com.sawelo.wordmemorizer.util.SortingAnchor
 import com.sawelo.wordmemorizer.util.SortingOrder
@@ -48,7 +48,7 @@ class SortingSettingsDialogFragment : DialogFragment() {
                 setOnCheckedChangeListener { _, isChecked ->
                     lifecycleScope.launch {
                         context.dataStore.edit { settings ->
-                            if (isChecked) PreferencesUtil.setCurrentSortingToPreferences(
+                            if (isChecked) PreferencesUtils.setCurrentSortingToPreferences(
                                 settings, enum
                             )
                         }
@@ -59,7 +59,7 @@ class SortingSettingsDialogFragment : DialogFragment() {
             lifecycleScope.launch {
                 context.dataStore.data.first().also { preferences ->
                     val currentEnum =
-                        PreferencesUtil.obtainCurrentSortingFromPreferences<T>(preferences)
+                        PreferencesUtils.obtainCurrentSortingFromPreferences<T>(preferences)
                     if (radioButton.id == currentEnum.obtainId()) radioButton.isChecked = true
                     this@addRadioButton.addView(radioButton, (enum as Sorting).obtainId())
                 }

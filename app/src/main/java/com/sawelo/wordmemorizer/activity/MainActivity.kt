@@ -1,9 +1,14 @@
 package com.sawelo.wordmemorizer.activity
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -21,6 +26,7 @@ import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.MainFragment
 import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
+import com.sawelo.wordmemorizer.util.BubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,9 +45,16 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.commit {
-                add<MainFragment>(R.id.activityMain_fcv, MainFragment.MAIN_FRAGMENT_TAG)
+        supportFragmentManager.commit {
+            add<MainFragment>(R.id.activityMain_fcv, MainFragment.MAIN_FRAGMENT_TAG)
+        }
+
+        val activityResultLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent = Intent(this, BubbleService::class.java)
+                startForegroundService(intent)
             }
         }
 
@@ -71,10 +84,22 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         binding.activityMainNavigationViewAddCategoryBtn.setOnClickListener {
             AddCategoryDialogFragment().show(supportFragmentManager, null)
         }
+        binding.activityMainNavigationViewShowFloatingBubbleBtn.setOnClickListener {
+            if (!Settings.canDrawOverlays(this)) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                activityResultLauncher.launch(intent)
+            } else {
+                val intent = Intent(this, BubbleService::class.java)
+                startForegroundService(intent)
+            }
+        }
 
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+            repeatonlifecycle(Lifecycle.State.STARTED) {
                 viewModel.getAllCategories().collectLatest { categories ->
                     asyncDiffer?.submitList(categories)
                 }
