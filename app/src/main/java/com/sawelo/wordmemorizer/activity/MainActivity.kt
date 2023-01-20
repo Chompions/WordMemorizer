@@ -45,11 +45,20 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
             }
         }
 
+        viewModel.message.observe(this) { event ->
+            event.getContentIfNotHandled()?.let {
+                Toast
+                    .makeText(this, it, Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+
+        setNavigationListener()
+
         binding.activityMainToolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menuOptions_reload -> {
                     viewModel.resetAllForgotCount()
-                    showToast("Word count reset")
                     true
                 }
                 R.id.menuOptions_sort -> {
@@ -58,18 +67,6 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 }
                 else -> false
             }
-        }
-
-        binding.activityMainToolbar.setNavigationOnClickListener {
-            binding.activityMainDrawerLayout.open()
-        }
-        binding.activityMainNavigationView.setNavigationItemSelectedListener {
-            binding.activityMainDrawerLayout.close()
-            true
-        }
-
-        binding.activityMainNavigationViewAddCategoryBtn.setOnClickListener {
-            AddCategoryDialogFragment().show(supportFragmentManager, null)
         }
 
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
@@ -82,18 +79,33 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
+    private fun setNavigationListener() {
+        binding.activityMainToolbar.setNavigationOnClickListener {
+            binding.activityMainDrawerLayout.open()
+        }
+
+        binding.activityMainNavigationView.setNavigationItemSelectedListener {
+            binding.activityMainDrawerLayout.close()
+            true
+        }
+
+        binding.activityMainNavigationViewAddCategoryBtn.setOnClickListener {
+            AddCategoryDialogFragment().show(supportFragmentManager, null)
+        }
+
+    }
+
     override fun onInserted(position: Int, count: Int) {
         val menu = binding.activityMainNavigationView.menu
         (position until position + count).forEach { perPosition ->
             asyncDiffer?.currentList?.get(perPosition)?.let { category ->
                 val text = "${category.categoryName} (${category.wordCount})"
-                menu.add(Menu.NONE, category.id, category.id, text)
+                menu.add(Menu.NONE, category.categoryId, category.categoryId, text)
 
-                val item = menu.findItem(category.id)
+                val item = menu.findItem(category.categoryId)
                 item.setOnMenuItemClickListener {
                     val mainFragment = supportFragmentManager
                         .findFragmentByTag(MainFragment.MAIN_FRAGMENT_TAG) as? MainFragment
-                    println(perPosition)
                     mainFragment?.setCurrentTab(perPosition)
                     binding.activityMainDrawerLayout.close()
                     true
@@ -103,7 +115,6 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
                     ?.setOnClickListener {
                         viewModel.deleteCategory(category)
-                        showToast("You deleted ${category.categoryName} category")
                     }
                 if (category.isAll()) {
                     item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible =
@@ -120,23 +131,15 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
-    override fun onMoved(fromPosition: Int, toPosition: Int) {
-        showToast("Honestly I don't expect the menu item to move around")
-    }
+    override fun onMoved(fromPosition: Int, toPosition: Int) {}
 
     override fun onChanged(position: Int, count: Int, payload: Any?) {
         val menu = binding.activityMainNavigationView.menu
         (position until position + count).forEach { perPosition ->
             asyncDiffer?.currentList?.get(perPosition)?.let { category ->
                 val text = "${category.categoryName} (${category.wordCount})"
-                menu.findItem(category.id).title = text
+                menu.findItem(category.categoryId).title = text
             }
         }
-    }
-
-    private fun showToast(text: String) {
-        Toast
-            .makeText(this, text, Toast.LENGTH_SHORT)
-            .show()
     }
 }

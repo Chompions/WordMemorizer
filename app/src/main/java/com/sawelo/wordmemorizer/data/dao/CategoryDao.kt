@@ -6,11 +6,14 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
-    @Query("SELECT * FROM category ORDER BY id")
-    fun getCategories(): Flow<List<Category>>
+    @Query("SELECT * FROM category ORDER BY categoryId")
+    fun getCategoriesName(): Flow<List<Category>>
 
-    @Query ("UPDATE category SET wordCount = wordCount + :changeByInt WHERE id = :id")
-    suspend fun updateWordCountById(id: Int, changeByInt: Int = 1)
+    @Query ("UPDATE category SET wordCount = wordCount + 1 WHERE categoryId = :categoryId")
+    suspend fun incrementWordCountById(categoryId: Int)
+
+    @Query ("UPDATE category SET wordCount = wordCount - 1 WHERE categoryId = :categoryId")
+    suspend fun decrementWordCountById(categoryId: Int)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCategory(category: Category): Long

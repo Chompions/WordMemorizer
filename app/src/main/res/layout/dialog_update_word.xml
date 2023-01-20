@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <EditText
+        android:id="@+id/dialog_updateWord_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="4dp"
+        android:hint="@string/word"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <FrameLayout
+        android:id="@+id/dialog_updateWord_fl"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        app:layout_constraintTop_toBottomOf="@id/dialog_updateWord_et"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/dialog_similarWord_rv"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginVertical="4dp"
+            tools:listitem="@layout/item_add_word"
+            />
+
+        <TextView
+            android:id="@+id/dialog_similarWord_tv"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginVertical="4dp"
+            android:text="@string/addWord_noSimilarWords"
+            android:gravity="center"
+            />
+
+    </FrameLayout>
+
+    <EditText
+        android:id="@+id/dialog_updateFurigana_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="4dp"
+        android:hint="@string/furigana"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/dialog_updateWord_fl"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <EditText
+        android:id="@+id/dialog_updateDefinition_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="4dp"
+        android:hint="@string/definition"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@id/dialog_updateFurigana_et"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <HorizontalScrollView
+        android:id="@+id/dialog_updateCategory_scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/dialog_updateDefinition_et"
+        app:layout_constraintBottom_toTopOf="@id/dialog_updateWord_btn">
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/dialog_updateCategory_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/dialog_deleteWord_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginVertical="4dp"
+        android:layout_marginHorizontal="4dp"
+        android:text="@string/delete_word"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_updateCategory_scrollView" />
+
+    <Button
+        android:id="@+id/dialog_updateWord_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginVertical="4dp"
+        android:layout_marginHorizontal="4dp"
+        android:text="@string/update_word"
+        app:layout_constraintTop_toBottomOf="@id/dialog_updateCategory_scrollView"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

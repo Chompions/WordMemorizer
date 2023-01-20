@@ -12,13 +12,14 @@ import com.sawelo.wordmemorizer.data.dao.CategoryDao
 import com.sawelo.wordmemorizer.data.dao.WordDao
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.WordCategoryMap
 import com.sawelo.wordmemorizer.util.WordUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [Word::class, Category::class],
+    entities = [Word::class, Category::class, WordCategoryMap::class],
     version = 1
 )
 @TypeConverters(WordInfoConverter::class, CategoryConverter::class)

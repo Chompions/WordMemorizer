@@ -5,10 +5,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.sqlite.db.SimpleSQLiteQuery
-import com.sawelo.wordmemorizer.data.converter.CategoryConverter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.util.PreferencesUtil
 import com.sawelo.wordmemorizer.util.SortingAnchor
 import com.sawelo.wordmemorizer.util.SortingOrder
@@ -25,34 +24,25 @@ class WordRepository(
     private val dataStore: DataStore<Preferences>,
 ) {
 
-    fun getAllCategories(): Flow<List<Category>> = database.categoryDao().getCategories()
-
     fun getAllWordsPagingData(
         category: Category
     ): Flow<PagingData<Word>> = callbackFlow {
         dataStore.data.cancellable().collectLatest { preferences ->
-            val sortingAnchorEnum = PreferencesUtil.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
-            val sortingOrderEnum = PreferencesUtil.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
-
-            val getAllWordsQuery = SimpleSQLiteQuery(
-                "SELECT * FROM word ORDER BY " +
-                        "${sortingAnchorEnum.obtainQueryString()} ${sortingOrderEnum.obtainQueryString()}"
-            )
-            val categoryQueryString = CategoryConverter()
-                .fromCategoryToJson(category.copy(wordCount = 0))
-            val getAllWordsByCategoryQuery = SimpleSQLiteQuery(
-                "SELECT * FROM word WHERE categoryList " +
-                        "LIKE '%' || '$categoryQueryString' || '%' ORDER BY " +
-                        "${sortingAnchorEnum.obtainQueryString()} ${sortingOrderEnum.obtainQueryString()}"
-            )
+            val sortingAnchorEnum =
+                PreferencesUtil.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
+            val sortingOrderEnum =
+                PreferencesUtil.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
+            val sortingString =
+                "${sortingAnchorEnum.obtainQueryString()} ${sortingOrderEnum.obtainQueryString()}"
 
             Pager(
                 PagingConfig(pageSize = 20)
             ) {
                 if (category.isAll()) {
-                    database.wordDao().getAllWordsPagingData(getAllWordsQuery)
+                    database.wordDao().getAllWordsPagingData(sortingString)
                 } else {
-                    database.wordDao().getAllWordsPagingData(getAllWordsByCategoryQuery)
+                    database.wordDao()
+                        .getAllWordsPagingDataByCategory(category.categoryId, sortingString)
                 }
             }.flow.cancellable().collectLatest {
                 send(it)
@@ -70,7 +60,8 @@ class WordRepository(
             if (category.isAll()) {
                 database.wordDao().getForgottenWordsPagingData()
             } else {
-                database.wordDao().getForgottenWordsByCategoryPagingData(category.copy(wordCount = 0))
+                database.wordDao()
+                    .getForgottenWordsByCategoryPagingData(category.categoryId)
             }
         }.flow.cancellable().collectLatest {
             send(it)
@@ -78,47 +69,62 @@ class WordRepository(
         awaitClose { cancel() }
     }
 
-    suspend fun getAllWordsByWord(wordText: String): List<Word> {
-        return database.wordDao().getWordsByWord(wordText)
+    suspend fun getAllWordsByText(
+        wordText: String,
+        furiganaText: String,
+        definitionText: String,
+    ): List<Word> {
+        return database.wordDao().getAllWordsByText(
+            wordText.filter { it.isLetter() && !it.isWhitespace()},
+            furiganaText.filter { it.isLetter() && !it.isWhitespace()},
+            definitionText.filter { it.isLetter() && !it.isWhitespace()}
+        )
     }
 
-    suspend fun addWord(word: Word) {
-        database.wordDao().insertWord(word)
-        // Increase wordCount for 'All' category
-        database.categoryDao().updateWordCountById(1, 1)
-        // Increase wordCount for every chosen category
-        word.categoryList.forEach {
-            database.categoryDao().updateWordCountById(it.id, 1)
+    suspend fun addWord(wordWithCategories: WordWithCategories) {
+        database.wordDao().insertWordWithCategories(wordWithCategories)
+        database.categoryDao().incrementWordCountById(1)
+        wordWithCategories.categories.forEach {
+            database.categoryDao().incrementWordCountById(it.categoryId)
         }
     }
 
-    suspend fun addCategory(category: Category) {
-        database.categoryDao().insertCategory(category)
+    suspend fun deleteWord(wordWithCategories: WordWithCategories) {
+        database.wordDao().deleteWord(wordWithCategories.word)
+        database.categoryDao().decrementWordCountById(1)
+        wordWithCategories.categories.forEach {
+            database.categoryDao().decrementWordCountById(it.categoryId)
+        }
     }
 
-    suspend fun updateForgotCountWord(word: Word, incrementByInt: Int = 1) {
-        database.wordDao().updateForgotCountById(word.id, incrementByInt)
+    suspend fun updateShowForgotWord(word: Word) {
+        database.wordDao().updateShowForgotWord(word.wordId)
     }
 
-    suspend fun updateIsForgottenWord(word: Word, isForgotten: Boolean) {
-        database.wordDao().updateIsForgottenById(word.id, isForgotten)
+    suspend fun updateHideForgotWord(word: Word) {
+        database.wordDao().updateHideForgotWord(word.wordId)
     }
 
     suspend fun resetAllForgotCount() {
         database.wordDao().deleteForgotCount()
     }
 
-    suspend fun deleteWord(word: Word) {
-        database.wordDao().deleteWord(word)
-        // Decrease wordCount for 'All' category
-        database.categoryDao().updateWordCountById(1, -1)
-        // Decrease wordCount for every chosen category
-        word.categoryList.forEach {
-            database.categoryDao().updateWordCountById(it.id, -1)
-        }
+    fun getAllCategories(): Flow<List<Category>> = database.categoryDao().getCategoriesName()
+
+    suspend fun addCategory(category: Category) {
+        database.categoryDao().insertCategory(category)
     }
 
     suspend fun deleteCategory(category: Category) {
         database.categoryDao().deleteCategory(category)
     }
+
+//
+//    suspend fun updateWord(word: Word, isIncreaseCount: Boolean) {
+//        database.wordDao().updateWord(word.withoutCategoryWordCount())
+//        if (isIncreaseCount) {
+//            increaseForgotCount(word.withoutCategoryWordCount())
+//        } else decreaseForgotCount(word.withoutCategoryWordCount())
+//    }
+
 }

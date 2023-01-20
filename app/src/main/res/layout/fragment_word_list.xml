@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".fragment.CategoryFragment">
+    tools:context=".fragment.WordListFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/fragmentCategory_mainWords_rv"
@@ -30,6 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:indeterminate="true"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/fragmentCategory_line"/>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -46,6 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:indeterminate="true"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
