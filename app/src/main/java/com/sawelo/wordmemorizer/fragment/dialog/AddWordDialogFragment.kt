@@ -6,10 +6,7 @@ import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
@@ -18,10 +15,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.atilika.kuromoji.jumandic.Token
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.adapter.AddWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
@@ -30,7 +27,6 @@ import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.AddWordViewModel
-import dev.esnault.wanakana.core.Wanakana
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -45,6 +41,9 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
     private var definitionEt: EditText? = null
     private var similarWordRv: RecyclerView? = null
     private var similarWordTv: TextView? = null
+
+    private var progressIndicator: LinearProgressIndicator? = null
+    private var recommendationLayout: LinearLayout? = null
     private var addCategoryGroup: MaterialButtonToggleGroup? = null
     private var addBtn: Button? = null
 
@@ -59,6 +58,9 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
             definitionEt = view.findViewById(R.id.dialog_addDefinition_et)
             similarWordRv = view.findViewById(R.id.dialog_similarWord_rv)
             similarWordTv = view.findViewById(R.id.dialog_similarWord_tv)
+
+            progressIndicator = view.findViewById(R.id.dialog_addCategory_progressIndicator)
+            recommendationLayout = view.findViewById(R.id.dialog_addCategory_recommendationLayout)
             addCategoryGroup = view.findViewById(R.id.dialog_addCategory_group)
             addBtn = view.findViewById(R.id.dialog_addWord_btn)
 
@@ -66,7 +68,7 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
             similarWordRv?.adapter = adapter
             similarWordRv?.layoutManager = LinearLayoutManager(activity)
 
-            getWordsOnTextChanged()
+            getWordsOnTextChanged(activity)
             getCategoryList(activity)
             setAddButton()
 
@@ -84,17 +86,35 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
         viewModel.clearFlow()
     }
 
-    private fun getWordsOnTextChanged() {
-        wordEt?.doOnTextChanged { text, _, _, _ ->
-            val wordString = text.toString()
-            viewModel.wordTextFlow.value = wordString
-            if (Wanakana.isJapanese(wordString)) {
-                val tokens: List<Token> = viewModel.tokenizer.tokenize(wordString)
-                val hiraganaTokens = tokens.map {
-                    Wanakana.toHiragana(it.reading)
-                }
-                furiganaEt?.setText(hiraganaTokens.joinToString())
+    private fun addRecommendationButton(
+        context: Context,
+        wordText: String,
+        furiganaText: String,
+        definitionText: String
+    ) {
+        val recommendationButton = MaterialButton(
+            context, null,
+            com.google.android.material.R.attr.materialIconButtonFilledTonalStyle
+        ).apply {
+            val params = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            params.setMargins(0, 0, 4, 0)
+            layoutParams = params
+            text = wordText
+            setOnClickListener {
+                wordEt?.setText(wordText)
+                furiganaEt?.setText(furiganaText)
+                definitionEt?.setText(definitionText)
             }
+        }
+        recommendationLayout?.addView(recommendationButton)
+    }
+
+    private fun getWordsOnTextChanged(context: Context) {
+        wordEt?.doOnTextChanged { text, _, _, _ ->
+            viewModel.wordTextFlow.value = text.toString()
         }
         furiganaEt?.doOnTextChanged { text, _, _, _ ->
             viewModel.furiganaTextFlow.value = text.toString()
@@ -104,13 +124,33 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
         }
 
         lifecycleScope.launch {
-            viewModel.getAllWordsByTextFlow.collectLatest {
+            viewModel.progressIndicatorShowFlow.collectLatest {
+                progressIndicator?.isVisible = it
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.getAllWordsByTextFlow().collectLatest {
                 similarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
             }
         }
-    }
 
+        lifecycleScope.launch {
+            viewModel.getRecommendationWordsFlow()
+                .collectLatest {
+                    recommendationLayout?.removeAllViews()
+                    it.forEach { data ->
+                        val wordText = data.japanese.first().word
+                        val furiganaText = data.japanese.first().reading
+                        val definitionText =
+                            data.senses.first().englishDefinitions.joinToString(" / ")
+                        addRecommendationButton(context, wordText, furiganaText, definitionText)
+                    }
+                    progressIndicator?.hide()
+                }
+        }
+    }
 
     @Suppress("DEPRECATION")
     private fun getCategoryList(context: Context) {
