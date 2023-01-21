@@ -4,10 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.sawelo.wordmemorizer.data.converter.CategoryConverter
-import com.sawelo.wordmemorizer.data.converter.WordInfoConverter
 import com.sawelo.wordmemorizer.data.dao.CategoryDao
 import com.sawelo.wordmemorizer.data.dao.WordDao
 import com.sawelo.wordmemorizer.data.data_class.Category
@@ -22,7 +19,6 @@ import kotlinx.coroutines.launch
     entities = [Word::class, Category::class, WordCategoryMap::class],
     version = 1
 )
-@TypeConverters(WordInfoConverter::class, CategoryConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordDao(): WordDao
     abstract fun categoryDao(): CategoryDao
