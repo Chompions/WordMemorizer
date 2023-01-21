@@ -3,7 +3,6 @@ package com.sawelo.wordmemorizer.activity
 import android.os.Bundle
 import android.view.Menu
 import android.widget.Button
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -18,7 +17,7 @@ import androidx.recyclerview.widget.ListUpdateCallback
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
-import com.sawelo.wordmemorizer.fragment.MainFragment
+import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
@@ -41,15 +40,7 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
 
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
-                add<MainFragment>(R.id.activityMain_fcv, MainFragment.MAIN_FRAGMENT_TAG)
-            }
-        }
-
-        viewModel.message.observe(this) { event ->
-            event.getContentIfNotHandled()?.let {
-                Toast
-                    .makeText(this, it, Toast.LENGTH_SHORT)
-                    .show()
+                add<HomeFragment>(R.id.activityMain_fcv, HomeFragment.MAIN_FRAGMENT_TAG)
             }
         }
 
@@ -104,9 +95,9 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
 
                 val item = menu.findItem(category.categoryId)
                 item.setOnMenuItemClickListener {
-                    val mainFragment = supportFragmentManager
-                        .findFragmentByTag(MainFragment.MAIN_FRAGMENT_TAG) as? MainFragment
-                    mainFragment?.setCurrentTab(perPosition)
+                    val homeFragment = supportFragmentManager
+                        .findFragmentByTag(HomeFragment.MAIN_FRAGMENT_TAG) as? HomeFragment
+                    homeFragment?.setCurrentTab(perPosition)
                     binding.activityMainDrawerLayout.close()
                     true
                 }
@@ -117,8 +108,7 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                         viewModel.deleteCategory(category)
                     }
                 if (category.isAll()) {
-                    item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible =
-                        false
+                    item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible = false
                 }
             }
         }

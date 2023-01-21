@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.viewmodel
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
@@ -16,9 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val wordRepository: WordRepository
-) : BaseViewModel() {
+) : ViewModel() {
     val asyncDifferConfig = AsyncDifferConfig.Builder(CategoryDiffUtilCallback).build()
-    var currentCategoryFragmentTag: String? = null
 
     fun getAllCategories(): Flow<List<Category>> {
         return wordRepository.getAllCategories()
@@ -26,6 +26,10 @@ class MainViewModel @Inject constructor(
 
     fun getAllWordsPagingData(category: Category): Flow<PagingData<Word>> {
         return wordRepository.getAllWordsPagingData(category).cachedIn(viewModelScope)
+    }
+
+    fun getAllForgottenWordsPagingData(category: Category): Flow<PagingData<Word>> {
+        return wordRepository.getAllForgottenWordsPagingData(category).cachedIn(viewModelScope)
     }
 
     fun addCategory(category: Category) {
@@ -37,6 +41,18 @@ class MainViewModel @Inject constructor(
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
             wordRepository.deleteCategory(category)
+        }
+    }
+
+    fun updateShowForgotWord(word: Word) {
+        viewModelScope.launch {
+            wordRepository.updateShowForgotWord(word)
+        }
+    }
+
+    fun updateHideForgotWord(word: Word) {
+        viewModelScope.launch {
+            wordRepository.updateHideForgotWord(word)
         }
     }
 

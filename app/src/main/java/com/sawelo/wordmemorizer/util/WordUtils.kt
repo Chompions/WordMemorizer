@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.util.TypedValue
 import android.view.View
+import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.core.view.isVisible
@@ -32,6 +33,12 @@ object WordUtils {
             isVisible = value != 0
         }
         animator.start()
+    }
+
+    fun Context.showToast(text: String?) {
+        Toast
+            .makeText(this, text, Toast.LENGTH_SHORT)
+            .show()
     }
 
     fun Category.isAll(): Boolean = this.categoryName == defaultCategoryList.first()

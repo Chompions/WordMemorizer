@@ -68,37 +68,14 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
 
             getWordsOnTextChanged()
             getCategoryList(activity)
-
-            addBtn?.setOnClickListener {
-                val wordWithCategories = WordWithCategories(
-                    Word(
-                        wordText = wordEt?.text.toString(),
-                        furiganaText = furiganaEt?.text.toString(),
-                        definitionText = definitionEt?.text.toString(),
-                        createdTimeMillis = System.currentTimeMillis(),
-                    ),
-                    categoryList!!.filter {
-                        it.categoryId in (addCategoryGroup?.checkedButtonIds ?: emptyList())
-                    }
-                )
-
-                when {
-                    wordWithCategories.word.wordText.isBlank() -> showToast("Word cannot be empty")
-                    wordWithCategories.word.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
-                    wordWithCategories.word.definitionText.isBlank() -> showToast("Definition cannot be empty")
-                    else -> {
-                        viewModel.addWord(wordWithCategories)
-                        addWordDialog.dismiss()
-                    }
-                }
-            }
+            setAddButton()
 
             addWordDialog
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 
-    override fun onItemClickListener(word: Word) {
-        viewModel.updateShowForgotWord(word)
+    override fun onItemClickListener(item: Word) {
+        viewModel.updateShowForgotWord(item)
         addWordDialog.dismiss()
     }
 
@@ -158,6 +135,32 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
                         id = category.categoryId
                     }
                     (addCategoryGroup as ViewGroup).addView(button)
+                }
+            }
+        }
+    }
+
+    private fun setAddButton() {
+        addBtn?.setOnClickListener {
+            val wordWithCategories = WordWithCategories(
+                Word(
+                    wordText = wordEt?.text.toString(),
+                    furiganaText = furiganaEt?.text.toString(),
+                    definitionText = definitionEt?.text.toString(),
+                    createdTimeMillis = System.currentTimeMillis(),
+                ),
+                categoryList!!.filter {
+                    it.categoryId in (addCategoryGroup?.checkedButtonIds ?: emptyList())
+                }
+            )
+
+            when {
+                wordWithCategories.word.wordText.isBlank() -> showToast("Word cannot be empty")
+                wordWithCategories.word.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
+                wordWithCategories.word.definitionText.isBlank() -> showToast("Definition cannot be empty")
+                else -> {
+                    viewModel.addWord(wordWithCategories)
+                    addWordDialog.dismiss()
                 }
             }
         }

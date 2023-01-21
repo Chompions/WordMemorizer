@@ -28,22 +28,22 @@ class MainWordAdapter(
     }
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
-        getItem(position)?.let { itemWord ->
+        getItem(position)?.let { wordItem ->
             with(holder) {
-                mainWord.text = itemWord.wordText
-                forgotCount.text = itemWord.forgotCount.toString()
-                forgotBtn.isEnabled = !itemWord.isForgotten
+                mainWord.text = wordItem.wordText
+                forgotCount.text = wordItem.forgotCount.toString()
+                forgotBtn.isEnabled = !wordItem.isForgotten
 
                 forgotBtn.setOnClickListener {
-                    itemCallback.onItemForgotBtnClickListener(itemWord)
+                    itemCallback.onItemForgotBtnClickListener(wordItem)
                 }
 
                 itemView.setOnClickListener {
-                    itemCallback.onItemClickListener(itemWord)
+                    itemCallback.onItemClickListener(wordItem)
                 }
 
                 itemView.setOnLongClickListener {
-                    itemCallback.onItemLongClickListener(itemWord)
+                    itemCallback.onItemLongClickListener(wordItem)
                     true
                 }
             }

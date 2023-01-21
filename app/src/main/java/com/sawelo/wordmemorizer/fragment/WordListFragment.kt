@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -13,15 +12,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.MainWordAdapter
 import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.databinding.FragmentWordListBinding
-import com.sawelo.wordmemorizer.fragment.dialog.UpdateWordDialogFragment
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -43,21 +43,19 @@ class WordListFragment : Fragment(), ItemWordAdapterCallback {
         binding = FragmentWordListBinding.inflate(inflater, container, false)
         return binding?.root
     }
-//
-//    override fun onItemHideBtnClickListener(word: Word) {
-//        viewModel.updateIsForgottenWord(word, false)
-//    }
-//
-//    override fun onItemForgotBtnClickListener(word: Word) {
-//        viewModel.updateIsForgottenWord(word, true)
-//        viewModel.updateForgotCountWord(word)
-//    }
 
-    override fun onItemLongClickListener(word: Word) {
-        if (currentCategoryList != null) {
-            UpdateWordDialogFragment
-                .newInstance(word, currentCategoryList!!)
-                .show(childFragmentManager, null)
+    override fun onItemHideBtnClickListener(item: Word) {
+        viewModel.updateHideForgotWord(item)
+    }
+
+    override fun onItemForgotBtnClickListener(item: Word) {
+        viewModel.updateShowForgotWord(item)
+    }
+
+    override fun onItemLongClickListener(item: Word) {
+        lifecycleScope.launch {
+            EditWordActivity.startActivity(
+                activity, item.wordId, viewModel.getAllCategories().first())
         }
     }
 
@@ -86,7 +84,6 @@ class WordListFragment : Fragment(), ItemWordAdapterCallback {
 
         // Get parcelable
         getParcelable()
-        println("CURRENT CATEGORY IS  $currentCategory")
 
         // Set list depending on currentCategory
         currentCategory?.also { category ->
@@ -102,24 +99,18 @@ class WordListFragment : Fragment(), ItemWordAdapterCallback {
                 }
             }
 
-            // Collect all forgotten words
-//            viewLifecycleOwner.lifecycleScope.launch {
-//                repeatOnLifecycle(Lifecycle.State.STARTED) {
-//                    viewModel.getAllForgottenWordsPagingData(category)
-//                        .onEach {
-//                            binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
-//                        }
-//                        .collectLatest {
-//                            similarWordAdapter?.submitData(it)
-//                        }
-//                }
-//            }
+            viewLifecycleOwner.lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.getAllForgottenWordsPagingData(category)
+                        .onEach {
+                            binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                        }
+                        .collectLatest {
+                            similarWordAdapter?.submitData(it)
+                        }
+                }
+            }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.currentCategoryFragmentTag = tag
     }
 
     override fun onDestroyView() {
@@ -151,12 +142,6 @@ class WordListFragment : Fragment(), ItemWordAdapterCallback {
         }
     }
 
-    private fun showToast(text: String) {
-        Toast
-            .makeText(requireContext(), text, Toast.LENGTH_SHORT)
-            .show()
-    }
-
     companion object {
         fun newInstance(
             currentCategory: Category,
@@ -165,7 +150,7 @@ class WordListFragment : Fragment(), ItemWordAdapterCallback {
             val dialogFragment = WordListFragment()
             dialogFragment.arguments = Bundle().apply {
                 putParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS, currentCategory)
-                putParcelableArrayList(
+                putParcelableArrayList (
                     WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS,
                     ArrayList(categoryList)
                 )

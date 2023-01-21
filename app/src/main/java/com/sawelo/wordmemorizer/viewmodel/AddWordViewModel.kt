@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.viewmodel
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.atilika.kuromoji.jumandic.Tokenizer
 import com.sawelo.wordmemorizer.data.WordRepository
@@ -16,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddWordViewModel @Inject constructor(
     private val wordRepository: WordRepository
-) : BaseViewModel() {
+) : ViewModel() {
     val tokenizer = Tokenizer()
     val wordTextFlow = MutableStateFlow("")
     val furiganaTextFlow = MutableStateFlow("")
@@ -34,11 +35,10 @@ class AddWordViewModel @Inject constructor(
     fun addWord(wordWithCategories: WordWithCategories) {
         try {
             viewModelScope.launch {
-                wordRepository.addWord(wordWithCategories)
-                postMessage("Add word ${wordWithCategories.word.wordText}")
+                wordRepository.addWordWithCategories(wordWithCategories)
             }
         } catch (e: Exception) {
-            postMessage("Add word failed: ${e.message}")
+            throw Exception("Unable to add your word: ${e.message}")
         }
     }
 
