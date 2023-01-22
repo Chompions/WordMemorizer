@@ -51,7 +51,7 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.getAllCategories().collectLatest { categories ->
                     asyncDiffer?.submitList(categories)
-                    viewPager?.offscreenPageLimit = categories.size - 1
+                    viewPager?.offscreenPageLimit = if (categories.size > 1) categories.size - 1 else 1
                 }
             }
         }

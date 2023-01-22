@@ -11,4 +11,8 @@
         android:icon="@drawable/ic_baseline_change_circle_24"
         android:title="@string/reload"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menuOptions_settings"
+        android:title="@string/settings"
+        app:showAsAction="never"/>
 </menu>

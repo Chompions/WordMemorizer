@@ -28,4 +28,5 @@
     <string name="delete_word">Delete word</string>
     <string name="update_word">Update word</string>
     <string name="editing">editing</string>
+    <string name="settings">settings</string>
 </resources>

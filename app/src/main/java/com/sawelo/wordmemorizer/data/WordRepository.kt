@@ -9,9 +9,9 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
-import com.sawelo.wordmemorizer.util.PreferencesUtil
-import com.sawelo.wordmemorizer.util.SortingAnchor
-import com.sawelo.wordmemorizer.util.SortingOrder
+import com.sawelo.wordmemorizer.util.PreferencesUtils
+import com.sawelo.wordmemorizer.util.sorting_utils.SortingAnchor
+import com.sawelo.wordmemorizer.util.sorting_utils.SortingOrder
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
@@ -28,9 +28,9 @@ class WordRepository(
         checkAndUpdateWordCount()
         dataStore.data.cancellable().collectLatest { preferences ->
             val sortingAnchorEnum =
-                PreferencesUtil.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
+                PreferencesUtils.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
             val sortingOrderEnum =
-                PreferencesUtil.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
+                PreferencesUtils.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
             val sortingString =
                 "${sortingAnchorEnum.obtainQueryString()} ${sortingOrderEnum.obtainQueryString()}"
 

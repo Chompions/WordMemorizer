@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.util
+package com.sawelo.wordmemorizer.util.sorting_utils
 
 import android.content.Context
 

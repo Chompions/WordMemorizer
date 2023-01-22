@@ -3,8 +3,11 @@ package com.sawelo.wordmemorizer.util
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.sawelo.wordmemorizer.util.sorting_utils.Sorting
+import com.sawelo.wordmemorizer.util.sorting_utils.SortingAnchor
+import com.sawelo.wordmemorizer.util.sorting_utils.SortingOrder
 
-object PreferencesUtil {
+object PreferencesUtils {
 
     fun setCurrentSortingToPreferences(settings: MutablePreferences, enum: Sorting) {
         return when(enum) {
