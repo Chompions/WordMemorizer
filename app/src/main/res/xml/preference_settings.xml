@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="preference_floating_bubble_key"
+        android:title="Activate floating bubble"
+        android:summary="Use the floating bubble to add or search for words anywhere"/>
+</PreferenceScreen>

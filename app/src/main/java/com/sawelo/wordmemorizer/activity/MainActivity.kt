@@ -1,26 +1,30 @@
 package com.sawelo.wordmemorizer.activity
 
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.widget.Button
-import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.core.view.removeItemAt
-import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import androidx.fragment.app.replace
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
-import com.sawelo.wordmemorizer.fragment.MainFragment
+import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
+import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,6 +35,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var sharedPreferences: SharedPreferences
     private val viewModel: MainViewModel by viewModels()
     private var asyncDiffer: AsyncListDiffer<Category>? = null
 
@@ -39,38 +44,19 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.commit {
-                add<MainFragment>(R.id.activityMain_fcv, MainFragment.MAIN_FRAGMENT_TAG)
-            }
+        supportFragmentManager.commit {
+            replace<HomeFragment>(R.id.activityMain_fcv, HomeFragment.MAIN_FRAGMENT_TAG)
         }
 
-        binding.activityMainToolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.menuOptions_reload -> {
-                    viewModel.resetAllForgotCount()
-                    showToast("Word count reset")
-                    true
-                }
-                R.id.menuOptions_sort -> {
-                    SortingSettingsDialogFragment().show(supportFragmentManager, null)
-                    true
-                }
-                else -> false
-            }
+        val postNotificationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        checkPermissionAndStartFloatingBubbleService(sharedPreferences) {
+            postNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        binding.activityMainToolbar.setNavigationOnClickListener {
-            binding.activityMainDrawerLayout.open()
-        }
-        binding.activityMainNavigationView.setNavigationItemSelectedListener {
-            binding.activityMainDrawerLayout.close()
-            true
-        }
-
-        binding.activityMainNavigationViewAddCategoryBtn.setOnClickListener {
-            AddCategoryDialogFragment().show(supportFragmentManager, null)
-        }
+        setNavigationListener()
 
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
         lifecycleScope.launch {
@@ -82,19 +68,52 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
+    private fun setNavigationListener() {
+        binding.activityMainToolbar.setNavigationOnClickListener {
+            binding.activityMainDrawerLayout.open()
+        }
+
+        binding.activityMainNavigationView.setNavigationItemSelectedListener {
+            binding.activityMainDrawerLayout.close()
+            true
+        }
+
+        binding.activityMainNavigationViewAddCategoryBtn.setOnClickListener {
+            AddCategoryDialogFragment().show(supportFragmentManager, null)
+        }
+
+        binding.activityMainToolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menuOptions_reload -> {
+                    viewModel.resetAllForgotCount()
+                    true
+                }
+                R.id.menuOptions_sort -> {
+                    SortingSettingsDialogFragment().show(supportFragmentManager, null)
+                    true
+                }
+                R.id.menuOptions_settings -> {
+                    val intent = Intent(this, SettingsActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
     override fun onInserted(position: Int, count: Int) {
         val menu = binding.activityMainNavigationView.menu
         (position until position + count).forEach { perPosition ->
             asyncDiffer?.currentList?.get(perPosition)?.let { category ->
                 val text = "${category.categoryName} (${category.wordCount})"
-                menu.add(Menu.NONE, category.id, category.id, text)
+                menu.add(Menu.NONE, category.categoryId, category.categoryId, text)
 
-                val item = menu.findItem(category.id)
+                val item = menu.findItem(category.categoryId)
                 item.setOnMenuItemClickListener {
-                    val mainFragment = supportFragmentManager
-                        .findFragmentByTag(MainFragment.MAIN_FRAGMENT_TAG) as? MainFragment
-                    println(perPosition)
-                    mainFragment?.setCurrentTab(perPosition)
+                    val homeFragment = supportFragmentManager
+                        .findFragmentByTag(HomeFragment.MAIN_FRAGMENT_TAG) as? HomeFragment
+                    homeFragment?.setCurrentTab(perPosition)
                     binding.activityMainDrawerLayout.close()
                     true
                 }
@@ -103,11 +122,9 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
                     ?.setOnClickListener {
                         viewModel.deleteCategory(category)
-                        showToast("You deleted ${category.categoryName} category")
                     }
                 if (category.isAll()) {
-                    item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible =
-                        false
+                    item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible = false
                 }
             }
         }
@@ -120,23 +137,15 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
-    override fun onMoved(fromPosition: Int, toPosition: Int) {
-        showToast("Honestly I don't expect the menu item to move around")
-    }
+    override fun onMoved(fromPosition: Int, toPosition: Int) {}
 
     override fun onChanged(position: Int, count: Int, payload: Any?) {
         val menu = binding.activityMainNavigationView.menu
         (position until position + count).forEach { perPosition ->
             asyncDiffer?.currentList?.get(perPosition)?.let { category ->
                 val text = "${category.categoryName} (${category.wordCount})"
-                menu.findItem(category.id).title = text
+                menu.findItem(category.categoryId).title = text
             }
         }
-    }
-
-    private fun showToast(text: String) {
-        Toast
-            .makeText(this, text, Toast.LENGTH_SHORT)
-            .show()
     }
 }

@@ -17,15 +17,15 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.databinding.FragmentMainBinding
+import com.sawelo.wordmemorizer.databinding.FragmentHomeBinding
 import com.sawelo.wordmemorizer.fragment.dialog.AddWordDialogFragment
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class MainFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
+class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
     private val viewModel: MainViewModel by activityViewModels()
-    private var binding: FragmentMainBinding? = null
+    private var binding: FragmentHomeBinding? = null
     private var asyncDiffer: AsyncListDiffer<Category>? = null
     private var adapter: CategoryAdapter? = null
     private var tabLayout: TabLayout? = null
@@ -35,7 +35,7 @@ class MainFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentMainBinding.inflate(inflater, container, false)
+        binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
@@ -51,7 +51,7 @@ class MainFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.getAllCategories().collectLatest { categories ->
                     asyncDiffer?.submitList(categories)
-                    viewPager?.offscreenPageLimit = categories.size - 1
+                    viewPager?.offscreenPageLimit = if (categories.size > 1) categories.size - 1 else 1
                 }
             }
         }

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.EditWordActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/activityEditWord_appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/activityEditWord_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/baseline_arrow_back_24"
+            app:title="@string/editing"/>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/activityEditWord_progressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_appBarLayout"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/activityEditWord_addWord_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/word"
+        android:layout_margin="16dp"
+        style="?attr/textInputOutlinedStyle"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_appBarLayout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/activityEditWord_addWord_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/activityEditWord_addFurigana_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/furigana"
+        android:layout_margin="16dp"
+        style="?attr/textInputOutlinedStyle"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_addWord_til">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/activityEditWord_addFurigana_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/activityEditWord_addDefinition_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/definition"
+        android:layout_margin="16dp"
+        style="?attr/textInputOutlinedStyle"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_addFurigana_til">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/activityEditWord_addDefinition_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/activityEditWord_scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_addDefinition_til">
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/activityEditWord_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/activityEditWord_deleteWord_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="16dp"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:text="@string/delete_word"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_scrollView"
+        app:layout_constraintEnd_toStartOf="@id/activityEditWord_updateWord_btn"/>
+
+    <Button
+        android:id="@+id/activityEditWord_updateWord_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="16dp"
+        android:text="@string/update_word"
+        app:layout_constraintTop_toBottomOf="@id/activityEditWord_scrollView"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

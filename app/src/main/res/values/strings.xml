@@ -25,4 +25,10 @@
     <string name="forgot_count">Forgot Count</string>
     <string name="created_time">Created Time</string>
     <string name="random">Random</string>
+    <string name="delete_word">Delete word</string>
+    <string name="update_word">Update word</string>
+    <string name="editing">editing</string>
+    <string name="settings">settings</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
 </resources>

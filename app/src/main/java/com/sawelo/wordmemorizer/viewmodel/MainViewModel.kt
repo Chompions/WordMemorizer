@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.recyclerview.widget.AsyncDifferConfig
-import com.atilika.kuromoji.jumandic.Tokenizer
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
@@ -19,9 +18,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val wordRepository: WordRepository
 ) : ViewModel() {
-    val tokenizer = Tokenizer()
     val asyncDifferConfig = AsyncDifferConfig.Builder(CategoryDiffUtilCallback).build()
-    var currentCategoryFragmentTag: String? = null
 
     fun getAllCategories(): Flow<List<Category>> {
         return wordRepository.getAllCategories()
@@ -35,33 +32,27 @@ class MainViewModel @Inject constructor(
         return wordRepository.getAllForgottenWordsPagingData(category).cachedIn(viewModelScope)
     }
 
-    fun getAllWordsByWord(wordText: String, result: (List<Word>) -> Unit) {
-        viewModelScope.launch {
-            result.invoke(wordRepository.getAllWordsByWord(wordText))
-        }
-    }
-
-    fun addWord(word: Word) {
-        viewModelScope.launch {
-            wordRepository.addWord(word)
-        }
-    }
-
     fun addCategory(category: Category) {
         viewModelScope.launch {
             wordRepository.addCategory(category)
         }
     }
 
-    fun updateForgotCountWord(word: Word) {
+    fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            wordRepository.updateForgotCountWord(word)
+            wordRepository.deleteCategory(category)
         }
     }
 
-    fun updateIsForgottenWord(word: Word, isForgotten: Boolean) {
+    fun updateShowForgotWord(word: Word) {
         viewModelScope.launch {
-            wordRepository.updateIsForgottenWord(word, isForgotten)
+            wordRepository.updateShowForgotWord(word)
+        }
+    }
+
+    fun updateHideForgotWord(word: Word) {
+        viewModelScope.launch {
+            wordRepository.updateHideForgotWord(word)
         }
     }
 
@@ -71,16 +62,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun deleteWord(word: Word) {
-        viewModelScope.launch {
-            wordRepository.deleteWord(word)
-        }
-    }
-
-    fun deleteCategory(category: Category) {
-        viewModelScope.launch {
-            wordRepository.deleteCategory(category)
-        }
-    }
+//    fun deleteWord(word: Word) {
+//        viewModelScope.launch {
+//            wordRepository.deleteWord(word)
+//        }
+//    }
 
 }

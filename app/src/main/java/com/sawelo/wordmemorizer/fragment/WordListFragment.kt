@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -13,46 +12,51 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.sawelo.wordmemorizer.adapter.CategoryAdapter
+import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.MainWordAdapter
 import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.databinding.FragmentCategoryBinding
+import com.sawelo.wordmemorizer.databinding.FragmentWordListBinding
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class CategoryFragment : Fragment(), ItemWordAdapterCallback {
+class WordListFragment : Fragment(), ItemWordAdapterCallback {
     private val viewModel: MainViewModel by activityViewModels()
-    private var binding: FragmentCategoryBinding? = null
+    private var binding: FragmentWordListBinding? = null
     private var mainWordAdapter: MainWordAdapter? = null
     private var mainWordRv: RecyclerView? = null
     private var similarWordAdapter: SimilarWordAdapter? = null
     private var similarWordRv: RecyclerView? = null
 
+    private var currentCategory: Category? = null
+    private var currentCategoryList: List<Category>? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentCategoryBinding.inflate(inflater, container, false)
+        binding = FragmentWordListBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
-    override fun onItemHideBtnClickListener(word: Word) {
-        viewModel.updateIsForgottenWord(word, false)
+    override fun onItemHideBtnClickListener(item: Word) {
+        viewModel.updateHideForgotWord(item)
     }
 
-    override fun onItemForgotBtnClickListener(word: Word) {
-        viewModel.updateIsForgottenWord(word, true)
-        viewModel.updateForgotCountWord(word)
+    override fun onItemForgotBtnClickListener(item: Word) {
+        viewModel.updateShowForgotWord(item)
     }
 
-    override fun onItemLongClickListener(word: Word) {
-        viewModel.deleteWord(word)
-        showToast("You deleted ${word.wordText}")
+    override fun onItemLongClickListener(item: Word) {
+        lifecycleScope.launch {
+            EditWordActivity.startActivity(
+                activity, item.wordId, viewModel.getAllCategories().first())
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -78,26 +82,23 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
             adapter = similarWordAdapter
         }
 
-        // Get arguments
-        @Suppress("DEPRECATION") val parcelable = if (Build.VERSION.SDK_INT >= 33) {
-            arguments?.getParcelable(CategoryAdapter.CATEGORY_ARGS, Category::class.java)
-        } else {
-            arguments?.getParcelable(CategoryAdapter.CATEGORY_ARGS)
-        }
+        // Get parcelable
+        getParcelable()
 
-        parcelable?.also { category ->
+        // Set list depending on currentCategory
+        currentCategory?.also { category ->
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     viewModel.getAllWordsPagingData(category)
                         .onEach {
                             binding?.fragmentCategoryMainWordsProgressIndicator?.show()
-                        }.collectLatest {
+                        }
+                        .collectLatest {
                             mainWordAdapter?.submitData(it)
                         }
                 }
             }
 
-            // Collect all forgotten words
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     viewModel.getAllForgottenWordsPagingData(category)
@@ -112,11 +113,6 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.currentCategoryFragmentTag = tag
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
@@ -124,11 +120,45 @@ class CategoryFragment : Fragment(), ItemWordAdapterCallback {
         mainWordRv = null
         similarWordAdapter = null
         similarWordRv = null
+
+        currentCategory = null
+        currentCategoryList = null
     }
 
-    private fun showToast(text: String) {
-        Toast
-            .makeText(requireContext(), text, Toast.LENGTH_SHORT)
-            .show()
+    @Suppress("DEPRECATION")
+    private fun getParcelable() {
+        // Get argument for currentCategory
+        currentCategory = if (Build.VERSION.SDK_INT >= 33) {
+            arguments?.getParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS, Category::class.java)
+        } else {
+            arguments?.getParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS)
+        }
+
+        // Get argument for currentCategory
+        currentCategoryList = if (Build.VERSION.SDK_INT >= 33) {
+            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS, Category::class.java)
+        } else {
+            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS)
+        }
+    }
+
+    companion object {
+        fun newInstance(
+            currentCategory: Category,
+            categoryList: List<Category>
+        ): WordListFragment {
+            val dialogFragment = WordListFragment()
+            dialogFragment.arguments = Bundle().apply {
+                putParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS, currentCategory)
+                putParcelableArrayList (
+                    WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS,
+                    ArrayList(categoryList)
+                )
+            }
+            return dialogFragment
+        }
+
+        const val WORD_LIST_FRAGMENT_CATEGORY_ARGS = "WORD_LIST_FRAGMENT_CATEGORY_ARGS"
+        const val WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS = "WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS"
     }
 }

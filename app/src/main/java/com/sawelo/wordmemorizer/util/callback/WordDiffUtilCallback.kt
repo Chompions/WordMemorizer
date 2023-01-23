@@ -5,7 +5,7 @@ import com.sawelo.wordmemorizer.data.data_class.Word
 
 object WordDiffUtilCallback: DiffUtil.ItemCallback<Word>() {
     override fun areItemsTheSame(oldItem: Word, newItem: Word): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem.wordId == newItem.wordId
     }
 
     override fun areContentsTheSame(oldItem: Word, newItem: Word): Boolean {
