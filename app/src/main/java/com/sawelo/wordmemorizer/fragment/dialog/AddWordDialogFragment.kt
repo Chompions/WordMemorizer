@@ -27,6 +27,7 @@ import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import com.sawelo.wordmemorizer.viewmodel.AddWordViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -137,18 +138,23 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
         }
 
         lifecycleScope.launch {
-            viewModel.getRecommendationWordsFlow()
-                .collectLatest {
-                    recommendationLayout?.removeAllViews()
-                    it.forEach { data ->
-                        val wordText = data.japanese.first().word
-                        val furiganaText = data.japanese.first().reading
-                        val definitionText =
-                            data.senses.first().englishDefinitions.joinToString(" / ")
-                        addRecommendationButton(context, wordText, furiganaText, definitionText)
+            try {
+                viewModel.getRecommendationWordsFlow()
+                    .collectLatest {
+                        recommendationLayout?.removeAllViews()
+                        it.forEach { data ->
+                            val wordText = data.japanese.first().word
+                            val furiganaText = data.japanese.first().reading
+                            val definitionText =
+                                data.senses.first().englishDefinitions.joinToString(" / ")
+                            addRecommendationButton(context, wordText, furiganaText, definitionText)
+                        }
+                        progressIndicator?.hide()
                     }
-                    progressIndicator?.hide()
-                }
+            } catch (_: CancellationException) {
+            } catch (e: Exception) {
+                showToast("Obtaining recommended words failed: ${e.message}")
+            }
         }
     }
 
@@ -206,7 +212,7 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
         }
     }
 
-    private fun showToast(text: String) {
+    private fun showToast(text: String?) {
         Toast
             .makeText(activity, text, Toast.LENGTH_SHORT)
             .show()

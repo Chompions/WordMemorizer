@@ -54,12 +54,12 @@ object NotificationUtils {
                     putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, true)
                 }
 
-                val serviceIntent = Intent(this, FloatingMenuService::class.java)
+                val serviceIntent = Intent(this, FloatingBubbleService::class.java)
                 serviceIntent.action = NOTIFICATION_START_ACTION
                 startForegroundService(serviceIntent)
             }
         } else {
-            val serviceIntent = Intent(this, FloatingMenuService::class.java)
+            val serviceIntent = Intent(this, FloatingBubbleService::class.java)
             serviceIntent.action = NOTIFICATION_STOP_ACTION
             stopService(serviceIntent)
         }

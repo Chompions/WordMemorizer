@@ -21,9 +21,9 @@ import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
 
-class FloatingMenuService : Service() {
+class FloatingBubbleService : Service() {
 
-    private var floatingBubbleReceiver: FloatingBubbleReceiver? = null
+    private var floatingDialogReceiver: FloatingDialogReceiver? = null
     private var floatingBubbleView: View? = null
     private var windowManager: WindowManager? = null
 
@@ -41,13 +41,13 @@ class FloatingMenuService : Service() {
     }
 
     override fun onDestroy() {
-        if (floatingBubbleReceiver != null) {
+        if (floatingDialogReceiver != null) {
             val receiverIntent = Intent()
             receiverIntent.action = NOTIFICATION_STOP_ACTION
             sendBroadcast(receiverIntent)
 
-            unregisterReceiver(floatingBubbleReceiver)
-            floatingBubbleReceiver = null
+            unregisterReceiver(floatingDialogReceiver)
+            floatingDialogReceiver = null
         }
 
         if (floatingBubbleView != null) {
@@ -77,13 +77,13 @@ class FloatingMenuService : Service() {
         }
         notificationManager.createNotificationChannel(channel)
 
-        floatingBubbleReceiver = FloatingBubbleReceiver()
+        floatingDialogReceiver = FloatingDialogReceiver()
         val intentFilter = IntentFilter()
         intentFilter.addAction(NOTIFICATION_START_ACTION)
         intentFilter.addAction(NOTIFICATION_STOP_ACTION)
-        registerReceiver(floatingBubbleReceiver, intentFilter)
+        registerReceiver(floatingDialogReceiver, intentFilter)
 
-        val stopServiceIntent = Intent(this, FloatingMenuService::class.java)
+        val stopServiceIntent = Intent(this, FloatingBubbleService::class.java)
         stopServiceIntent.action = NOTIFICATION_STOP_ACTION
         val stopServicePendingIntent = PendingIntent.getService(
             this, 0, stopServiceIntent, PendingIntent.FLAG_IMMUTABLE

@@ -27,19 +27,16 @@ import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
+class FloatingDialogReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
     @Inject
     lateinit var wordRepository: WordRepository
 
-    private var floatingBubbleUtil: FloatingBubbleUtil? = null
+    private var floatingDialogUtil: FloatingDialogUtil? = null
     private var floatingBubbleDialogView: ViewGroup? = null
     private var floatingBubbleInfoDialogView: ViewGroup? = null
 
@@ -83,7 +80,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
 
     @SuppressLint("InflateParams")
     private fun addFloatingMenu(context: Context) {
-        floatingBubbleUtil = FloatingBubbleUtil(wordRepository)
+        floatingDialogUtil = FloatingDialogUtil(wordRepository)
         coroutineScope = CoroutineScope(Dispatchers.Main)
         contextThemeWrapper = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
 
@@ -142,7 +139,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
             floatingBubbleInfoDialogView = null
         }
         coroutineScope = null
-        floatingBubbleUtil = null
+        floatingDialogUtil = null
         contextThemeWrapper = null
 
         isShown = false
@@ -150,7 +147,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
 
     override fun onItemClickListener(item: Word) {
         coroutineScope?.launch {
-            floatingBubbleUtil?.updateShowForgotWord(item)
+            floatingDialogUtil?.updateShowForgotWord(item)
             addInfoWindow(item)
         }
     }
@@ -211,48 +208,55 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
 
     private fun getWordsOnTextChanged() {
         wordEt?.doOnTextChanged { text, _, _, _ ->
-            floatingBubbleUtil?.wordTextFlow?.value = text.toString()
+            floatingDialogUtil?.wordTextFlow?.value = text.toString()
         }
         furiganaEt?.doOnTextChanged { text, _, _, _ ->
-            floatingBubbleUtil?.furiganaTextFlow?.value = text.toString()
+            floatingDialogUtil?.furiganaTextFlow?.value = text.toString()
         }
         definitionEt?.doOnTextChanged { text, _, _, _ ->
-            floatingBubbleUtil?.definitionTextFlow?.value = text.toString()
+            floatingDialogUtil?.definitionTextFlow?.value = text.toString()
         }
 
         coroutineScope?.launch {
-            floatingBubbleUtil?.progressIndicatorShowFlow?.collectLatest {
+            floatingDialogUtil?.progressIndicatorShowFlow?.collectLatest {
                 progressIndicator?.isVisible = it
             }
         }
 
         coroutineScope?.launch {
-            floatingBubbleUtil?.getAllWordsByTextFlow()?.collectLatest {
+            floatingDialogUtil?.getAllWordsByTextFlow()?.collectLatest {
                 similarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
             }
         }
 
+
+
         coroutineScope?.launch {
-            floatingBubbleUtil?.getRecommendationWordsFlow()
-                ?.collectLatest {
-                    recommendationLayout?.removeAllViews()
-                    it.forEach { data ->
-                        val wordText = data.japanese.first().word
-                        val furiganaText = data.japanese.first().reading
-                        val definitionText =
-                            data.senses.first().englishDefinitions.joinToString(" / ")
-                        addRecommendationButton(wordText, furiganaText, definitionText)
+            try {
+                floatingDialogUtil?.getRecommendationWordsFlow()
+                    ?.collectLatest {
+                        recommendationLayout?.removeAllViews()
+                        it.forEach { data ->
+                            val wordText = data.japanese.first().word
+                            val furiganaText = data.japanese.first().reading
+                            val definitionText =
+                                data.senses.first().englishDefinitions.joinToString(" / ")
+                            addRecommendationButton(wordText, furiganaText, definitionText)
+                        }
+                        progressIndicator?.hide()
                     }
-                    progressIndicator?.hide()
-                }
+            } catch (_: CancellationException) {
+            } catch (e: Exception) {
+                showToast("Obtaining recommended words failed: ${e.message}")
+            }
         }
     }
 
     @Suppress("DEPRECATION")
     private fun getCategoryList() {
         runBlocking {
-            categoryList = floatingBubbleUtil?.getAllCategories()
+            categoryList = floatingDialogUtil?.getAllCategories()
 
             if (categoryList != null && contextThemeWrapper != null) {
                 for (category in categoryList!!) {
@@ -295,7 +299,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
                 wordWithCategories.word.definitionText.isBlank() -> showToast("Definition cannot be empty")
                 else -> {
                     coroutineScope?.launch {
-                        floatingBubbleUtil?.addWord(wordWithCategories)
+                        floatingDialogUtil?.addWord(wordWithCategories)
                         removeFloatingMenu()
                     }
                 }
