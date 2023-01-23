@@ -31,8 +31,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
-    @Inject lateinit var wordRepository: WordRepository
+class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
+    @Inject
+    lateinit var wordRepository: WordRepository
 
     private var floatingBubbleUtil: FloatingBubbleUtil? = null
     private var floatingBubbleDialogView: ViewGroup? = null
@@ -56,31 +57,34 @@ class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
     private var recommendationLayout: LinearLayout? = null
     private var addCategoryGroup: MaterialButtonToggleGroup? = null
     private var addBtn: Button? = null
+    private var cancelBtn: Button? = null
 
     private var coroutineScope: CoroutineScope? = null
     private var mContext: Context? = null
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == null || intent.action != NotificationUtils.NOTIFICATION_START_ACTION) {
-            removeFloatingMenu()
+        when (intent.action) {
+            NotificationUtils.NOTIFICATION_STOP_ACTION -> {
+                removeFloatingMenu()
+            }
+            NotificationUtils.NOTIFICATION_START_ACTION -> {
+                if (!isShown) {
+                    floatingBubbleUtil = FloatingBubbleUtil(wordRepository)
+                    coroutineScope = CoroutineScope(Dispatchers.Main)
+                    mContext = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
+
+                    addFloatingMenu()
+                } else {
+                    removeFloatingMenu()
+                }
+            }
         }
-
-        if (!isShown) {
-            floatingBubbleUtil = FloatingBubbleUtil(wordRepository)
-            coroutineScope = CoroutineScope(Dispatchers.Main)
-            mContext = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
-
-            addFloatingMenu()
-        } else {
-            removeFloatingMenu()
-        }
-
     }
 
     private fun addFloatingMenu() {
         layoutInflater = mContext?.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         floatingBubbleDialogView =
-            layoutInflater?.inflate(R.layout.dialog_add_word_floating, null) as ViewGroup
+            layoutInflater?.inflate(R.layout.window_add_word_floating, null) as ViewGroup
 
         wordEt = floatingBubbleDialogView?.findViewById(R.id.dialog_addWord_et)
         furiganaEt = floatingBubbleDialogView?.findViewById(R.id.dialog_addFurigana_et)
@@ -88,10 +92,13 @@ class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
         similarWordRv = floatingBubbleDialogView?.findViewById(R.id.dialog_similarWord_rv)
         similarWordTv = floatingBubbleDialogView?.findViewById(R.id.dialog_similarWord_tv)
 
-        progressIndicator = floatingBubbleDialogView?.findViewById(R.id.dialog_addCategory_progressIndicator)
-        recommendationLayout = floatingBubbleDialogView?.findViewById(R.id.dialog_addCategory_recommendationLayout)
+        progressIndicator =
+            floatingBubbleDialogView?.findViewById(R.id.dialog_addCategory_progressIndicator)
+        recommendationLayout =
+            floatingBubbleDialogView?.findViewById(R.id.dialog_addCategory_recommendationLayout)
         addCategoryGroup = floatingBubbleDialogView?.findViewById(R.id.dialog_addCategory_group)
         addBtn = floatingBubbleDialogView?.findViewById(R.id.dialog_addWord_btn)
+        cancelBtn = floatingBubbleDialogView?.findViewById(R.id.dialog_cancel_btn)
 
         adapter = AddWordAdapter(this)
         similarWordRv?.adapter = adapter
@@ -99,7 +106,7 @@ class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
 
         getWordsOnTextChanged()
         getCategoryList()
-        setAddButton()
+        setButton()
 
         windowManager = mContext?.getSystemService(Service.WINDOW_SERVICE) as WindowManager
         params = WindowManager.LayoutParams(
@@ -144,10 +151,12 @@ class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
 
     private fun addInfoWindow(item: Word) {
         floatingBubbleInfoDialogView =
-            layoutInflater?.inflate(R.layout.dialog_add_word_info_floating, null) as ViewGroup
+            layoutInflater?.inflate(R.layout.window_add_word_info_floating, null) as ViewGroup
         val wordTv: TextView? = floatingBubbleInfoDialogView?.findViewById(R.id.info_wordText)
-        val furiganaTv: TextView? = floatingBubbleInfoDialogView?.findViewById(R.id.info_furiganaText)
-        val definitionTv: TextView? = floatingBubbleInfoDialogView?.findViewById(R.id.info_definitionText)
+        val furiganaTv: TextView? =
+            floatingBubbleInfoDialogView?.findViewById(R.id.info_furiganaText)
+        val definitionTv: TextView? =
+            floatingBubbleInfoDialogView?.findViewById(R.id.info_definitionText)
         val okBtn: Button? = floatingBubbleInfoDialogView?.findViewById(R.id.info_ok)
 
         wordTv?.text = item.wordText
@@ -259,7 +268,7 @@ class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
         }
     }
 
-    private fun setAddButton() {
+    private fun setButton() {
         addBtn?.setOnClickListener {
             val wordWithCategories = WordWithCategories(
                 Word(
@@ -284,6 +293,9 @@ class FloatingBubbleReceiver: BroadcastReceiver(), ItemWordAdapterCallback {
                     }
                 }
             }
+        }
+        cancelBtn?.setOnClickListener {
+            removeFloatingMenu()
         }
     }
 

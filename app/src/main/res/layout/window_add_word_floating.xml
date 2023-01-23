@@ -106,6 +106,18 @@
     </HorizontalScrollView>
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/dialog_cancel_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginHorizontal="4dp"
+        android:layout_marginVertical="8dp"
+        android:text="@string/cancel"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_addCategory_categoryScrollView" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/dialog_addWord_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
