@@ -4,11 +4,12 @@ An android app to memorize words with emphasize on Japanese kanji
 
 ## Features
 
-* Write kanji that automatically gives you the hiragana/furigana with the support of [Wanakana](https://github.com/WaniKani/WanaKana)
+* Write kanji that automatically gives you the hiragana/furigana with the support of Jisho.org to find furigana and definition automatically
 * Find similar words when adding new words to avoid repeated entries 
 * Emphasize on forgotten counts to keep track of what you need to remember the most 
 * Sort words according to your category (Important, Names, etc.) or add your own category
 * Designed with Material Design 3 for a beautiful design 
+* With floating bubble, you can add or search word wherever you are
 
 ## Screenshots
 
@@ -19,10 +20,9 @@ An android app to memorize words with emphasize on Japanese kanji
 
 ## Upcoming features
 
-* Press item to edit words (yes, this is not implemented yet)
 * Save more information per words, such as radical count, is-common check, JLPT level, etc. 
-* Automatically find meaning/definition of a word while typing
-* Floating bubble to add word entry wherever you are on screen just by copy/paste
+* Add word entry in floating bubble just by copy/paste
+* Add word by drawing and character recognition
 * More features 
 
 **Note**: If you have any ideas on what other features I should add, feel free to contact me or file an issue
