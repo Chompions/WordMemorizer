@@ -2,12 +2,13 @@ package com.sawelo.wordmemorizer.activity
 
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import android.view.Menu
 import android.widget.Button
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.core.view.removeItemAt
 import androidx.fragment.app.commit
@@ -25,7 +26,7 @@ import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
 import com.sawelo.wordmemorizer.util.NotificationUtils
-import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndSendNotification
+import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,7 +35,7 @@ import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), ListUpdateCallback, OnSharedPreferenceChangeListener {
+class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
     private val viewModel: MainViewModel by viewModels()
@@ -49,9 +50,19 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback, OnSharedPreference
             replace<HomeFragment>(R.id.activityMain_fcv, HomeFragment.MAIN_FRAGMENT_TAG)
         }
 
+        val postNotificationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) {
+                    sharedPreferences.edit {
+                        putBoolean(NotificationUtils.PREFERENCE_FLOATING_BUBBLE_KEY, true)
+                    }
+                }
+            }
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this)
-        sharedPreferences.checkPermissionAndSendNotification(this)
+        checkPermissionAndStartFloatingBubbleService(sharedPreferences) {
+            postNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         setNavigationListener()
 
@@ -96,12 +107,6 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback, OnSharedPreference
                 }
                 else -> false
             }
-        }
-    }
-
-    override fun onSharedPreferenceChanged(sharedPref: SharedPreferences, key: String) {
-        if (key == NotificationUtils.PREFERENCE_FLOATING_BUBBLE_KEY) {
-            sharedPreferences.checkPermissionAndSendNotification(this)
         }
     }
 
@@ -151,49 +156,4 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback, OnSharedPreference
             }
         }
     }
-
-
-//
-//    private fun setNotification() {
-//        // Create bubble intent
-//        val target = Intent(this, BubbleActivity::class.java)
-//        val bubbleIntent = PendingIntent.getActivity(
-//            this, 0, target, PendingIntent.FLAG_IMMUTABLE)
-//        val category = "com.example.category.IMG_SHARE_TARGET"
-//
-//        // Create sharing shortcut
-//        val shortcut =
-//            ShortcutInfo.Builder(this, SHORTCUT_ID)
-//                .setCategories(setOf(category))
-//                .setIntent(Intent(Intent.ACTION_DEFAULT))
-//                .setLongLived(true)
-//                .setShortLabel("Touch me")
-//                .build()
-//
-//        // Create bubble metadata
-//        val bubbleData = if (Build.VERSION.SDK_INT >= 30) {
-//            Notification.BubbleMetadata.Builder(
-//                bubbleIntent, Icon.createWithResource(
-//                    this, R.drawable.ic_launcher_foreground))
-//                .setDesiredHeight(600)
-//                .build()
-//        } else
-//            Notification.BubbleMetadata.Builder()
-//                .setDesiredHeight(600)
-//                .build()
-//
-//        // Create notification, referencing the sharing shortcut
-//        val builder = Notification.Builder(this, CHANNEL_ID)
-//
-//            .setBubbleMetadata(bubbleData)
-//            .setShortcutId(SHORTCUT_ID)
-//
-
-//
-//        NotificationManagerCompat.from(this).notify(1, builder.build())
-//    }
-//
-//    companion object {
-//        const val SHORTCUT_ID = "SHORTCUT_ID"
-//    }
 }

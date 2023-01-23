@@ -29,4 +29,5 @@
     <string name="update_word">Update word</string>
     <string name="editing">editing</string>
     <string name="settings">settings</string>
+    <string name="ok">Ok</string>
 </resources>

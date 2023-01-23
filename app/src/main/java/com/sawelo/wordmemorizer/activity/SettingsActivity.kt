@@ -10,6 +10,7 @@ import com.sawelo.wordmemorizer.fragment.SettingsFragment
 
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -22,5 +23,7 @@ class SettingsActivity : AppCompatActivity() {
         supportFragmentManager.commit {
             replace<SettingsFragment>(R.id.activitySettings_fcv, null)
         }
+
+
     }
 }
