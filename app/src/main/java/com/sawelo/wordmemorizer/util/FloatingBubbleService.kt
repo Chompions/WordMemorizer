@@ -93,7 +93,6 @@ class FloatingBubbleService : Service() {
         }
 
         if (floatingBubbleView != null) {
-            println("MUST BE REMOVING")
             windowManager?.removeView(floatingBubbleView)
             floatingBubbleView = null
         }
