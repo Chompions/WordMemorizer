@@ -19,9 +19,9 @@
         android:theme="@style/Theme.WordMemorizer"
         tools:targetApi="31" >
         <service
-            android:name=".util.FloatingBubbleService"
+            android:name=".util.FloatingMenuService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".activity.BubbleActivity"

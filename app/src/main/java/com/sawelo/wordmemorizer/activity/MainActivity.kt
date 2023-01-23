@@ -8,7 +8,6 @@ import android.widget.Button
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.core.view.removeItemAt
 import androidx.fragment.app.commit
@@ -25,7 +24,6 @@ import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
-import com.sawelo.wordmemorizer.util.NotificationUtils
 import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
@@ -51,13 +49,7 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
 
         val postNotificationPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-                if (granted) {
-                    sharedPreferences.edit {
-                        putBoolean(NotificationUtils.PREFERENCE_FLOATING_BUBBLE_KEY, true)
-                    }
-                }
-            }
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         checkPermissionAndStartFloatingBubbleService(sharedPreferences) {

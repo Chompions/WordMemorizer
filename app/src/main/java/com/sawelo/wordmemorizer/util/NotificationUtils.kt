@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentActivity
 
 object NotificationUtils {
 
-    private fun FragmentActivity.showToastAndChangePref(
+    private fun FragmentActivity.showToastAndCancelPref(
         text: String,
         sharedPreferences: SharedPreferences
     ) {
@@ -29,9 +29,8 @@ object NotificationUtils {
 
     fun FragmentActivity.checkPermissionAndStartFloatingBubbleService(
         sharedPreferences: SharedPreferences,
-        permissionLauncher: () -> Unit,
+        notificationPermissionLauncher: () -> Unit,
     ) {
-        val serviceIntent = Intent(this, FloatingBubbleService::class.java)
         if (sharedPreferences.getBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, false)) {
             if (Build.VERSION.SDK_INT >= 33) {
                 if (ActivityCompat.checkSelfPermission(
@@ -39,22 +38,29 @@ object NotificationUtils {
                         android.Manifest.permission.POST_NOTIFICATIONS
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    showToastAndChangePref("Notification permission required", sharedPreferences)
-                    permissionLauncher.invoke()
+                    showToastAndCancelPref("Notification permission required", sharedPreferences)
+                    notificationPermissionLauncher.invoke()
                 }
             }
             if (!Settings.canDrawOverlays(this)) {
-                showToastAndChangePref("Overlay permission required", sharedPreferences)
+                showToastAndCancelPref("Overlay permission required", sharedPreferences)
                 val overlayIntent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:$packageName")
                 )
                 startActivity(overlayIntent)
             } else {
+                sharedPreferences.edit {
+                    putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, true)
+                }
+
+                val serviceIntent = Intent(this, FloatingMenuService::class.java)
                 serviceIntent.action = NOTIFICATION_START_ACTION
                 startForegroundService(serviceIntent)
             }
         } else {
+            val serviceIntent = Intent(this, FloatingMenuService::class.java)
+            serviceIntent.action = NOTIFICATION_STOP_ACTION
             stopService(serviceIntent)
         }
     }

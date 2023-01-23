@@ -4,7 +4,6 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.edit
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
@@ -21,13 +20,7 @@ class SettingsFragment: PreferenceFragmentCompat(), SharedPreferences.OnSharedPr
 
         postNotificationPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-                if (granted) {
-                    sharedPreferences.edit {
-                        putBoolean(NotificationUtils.PREFERENCE_FLOATING_BUBBLE_KEY, true)
-                    }
-                } else {
-                    activity?.finish()
-                }
+                if (!granted) activity?.finish()
             }
     }
 

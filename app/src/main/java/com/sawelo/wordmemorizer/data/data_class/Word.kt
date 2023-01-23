@@ -1,6 +1,5 @@
 package com.sawelo.wordmemorizer.data.data_class
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -14,6 +13,4 @@ data class Word(
     val isForgotten: Boolean = false,
     val forgotCount: Int = 0,
     val createdTimeMillis: Long,
-    @Embedded
-    val wordInfo: WordInfo? = null
 )

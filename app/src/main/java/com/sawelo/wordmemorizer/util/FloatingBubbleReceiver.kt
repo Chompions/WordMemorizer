@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.util
 
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,6 +22,8 @@ import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_START_ACTION
+import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -60,20 +64,16 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
     private var cancelBtn: Button? = null
 
     private var coroutineScope: CoroutineScope? = null
-    private var mContext: Context? = null
+    private var contextThemeWrapper: Context? = null
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            NotificationUtils.NOTIFICATION_STOP_ACTION -> {
+            NOTIFICATION_STOP_ACTION -> {
                 removeFloatingMenu()
             }
-            NotificationUtils.NOTIFICATION_START_ACTION -> {
+            NOTIFICATION_START_ACTION -> {
                 if (!isShown) {
-                    floatingBubbleUtil = FloatingBubbleUtil(wordRepository)
-                    coroutineScope = CoroutineScope(Dispatchers.Main)
-                    mContext = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
-
-                    addFloatingMenu()
+                    addFloatingMenu(context)
                 } else {
                     removeFloatingMenu()
                 }
@@ -81,8 +81,13 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
         }
     }
 
-    private fun addFloatingMenu() {
-        layoutInflater = mContext?.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+    @SuppressLint("InflateParams")
+    private fun addFloatingMenu(context: Context) {
+        floatingBubbleUtil = FloatingBubbleUtil(wordRepository)
+        coroutineScope = CoroutineScope(Dispatchers.Main)
+        contextThemeWrapper = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
+
+        layoutInflater = contextThemeWrapper?.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         floatingBubbleDialogView =
             layoutInflater?.inflate(R.layout.window_add_word_floating, null) as ViewGroup
 
@@ -102,25 +107,26 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
 
         adapter = AddWordAdapter(this)
         similarWordRv?.adapter = adapter
-        similarWordRv?.layoutManager = LinearLayoutManager(mContext)
+        similarWordRv?.layoutManager = LinearLayoutManager(contextThemeWrapper)
 
         getWordsOnTextChanged()
         getCategoryList()
         setButton()
 
-        windowManager = mContext?.getSystemService(Service.WINDOW_SERVICE) as WindowManager
+        windowManager = contextThemeWrapper?.getSystemService(Service.WINDOW_SERVICE) as WindowManager
         params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
             PixelFormat.TRANSLUCENT
         )
-        if (mContext != null) {
-            params?.width = mContext!!.resources.displayMetrics.widthPixels - 100
+        if (contextThemeWrapper != null) {
+            params?.width = contextThemeWrapper!!.resources.displayMetrics.widthPixels - 100
         }
-
         params?.gravity = Gravity.CENTER
+        params?.windowAnimations = android.R.style.Animation_Dialog
+
         windowManager?.addView(floatingBubbleDialogView, params)
 
         isShown = true
@@ -137,7 +143,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
         }
         coroutineScope = null
         floatingBubbleUtil = null
-        mContext = null
+        contextThemeWrapper = null
 
         isShown = false
     }
@@ -149,6 +155,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
         }
     }
 
+    @SuppressLint("InflateParams")
     private fun addInfoWindow(item: Word) {
         floatingBubbleInfoDialogView =
             layoutInflater?.inflate(R.layout.window_add_word_info_floating, null) as ViewGroup
@@ -166,8 +173,8 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
             removeFloatingMenu()
         }
 
-        if (mContext != null) {
-            params?.width = mContext!!.resources.displayMetrics.widthPixels - 200
+        if (contextThemeWrapper != null) {
+            params?.width = contextThemeWrapper!!.resources.displayMetrics.widthPixels - 200
         }
 
         windowManager?.removeView(floatingBubbleDialogView)
@@ -180,9 +187,9 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
         furiganaText: String,
         definitionText: String
     ) {
-        if (mContext != null) {
+        if (contextThemeWrapper != null) {
             val recommendationButton = MaterialButton(
-                mContext!!, null,
+                contextThemeWrapper!!, null,
                 com.google.android.material.R.attr.materialIconButtonFilledTonalStyle
             ).apply {
                 val params = LinearLayout.LayoutParams(
@@ -244,14 +251,14 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
 
     @Suppress("DEPRECATION")
     private fun getCategoryList() {
-        coroutineScope?.launch {
+        runBlocking {
             categoryList = floatingBubbleUtil?.getAllCategories()
 
-            if (categoryList != null && mContext != null) {
+            if (categoryList != null && contextThemeWrapper != null) {
                 for (category in categoryList!!) {
                     if (!category.isAll()) {
                         val button = MaterialButton(
-                            mContext!!, null,
+                            contextThemeWrapper!!, null,
                             com.google.android.material.R.attr.materialButtonOutlinedStyle
                         ).apply {
                             layoutParams = ViewGroup.LayoutParams(
@@ -301,7 +308,7 @@ class FloatingBubbleReceiver : BroadcastReceiver(), ItemWordAdapterCallback {
 
     private fun showToast(text: String) {
         Toast
-            .makeText(mContext, text, Toast.LENGTH_SHORT)
+            .makeText(contextThemeWrapper, text, Toast.LENGTH_SHORT)
             .show()
     }
 }
