@@ -73,6 +73,13 @@ class AddWordDialogFragment : DialogFragment(), ItemWordAdapterCallback {
             getCategoryList(activity)
             setAddButton()
 
+            val drawWordBtn: ImageButton = view.findViewById(R.id.dialog_drawWord_btn)
+//            drawWordBtn.setOnClickListener {
+//                FloatingDrawWordWindow(activity) {
+//                    wordEt!!.setText(it)
+//                }.showWindow()
+//            }
+
             addWordDialog
         } ?: throw IllegalStateException("Activity cannot be null")
     }

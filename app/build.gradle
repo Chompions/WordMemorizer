@@ -12,7 +12,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.sawelo.wordmemorizer"
+        applicationId "com.sawelo.wordmemorizer_debug"
         minSdk 29
         targetSdk 33
         versionCode 1
@@ -72,10 +72,9 @@ dependencies {
 
     implementation 'com.google.dagger:hilt-android:2.44.2'
 
-    implementation 'dev.esnault.wanakana:wanakana-android:1.1.1'
+    implementation 'com.google.mlkit:digital-ink-recognition:18.0.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
 
     kapt 'androidx.room:room-compiler:2.5.0'
     kapt 'com.google.dagger:hilt-compiler:2.44.2'
