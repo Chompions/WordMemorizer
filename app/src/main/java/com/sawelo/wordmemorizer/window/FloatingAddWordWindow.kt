@@ -1,6 +1,7 @@
 package com.sawelo.wordmemorizer.window
 
 import android.content.Context
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.isVisible
@@ -82,6 +83,10 @@ class FloatingAddWordWindow(
         this.coroutineScope = coroutineScope
         floatingAddWordUtils = FloatingAddWordUtils(wordRepository)
 
+        wordEt?.setTextIsSelectable(true)
+        furiganaEt?.setTextIsSelectable(true)
+        definitionEt?.setTextIsSelectable(true)
+
         setAdapter()
         setDrawWindow()
         setWordsChangeListener()
@@ -99,9 +104,10 @@ class FloatingAddWordWindow(
 
     private fun setDrawWindow() {
         drawWordBtn?.setOnClickListener {
-            FloatingDrawWordWindow(context) {
+            FloatingDrawWordWindow(context, this) {
                 wordEt!!.setText(it)
             }.showWindow()
+            hideWindow()
         }
     }
 
@@ -149,6 +155,7 @@ class FloatingAddWordWindow(
             } catch (_: CancellationException) {
             } catch (e: Exception) {
                 showToast("Obtaining recommended words failed: ${e.message}")
+                Log.e(TAG, "Obtaining recommended words failed: ${e.message}")
             }
         }
     }
@@ -225,6 +232,7 @@ class FloatingAddWordWindow(
     }
 
     companion object {
+        private const val TAG = "FloatingAddWordWindow"
         private var IS_WINDOW_ACTIVE = false
         fun getIsWindowActive() = IS_WINDOW_ACTIVE
     }

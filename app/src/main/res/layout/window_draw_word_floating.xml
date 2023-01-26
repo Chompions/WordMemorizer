@@ -28,6 +28,7 @@
             android:layout_height="50dp"
             android:layout_marginVertical="6dp"
             android:layout_marginHorizontal="24dp"
+            android:elevation="6dp"
             app:layout_constraintTop_toBottomOf="@id/windowDraw_drawingWord"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -46,7 +47,6 @@
             android:layout_marginHorizontal="8dp"
             android:background="@drawable/rounded_background"
             android:backgroundTint="?colorOnSecondary"
-            android:alpha=".5"
             app:layout_constraintTop_toTopOf="@id/windowDraw_recommendationScrollView"
             app:layout_constraintBottom_toBottomOf="@id/windowDraw_recommendationScrollView">
 
@@ -71,10 +71,22 @@
             android:layout_marginEnd="16dp"
             android:contentDescription="@string/reset_drawing"
             android:src="@drawable/baseline_backspace_24"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/windowDraw_drawingWord"
             app:layout_constraintBottom_toBottomOf="@id/windowDraw_drawingWord"/>
+
+        <ImageButton
+            android:id="@+id/windowDraw_fadeWindow_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_margin="16dp"
+            android:src="@drawable/baseline_visibility_off_24"
+            android:elevation="6dp"
+            app:layout_constraintTop_toBottomOf="@id/windowDraw_line"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/fade_visibility" />
 
         <com.sawelo.wordmemorizer.view.DrawingView
             android:id="@+id/windowDraw_drawingView"

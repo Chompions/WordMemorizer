@@ -10,4 +10,13 @@ import dagger.hilt.android.HiltAndroidApp
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @HiltAndroidApp
-class MainApplication: Application()
+class MainApplication: Application() {
+    override fun onCreate() {
+        super.onCreate()
+        PACKAGE_NAME = applicationContext.packageName
+    }
+
+    companion object {
+        lateinit var PACKAGE_NAME: String
+    }
+}

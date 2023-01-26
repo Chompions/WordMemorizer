@@ -7,7 +7,6 @@ import com.sawelo.wordmemorizer.fragment.WordListFragment
 
 class CategoryAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
     private var categoryList: List<Category>? = null
-
     override fun getItemCount(): Int = categoryList?.size ?: 0
 
     override fun createFragment(position: Int): Fragment {

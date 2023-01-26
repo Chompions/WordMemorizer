@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import androidx.appcompat.view.ContextThemeWrapper
+import com.sawelo.wordmemorizer.MainApplication.Companion.PACKAGE_NAME
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
@@ -53,8 +54,8 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
 
     companion object {
         private const val CURRENT_CATEGORY_EXTRA = "CURRENT_CATEGORY_EXTRA"
-        const val OPEN_ACTION = "com.sawelo.wordmemorizer.action.OPEN_FLOATING_DIALOG"
-        const val CLOSE_ACTION = "com.sawelo.wordmemorizer.action.CLOSE_FLOATING_DIALOG"
+        private val OPEN_ACTION = "$PACKAGE_NAME.action.OPEN_FLOATING_DIALOG"
+        private val CLOSE_ACTION = "$PACKAGE_NAME.action.CLOSE_FLOATING_DIALOG"
 
         fun openWindow(context: Context, currentCategory: Category?) {
             val receiverIntent = Intent()

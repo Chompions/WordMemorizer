@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -21,8 +22,8 @@ import androidx.recyclerview.widget.ListUpdateCallback
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
-import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
+import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
 import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
@@ -104,28 +105,10 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
 
     override fun onInserted(position: Int, count: Int) {
         val menu = binding.activityMainNavigationView.menu
+        val currentList = asyncDiffer?.currentList
         (position until position + count).forEach { perPosition ->
-            asyncDiffer?.currentList?.get(perPosition)?.let { category ->
-                val text = "${category.categoryName} (${category.wordCount})"
-                menu.add(Menu.NONE, category.categoryId, category.categoryId, text)
-
-                val item = menu.findItem(category.categoryId)
-                item.setOnMenuItemClickListener {
-                    val homeFragment = supportFragmentManager
-                        .findFragmentByTag(HomeFragment.MAIN_FRAGMENT_TAG) as? HomeFragment
-                    homeFragment?.setCurrentTab(perPosition)
-                    binding.activityMainDrawerLayout.close()
-                    true
-                }
-
-                item.setActionView(R.layout.item_drawer_category)
-                item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
-                    ?.setOnClickListener {
-                        viewModel.deleteCategory(category)
-                    }
-                if (category.isAll()) {
-                    item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible = false
-                }
+            currentList?.get(perPosition)?.let { category ->
+                menu.createTab(category, perPosition)
             }
         }
     }
@@ -137,15 +120,49 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
-    override fun onMoved(fromPosition: Int, toPosition: Int) {}
+    override fun onMoved(fromPosition: Int, toPosition: Int) {
+        val menu = binding.activityMainNavigationView.menu
+        val currentList = asyncDiffer?.currentList
+        menu.removeItemAt(fromPosition)
+        currentList?.get(toPosition)?.let { category ->
+            menu.createTab(category, toPosition)
+        }
+    }
 
     override fun onChanged(position: Int, count: Int, payload: Any?) {
         val menu = binding.activityMainNavigationView.menu
+        val currentList = asyncDiffer?.currentList
         (position until position + count).forEach { perPosition ->
-            asyncDiffer?.currentList?.get(perPosition)?.let { category ->
-                val text = "${category.categoryName} (${category.wordCount})"
-                menu.findItem(category.categoryId).title = text
+            menu.removeItemAt(perPosition)
+            currentList?.get(perPosition)?.let { category ->
+                menu.createTab(category, perPosition)
             }
+        }
+    }
+
+    private fun Menu.createTab(category: Category, position: Int) {
+        val text = "${category.categoryName} (${category.wordCount})"
+        add(Menu.NONE, category.categoryId, position, text)
+
+        val item = this.findItem(category.categoryId)
+        item.setClickListener(category)
+        item.setActionView(R.layout.item_drawer_category)
+        item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
+            ?.setOnClickListener {
+                viewModel.deleteCategory(category)
+            }
+        if (category.isAll()) {
+            item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible = false
+        }
+    }
+
+    private fun MenuItem.setClickListener(category: Category) {
+        setOnMenuItemClickListener {
+            val homeFragment = supportFragmentManager
+                .findFragmentByTag(HomeFragment.MAIN_FRAGMENT_TAG) as? HomeFragment
+            homeFragment?.setCurrentTab(category)
+            binding.activityMainDrawerLayout.close()
+            true
         }
     }
 }

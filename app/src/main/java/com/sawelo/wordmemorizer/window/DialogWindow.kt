@@ -57,6 +57,14 @@ abstract class DialogWindow(
         windowManager.addView(view, params)
     }
 
+    override fun hideWindow() {
+        view?.visibility = View.INVISIBLE
+    }
+
+    override fun revealWindow() {
+        view?.visibility = View.VISIBLE
+    }
+
     override fun closeWindow() {
         beforeCloseWindow(coroutineScope)
         coroutineScope.cancel()

@@ -29,7 +29,7 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
     private val viewModel: MainViewModel by activityViewModels()
     private var binding: FragmentHomeBinding? = null
     private var asyncDiffer: AsyncListDiffer<Category>? = null
-    private var adapter: CategoryAdapter? = null
+    private var viewPagerAdapter: CategoryAdapter? = null
     private var tabLayout: TabLayout? = null
     private var viewPager: ViewPager2? = null
 
@@ -47,8 +47,8 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         tabLayout = binding?.fragmentMainTabsLayout
         viewPager = binding?.fragmentMainViewPager
 
-        adapter = CategoryAdapter(this)
-        viewPager?.adapter = adapter
+        viewPagerAdapter = CategoryAdapter(this)
+        viewPager?.adapter = viewPagerAdapter
 
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
         viewLifecycleOwner.lifecycleScope.launch {
@@ -80,7 +80,7 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         super.onDestroyView()
         binding = null
         asyncDiffer = null
-        adapter = null
+        viewPagerAdapter = null
         tabLayout = null
         viewPager = null
 
@@ -89,28 +89,53 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
     }
 
     override fun onInserted(position: Int, count: Int) {
-        adapter?.setCategoryList(asyncDiffer?.currentList)
+        val currentList = asyncDiffer?.currentList
         (position until position + count).forEach { perPosition ->
-            asyncDiffer?.currentList?.get(perPosition)?.let { category ->
-                val newTab = tabLayout?.newTab()?.setText(category.categoryName)
-                if (newTab != null) {
-                    tabLayout?.addTab(newTab)
-                    adapter?.notifyItemInserted(perPosition)
-                }
+            currentList?.get(perPosition)?.let { category ->
+                tabLayout?.createTab(category, perPosition)
             }
         }
+        viewPagerAdapter?.setCategoryList(currentList)
+        viewPagerAdapter?.notifyItemRangeInserted(position, count)
     }
 
     override fun onRemoved(position: Int, count: Int) {
-        adapter?.setCategoryList(asyncDiffer?.currentList)
+        val currentList = asyncDiffer?.currentList
         (position until position + count).forEach { perPosition ->
             tabLayout?.removeTabAt(perPosition)
-            adapter?.notifyItemRemoved(perPosition)
         }
+        viewPagerAdapter?.setCategoryList(currentList)
+        viewPagerAdapter?.notifyItemRangeRemoved(position, count)
+        viewPagerAdapter?.notifyItemChanged(position)
     }
 
-    override fun onMoved(fromPosition: Int, toPosition: Int) {}
-    override fun onChanged(position: Int, count: Int, payload: Any?) {}
+    override fun onMoved(fromPosition: Int, toPosition: Int) {
+        val currentList = asyncDiffer?.currentList
+        tabLayout?.removeTabAt(fromPosition)
+        currentList?.get(toPosition)?.let { category ->
+            tabLayout?.createTab(category, toPosition)
+        }
+        viewPagerAdapter?.setCategoryList(currentList)
+        viewPagerAdapter?.notifyItemMoved(fromPosition, toPosition)
+    }
+    override fun onChanged(position: Int, count: Int, payload: Any?) {
+        val currentList = asyncDiffer?.currentList
+        (position until position + count).forEach { perPosition ->
+            tabLayout?.removeTabAt(perPosition)
+            currentList?.get(perPosition)?.let { category ->
+                tabLayout?.createTab(category, perPosition)
+            }
+        }
+        viewPagerAdapter?.setCategoryList(currentList)
+        viewPagerAdapter?.notifyItemRangeChanged(position, count)
+    }
+
+    private fun TabLayout.createTab(category: Category, position: Int) {
+        newTab().let {
+            it.text = category.categoryName
+            tabLayout?.addTab(it, position)
+        }
+    }
 
     override fun onTabSelected(tab: TabLayout.Tab) {
         viewPager?.currentItem = tab.position
@@ -119,8 +144,11 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
     override fun onTabUnselected(tab: TabLayout.Tab?) {}
     override fun onTabReselected(tab: TabLayout.Tab?) {}
 
-    fun setCurrentTab(index: Int) {
-        viewPager?.currentItem = index
+    fun setCurrentTab(category: Category) {
+        val currentCategory = asyncDiffer?.currentList
+        if (currentCategory != null) {
+            viewPager?.currentItem = currentCategory.indexOf(category)
+        }
     }
 
     companion object {

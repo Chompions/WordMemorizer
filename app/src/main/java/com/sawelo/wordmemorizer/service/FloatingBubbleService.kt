@@ -72,6 +72,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
         super.onDestroy()
     }
 
+    @SuppressLint("LaunchActivityFromNotification")
     private fun createNotification() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -98,12 +99,9 @@ class FloatingBubbleService : Service(), OnTouchListener {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Floating bubble")
-            .setContentText("Press the bubble to add word")
-            .addAction(
-                R.drawable.ic_baseline_close_24,
-                "Stop floating bubble",
-                stopServicePendingIntent
-            )
+            .setContentText("Tap here to stop the floating bubble")
+            .setShowWhen(false)
+            .setContentIntent(stopServicePendingIntent)
 
         startForeground(NOTIFICATION_ID, builder.build())
         addFloatingBubble()

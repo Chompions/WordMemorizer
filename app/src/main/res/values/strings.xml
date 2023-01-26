@@ -35,4 +35,5 @@
     <string name="reset">Reset</string>
     <string name="reset_drawing">Reset drawing</string>
     <string name="your_character_here">your character here</string>
+    <string name="fade_visibility">Fade visibility</string>
 </resources>

@@ -12,6 +12,8 @@ abstract class BaseWindow(context: Context) {
         context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
     abstract fun showWindow()
+    abstract fun hideWindow()
+    abstract fun revealWindow()
     abstract fun closeWindow()
     abstract fun setViews(parent: ViewGroup)
     abstract fun clearViews()
