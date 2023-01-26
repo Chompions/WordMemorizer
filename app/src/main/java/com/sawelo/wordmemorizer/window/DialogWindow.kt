@@ -6,11 +6,9 @@ import android.graphics.PixelFormat
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import android.view.ViewGroup
 import android.view.WindowManager
-import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.util.callback.BackButtonListener
-import com.sawelo.wordmemorizer.view.DialogWindowConstraintLayout
+import com.sawelo.wordmemorizer.view.DialogWindowScrollView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -20,7 +18,7 @@ abstract class DialogWindow(
     private val layout: Int
 ) : BaseWindow(context), OnTouchListener, BackButtonListener {
 
-    private var view: ViewGroup? = null
+    private var view: DialogWindowScrollView? = null
     private var params: WindowManager.LayoutParams? = null
 
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
@@ -45,16 +43,14 @@ abstract class DialogWindow(
             windowAnimations = android.R.style.Animation_Dialog
             width = context.resources.displayMetrics.widthPixels - 100
         }
-
-        view?.findViewById<DialogWindowConstraintLayout>(R.id.dialogWindow_constraintLayout)
-            ?.apply {
-                setBackButtonListener(this@DialogWindow)
-                setOnTouchListener(this@DialogWindow)
-            }
+        view?.apply {
+            setOnTouchListener(this@DialogWindow)
+            setBackButtonListener(this@DialogWindow)
+        }
     }
 
     override fun showWindow() {
-        view = layoutInflater.inflate(layout, null) as ViewGroup
+        view = layoutInflater.inflate(layout, null) as DialogWindowScrollView
         setParams()
         setViews(view!!)
         beforeShowWindow(coroutineScope)

@@ -1,55 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.sawelo.wordmemorizer.view.DialogWindowConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.sawelo.wordmemorizer.view.DialogWindowScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:clipToPadding="false">
 
-    <TextView
-        android:id="@+id/info_wordText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        tools:text="TextView"
-        style="@style/MaterialAlertDialog.Material3.Title.Text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/info_furiganaText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginVertical="4dp"
-        tools:text="TextView"
-        android:textSize="20sp"
-        style="@style/MaterialAlertDialog.Material3.Body.Text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_wordText" />
+        <TextView
+            android:id="@+id/info_wordText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            tools:text="TextView"
+            style="@style/MaterialAlertDialog.Material3.Title.Text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/info_definitionText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginVertical="4dp"
-        tools:text="TextView"
-        android:textSize="20sp"
-        style="@style/MaterialAlertDialog.Material3.Body.Text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_furiganaText" />
+        <TextView
+            android:id="@+id/info_furiganaText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="4dp"
+            tools:text="TextView"
+            android:textSize="20sp"
+            style="@style/MaterialAlertDialog.Material3.Body.Text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/info_wordText" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/info_ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginVertical="8dp"
-        android:text="@string/ok"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_definitionText"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-</com.sawelo.wordmemorizer.view.DialogWindowConstraintLayout>
+        <TextView
+            android:id="@+id/info_definitionText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="4dp"
+            tools:text="TextView"
+            android:textSize="20sp"
+            style="@style/MaterialAlertDialog.Material3.Body.Text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/info_furiganaText" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/info_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="8dp"
+            android:text="@string/ok"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/info_definitionText"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.sawelo.wordmemorizer.view.DialogWindowScrollView>
