@@ -19,7 +19,8 @@ class DialogWindowConstraintLayout @JvmOverloads constructor(
 
     init {
         setBackgroundResource(R.drawable.rounded_background)
-        elevation = 16F
+        elevation = 6F
+        id = R.id.dialogWindow_constraintLayout
     }
 
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {

@@ -6,7 +6,9 @@ import android.graphics.PixelFormat
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
+import android.view.ViewGroup
 import android.view.WindowManager
+import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.util.callback.BackButtonListener
 import com.sawelo.wordmemorizer.view.DialogWindowConstraintLayout
 import kotlinx.coroutines.CoroutineScope
@@ -16,9 +18,9 @@ import kotlinx.coroutines.cancel
 abstract class DialogWindow(
     private val context: Context,
     private val layout: Int
-): BaseWindow(context), OnTouchListener, BackButtonListener {
+) : BaseWindow(context), OnTouchListener, BackButtonListener {
 
-    private var view: DialogWindowConstraintLayout? = null
+    private var view: ViewGroup? = null
     private var params: WindowManager.LayoutParams? = null
 
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
@@ -44,12 +46,15 @@ abstract class DialogWindow(
             width = context.resources.displayMetrics.widthPixels - 100
         }
 
-        view?.setBackButtonListener(this)
-        view?.setOnTouchListener(this)
+        view?.findViewById<DialogWindowConstraintLayout>(R.id.dialogWindow_constraintLayout)
+            ?.apply {
+                setBackButtonListener(this@DialogWindow)
+                setOnTouchListener(this@DialogWindow)
+            }
     }
 
     override fun showWindow() {
-        view = (layoutInflater.inflate(layout, null) as DialogWindowConstraintLayout)
+        view = layoutInflater.inflate(layout, null) as ViewGroup
         setParams()
         setViews(view!!)
         beforeShowWindow(coroutineScope)
