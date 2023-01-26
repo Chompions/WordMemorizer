@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.sawelo.wordmemorizer.R
+import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.AddWordAdapter
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
@@ -203,6 +204,16 @@ class FloatingAddWordWindow(
         coroutineScope?.launch {
             floatingAddWordUtils?.updateShowForgotWord(item)
             FloatingInfoWordWindow(context, item).showWindow()
+            closeWindow()
+        }
+    }
+
+    override fun onItemLongClickListener(item: Word) {
+        coroutineScope?.launch {
+            if (categoryList != null) {
+                EditWordActivity.startActivity(
+                    context, item.wordId, categoryList!!)
+            }
             closeWindow()
         }
     }

@@ -34,5 +34,5 @@
     <string name="draw_word">Draw word</string>
     <string name="reset">Reset</string>
     <string name="reset_drawing">Reset drawing</string>
-    <string name="your_character_here">Your character here</string>
+    <string name="your_character_here">your character here</string>
 </resources>

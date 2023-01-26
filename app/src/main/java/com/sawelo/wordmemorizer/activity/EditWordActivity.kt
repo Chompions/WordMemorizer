@@ -1,6 +1,6 @@
 package com.sawelo.wordmemorizer.activity
 
-import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -149,11 +149,11 @@ class EditWordActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun startActivity(activity: Activity?, wordId: Int, categoryList: List<Category>) {
-            val intent = Intent(activity, EditWordActivity::class.java)
+        fun startActivity(context: Context?, wordId: Int, categoryList: List<Category>) {
+            val intent = Intent(context, EditWordActivity::class.java)
             intent.putExtra(EDIT_WORD_ACTIVITY_ID_EXTRA, wordId)
             intent.putExtra(EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA, ArrayList(categoryList))
-            activity?.startActivity(intent)
+            context?.startActivity(intent)
         }
 
         private const val EDIT_WORD_ACTIVITY_ID_EXTRA = "EDIT_WORD_ACTIVITY_ID_EXTRA"

@@ -19,7 +19,7 @@ class DialogWindowScrollView @JvmOverloads constructor(
 
     init {
         setBackgroundResource(R.drawable.rounded_background)
-        elevation = 6F
+        elevation = 16F
     }
 
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
