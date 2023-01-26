@@ -15,10 +15,10 @@ import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
-import com.sawelo.wordmemorizer.util.FloatingDialogUtil
+import com.sawelo.wordmemorizer.util.FloatingAddWordUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
 import com.sawelo.wordmemorizer.util.ViewUtils.addCategoryList
-import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
+import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -28,8 +28,11 @@ import kotlinx.coroutines.runBlocking
 class FloatingAddWordWindow(
     private val context: Context,
     private val wordRepository: WordRepository
-): DialogWindow(context, R.layout.window_add_word_floating), ItemWordAdapterCallback {
+) : DialogWindow(context, R.layout.window_add_word_floating),
+    ItemWordAdapterListener {
+
     private var wordEt: EditText? = null
+    private var drawWordBtn: ImageButton? = null
     private var furiganaEt: EditText? = null
     private var definitionEt: EditText? = null
     private var similarWordRv: RecyclerView? = null
@@ -42,11 +45,12 @@ class FloatingAddWordWindow(
 
     private var coroutineScope: CoroutineScope? = null
     private var adapter: AddWordAdapter? = null
-    private var floatingDialogUtil: FloatingDialogUtil? = null
+    private var floatingAddWordUtils: FloatingAddWordUtils? = null
     private var categoryList: List<Category>? = null
 
     override fun setViews(parent: ViewGroup) {
         wordEt = parent.findViewById(R.id.dialog_addWord_et)
+        drawWordBtn = parent.findViewById(R.id.dialog_drawWord_btn)
         furiganaEt = parent.findViewById(R.id.dialog_addFurigana_et)
         definitionEt = parent.findViewById(R.id.dialog_addDefinition_et)
         similarWordRv = parent.findViewById(R.id.dialog_similarWord_rv)
@@ -60,6 +64,7 @@ class FloatingAddWordWindow(
 
     override fun clearViews() {
         wordEt = null
+        drawWordBtn = null
         furiganaEt = null
         definitionEt = null
         similarWordRv = null
@@ -73,9 +78,10 @@ class FloatingAddWordWindow(
 
     override fun beforeShowWindow(coroutineScope: CoroutineScope) {
         this.coroutineScope = coroutineScope
-        floatingDialogUtil = FloatingDialogUtil(wordRepository)
+        floatingAddWordUtils = FloatingAddWordUtils(wordRepository)
 
         setAdapter()
+        setDrawWindow()
         setWordsChangeListener()
         setCategoryList()
         setButton()
@@ -89,25 +95,33 @@ class FloatingAddWordWindow(
         similarWordRv?.layoutManager = LinearLayoutManager(context)
     }
 
+    private fun setDrawWindow() {
+        drawWordBtn?.setOnClickListener {
+            FloatingDrawWordWindow(context) {
+                wordEt!!.setText(it)
+            }.showWindow()
+        }
+    }
+
     private fun setWordsChangeListener() {
         wordEt?.doOnTextChanged { text, _, _, _ ->
-            floatingDialogUtil?.wordTextFlow?.value = text.toString()
+            floatingAddWordUtils?.wordTextFlow?.value = text.toString()
         }
         furiganaEt?.doOnTextChanged { text, _, _, _ ->
-            floatingDialogUtil?.furiganaTextFlow?.value = text.toString()
+            floatingAddWordUtils?.furiganaTextFlow?.value = text.toString()
         }
         definitionEt?.doOnTextChanged { text, _, _, _ ->
-            floatingDialogUtil?.definitionTextFlow?.value = text.toString()
+            floatingAddWordUtils?.definitionTextFlow?.value = text.toString()
         }
 
         coroutineScope?.launch {
-            floatingDialogUtil?.progressIndicatorShowFlow?.collectLatest {
+            floatingAddWordUtils?.progressIndicatorShowFlow?.collectLatest {
                 progressIndicator?.isVisible = it
             }
         }
 
         coroutineScope?.launch {
-            floatingDialogUtil?.getAllWordsByTextFlow()?.collectLatest {
+            floatingAddWordUtils?.getAllWordsByTextFlow()?.collectLatest {
                 similarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
             }
@@ -115,7 +129,7 @@ class FloatingAddWordWindow(
 
         coroutineScope?.launch {
             try {
-                floatingDialogUtil?.getRecommendationWordsFlow()
+                floatingAddWordUtils?.getRecommendationWordsFlow()
                     ?.collectLatest {
                         recommendationLayout?.removeAllViews()
                         it.forEach { data ->
@@ -139,7 +153,7 @@ class FloatingAddWordWindow(
 
     private fun setCategoryList() {
         runBlocking {
-            categoryList = floatingDialogUtil?.getAllCategories()
+            categoryList = floatingAddWordUtils?.getAllCategories()
             if (categoryList != null) {
                 addCategoryGroup?.addCategoryList(context, categoryList!!)
             }
@@ -165,7 +179,7 @@ class FloatingAddWordWindow(
                 wordWithCategories.word.definitionText.isBlank() -> showToast("Definition cannot be empty")
                 else -> {
                     coroutineScope?.launch {
-                        floatingDialogUtil?.addWord(wordWithCategories)
+                        floatingAddWordUtils?.addWord(wordWithCategories)
                         closeWindow()
                     }
                 }
@@ -177,16 +191,15 @@ class FloatingAddWordWindow(
     }
 
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
-        floatingDialogUtil = null
+        floatingAddWordUtils = null
         IS_WINDOW_ACTIVE = false
     }
 
     override fun onItemClickListener(item: Word) {
         coroutineScope?.launch {
-            floatingDialogUtil?.updateShowForgotWord(item)
-            FloatingInfoWordWindow(context, item) {
-                closeWindow()
-            }
+            floatingAddWordUtils?.updateShowForgotWord(item)
+            FloatingInfoWordWindow(context, item).showWindow()
+            closeWindow()
         }
     }
 

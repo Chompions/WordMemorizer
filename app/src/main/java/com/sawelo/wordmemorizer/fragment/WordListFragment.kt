@@ -18,14 +18,14 @@ import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.databinding.FragmentWordListBinding
-import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
+import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class WordListFragment : Fragment(), ItemWordAdapterCallback {
+class WordListFragment : Fragment(), ItemWordAdapterListener {
     private val viewModel: MainViewModel by activityViewModels()
     private var binding: FragmentWordListBinding? = null
     private var mainWordAdapter: MainWordAdapter? = null

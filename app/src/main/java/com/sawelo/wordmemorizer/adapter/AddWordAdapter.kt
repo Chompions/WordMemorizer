@@ -8,11 +8,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
+import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import com.sawelo.wordmemorizer.util.callback.WordDiffUtilCallback
 
 class AddWordAdapter(
-    private val itemCallback: ItemWordAdapterCallback
+    private val itemCallback: ItemWordAdapterListener
 ) : ListAdapter<Word, AddWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {

@@ -18,8 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WordMemorizer"
         tools:targetApi="31" >
+
         <service
-            android:name=".util.FloatingBubbleService"
+            android:name=".service.FloatingBubbleService"
             android:enabled="true"
             android:exported="false" />
 

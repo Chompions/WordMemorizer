@@ -1,10 +1,10 @@
-package com.sawelo.wordmemorizer.digitalink
+package com.sawelo.wordmemorizer.util
 
 import android.view.MotionEvent
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.vision.digitalink.*
-import com.sawelo.wordmemorizer.util.StrokeCallback
+import com.sawelo.wordmemorizer.util.callback.StrokeCallback
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class StrokeManager(private val callback: StrokeCallback) {

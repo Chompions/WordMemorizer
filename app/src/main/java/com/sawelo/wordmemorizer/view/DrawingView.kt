@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.digitalink
+package com.sawelo.wordmemorizer.view
 
 import android.content.Context
 import android.graphics.*
@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import com.sawelo.wordmemorizer.util.StrokeManager
 
 class DrawingView @JvmOverloads constructor(
     context: Context?,

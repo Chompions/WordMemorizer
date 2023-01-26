@@ -10,8 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 
 class FloatingInfoWordWindow(
     private val context: Context,
-    private val itemWord: Word,
-    private val okPressed: () -> Unit
+    private val itemWord: Word
 ): DialogWindow(context, R.layout.window_add_word_info_floating) {
     private var wordTv: TextView? = null
     private var furiganaTv: TextView? = null
@@ -40,7 +39,6 @@ class FloatingInfoWordWindow(
         definitionTv?.text = itemWord.definitionText
         okBtn?.setOnClickListener {
             closeWindow()
-            okPressed.invoke()
         }
     }
 

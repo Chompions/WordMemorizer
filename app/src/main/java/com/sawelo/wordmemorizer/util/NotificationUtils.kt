@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
+import com.sawelo.wordmemorizer.service.FloatingBubbleService
 
 object NotificationUtils {
 

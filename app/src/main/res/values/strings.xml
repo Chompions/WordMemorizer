@@ -13,10 +13,10 @@
     <string name="different">Different</string>
     <string name="dialog_text">We found similar words. \nPlease select the same word if any</string>
     <string name="word">Word</string>
-    <string name="addWord_noSimilarWords">There are no similar words to this word</string>
+    <string name="addWord_noSimilarWords">You have no similar words to this word</string>
     <string name="furigana">Furigana</string>
     <string name="toolbar_title">memorizing</string>
-    <string name="header_title">Category list</string>
+    <string name="header_title">category list</string>
     <string name="header_text">set your categories</string>
     <string name="add_category">Add category</string>
     <string name="category">Category</string>
@@ -29,7 +29,7 @@
     <string name="update_word">Update word</string>
     <string name="editing">editing</string>
     <string name="settings">settings</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="draw_word">Draw word</string>
     <string name="reset">Reset</string>

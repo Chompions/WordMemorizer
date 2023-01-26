@@ -3,7 +3,7 @@ package com.sawelo.wordmemorizer.util.sorting_utils
 import android.content.Context
 import com.sawelo.wordmemorizer.R
 
-enum class SortingOrder: Sorting {
+enum class SortingOrder: BaseSorting {
     ASCENDING {
         override fun obtainQueryString(): String = "ASC"
         override fun obtainText(context: Context): String = context.getString(R.string.ascending)

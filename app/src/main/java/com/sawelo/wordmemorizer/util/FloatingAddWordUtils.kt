@@ -8,7 +8,7 @@ import com.sawelo.wordmemorizer.data.remote.ApiConfig
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class FloatingDialogUtil(private val wordRepository: WordRepository) {
+class FloatingAddWordUtils(private val wordRepository: WordRepository) {
     val wordTextFlow = MutableStateFlow("")
     val furiganaTextFlow = MutableStateFlow("")
     val definitionTextFlow = MutableStateFlow("")

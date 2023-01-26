@@ -1,44 +1,56 @@
 package com.sawelo.wordmemorizer.window
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnTouchListener
-import android.view.ViewGroup
 import android.view.WindowManager
-import kotlinx.coroutines.*
+import com.sawelo.wordmemorizer.util.callback.BackButtonListener
+import com.sawelo.wordmemorizer.view.DialogWindowConstraintLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 
 abstract class DialogWindow(
-    context: Context,
+    private val context: Context,
     private val layout: Int
-): BaseWindow(context), OnTouchListener {
-    private var view: ViewGroup? = null
-    private val params: WindowManager.LayoutParams = WindowManager.LayoutParams(
-        WindowManager.LayoutParams.WRAP_CONTENT,
-        WindowManager.LayoutParams.WRAP_CONTENT,
-        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-        PixelFormat.TRANSLUCENT
-    ).apply {
-        windowAnimations = android.R.style.Animation_Dialog
-        width = context.resources.displayMetrics.widthPixels - 100
-    }
+): BaseWindow(context), OnTouchListener, BackButtonListener {
 
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main) + Job()
+    private var view: DialogWindowConstraintLayout? = null
+    private var params: WindowManager.LayoutParams? = null
+
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
     abstract fun beforeShowWindow(coroutineScope: CoroutineScope)
     abstract fun beforeCloseWindow(coroutineScope: CoroutineScope)
 
     fun setWidth(widthPixels: Int) {
-        params.width = widthPixels
+        params?.width = widthPixels
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setParams() {
+        params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            windowAnimations = android.R.style.Animation_Dialog
+            width = context.resources.displayMetrics.widthPixels - 100
+        }
+
+        view?.setBackButtonListener(this)
+        view?.setOnTouchListener(this)
     }
 
     override fun showWindow() {
-        view = (layoutInflater.inflate(layout, null) as ViewGroup).apply {
-            setOnTouchListener(this@DialogWindow)
-        }
+        view = (layoutInflater.inflate(layout, null) as DialogWindowConstraintLayout)
+        setParams()
         setViews(view!!)
         beforeShowWindow(coroutineScope)
         windowManager.addView(view, params)
@@ -56,8 +68,12 @@ abstract class DialogWindow(
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_OUTSIDE) {
-            windowManager.removeView(view)
+            closeWindow()
         }
         return false
+    }
+
+    override fun onBackButtonListener() {
+        closeWindow()
     }
 }

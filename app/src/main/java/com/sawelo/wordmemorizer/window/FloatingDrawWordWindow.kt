@@ -5,10 +5,10 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.isVisible
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.digitalink.DrawingView
-import com.sawelo.wordmemorizer.digitalink.StrokeManager
-import com.sawelo.wordmemorizer.util.StrokeCallback
+import com.sawelo.wordmemorizer.util.StrokeManager
+import com.sawelo.wordmemorizer.util.callback.StrokeCallback
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
+import com.sawelo.wordmemorizer.view.DrawingView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -68,21 +68,24 @@ class FloatingDrawWordWindow(
             strokeManager.wordCandidates.collectLatest { candidates ->
                 // Remove all button before adding new ones
                 recommendationLayout?.removeAllViews()
-                // Add clear button in recommendation list
-                recommendationLayout?.addButtonInLayout(context, "Reset") {
-                    clearCanvas()
-                }
-                // Add character candidates button in recommendation list
-                candidates.forEach {
-                    recommendationLayout?.addButtonInLayout(context, it.text) {
-                        startTyping(it.text)
+
+                if (candidates.isNotEmpty()) {
+                    // Add clear button in recommendation list
+                    recommendationLayout?.addButtonInLayout(context, "Reset") {
+                        clearCanvas()
+                    }
+                    // Add character candidates button in recommendation list
+                    candidates.forEach {
+                        recommendationLayout?.addButtonInLayout(context, it.text) {
+                            startTyping(it.text)
+                        }
                     }
                 }
             }
         }
 
         drawnTextResetBtn?.setOnClickListener {
-            clearTyping()
+            backspaceTyping()
         }
         cancelBtn?.setOnClickListener {
             closeWindow()
@@ -97,22 +100,29 @@ class FloatingDrawWordWindow(
 
 
     private fun startTyping(drawnText: String) {
-        clearCanvas()
         drawnCharacterList.add(drawnText)
-        drawingWordTv?.text = drawnCharacterList.joinToString("")
-        drawnTextResetBtn?.isVisible = true
+        updateDrawingWord()
     }
 
-    private fun clearTyping() {
-        clearCanvas()
-        drawnCharacterList.clear()
-        drawingWordTv?.text = context.getText(R.string.your_character_here)
-        drawnTextResetBtn?.isVisible = false
+    private fun backspaceTyping() {
+        drawnCharacterList.removeLast()
+        updateDrawingWord()
     }
 
     private fun clearCanvas() {
         drawingView?.clear()
         recommendationLayout?.removeAllViews()
+    }
+
+    private fun updateDrawingWord() {
+        clearCanvas()
+        if (drawnCharacterList.isNotEmpty()) {
+            drawingWordTv?.text = drawnCharacterList.joinToString("")
+            drawnTextResetBtn?.isVisible = true
+        } else {
+            drawingWordTv?.text = context.getText(R.string.your_character_here)
+            drawnTextResetBtn?.isVisible = false
+        }
     }
 
     override fun onFailure(message: String) {

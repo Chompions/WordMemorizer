@@ -1,40 +1,10 @@
 package com.sawelo.wordmemorizer.util
 
-import android.animation.ValueAnimator
 import android.content.Context
-import android.util.TypedValue
-import android.view.View
 import android.widget.Toast
-import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
-import androidx.core.view.isVisible
 import com.sawelo.wordmemorizer.data.data_class.Category
 
 object WordUtils {
-
-    @ColorInt
-    fun Context.getColorFromAttr(
-        @AttrRes attrColor: Int,
-        typedValue: TypedValue = TypedValue(),
-        resolveRefs: Boolean = true
-    ): Int {
-        theme.resolveAttribute(attrColor, typedValue, resolveRefs)
-        return typedValue.data
-    }
-
-    fun View.animateHeightFromTo(initialHeight: Int, finalHeight: Int) {
-        val animator = ValueAnimator.ofInt(initialHeight, finalHeight)
-        animator.duration = 250
-        animator.addUpdateListener {
-            val value = it.animatedValue as Int
-            val lp = this.layoutParams
-            lp.height = value
-            this.layoutParams = lp
-            isVisible = value != 0
-        }
-        animator.start()
-    }
-
     fun Context.showToast(text: String?) {
         Toast
             .makeText(this, text, Toast.LENGTH_SHORT)

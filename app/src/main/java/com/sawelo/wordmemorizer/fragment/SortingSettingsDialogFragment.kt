@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.fragment.dialog
+package com.sawelo.wordmemorizer.fragment
 
 import android.app.Dialog
 import android.content.Context
@@ -13,7 +13,7 @@ import com.google.android.material.radiobutton.MaterialRadioButton
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.dataStore
 import com.sawelo.wordmemorizer.util.PreferencesUtils
-import com.sawelo.wordmemorizer.util.sorting_utils.Sorting
+import com.sawelo.wordmemorizer.util.sorting_utils.BaseSorting
 import com.sawelo.wordmemorizer.util.sorting_utils.SortingAnchor
 import com.sawelo.wordmemorizer.util.sorting_utils.SortingOrder
 import kotlinx.coroutines.flow.first
@@ -43,8 +43,8 @@ class SortingSettingsDialogFragment : DialogFragment() {
     private inline fun <reified T : Enum<T>> RadioGroup.addRadioButton(context: Context) {
         enumValues<T>().forEach { enum ->
             val radioButton = MaterialRadioButton(context).apply {
-                id = (enum as Sorting).obtainId()
-                text = (enum as Sorting).obtainText(context)
+                id = (enum as BaseSorting).obtainId()
+                text = (enum as BaseSorting).obtainText(context)
                 setOnCheckedChangeListener { _, isChecked ->
                     lifecycleScope.launch {
                         context.dataStore.edit { settings ->
@@ -61,7 +61,7 @@ class SortingSettingsDialogFragment : DialogFragment() {
                     val currentEnum =
                         PreferencesUtils.obtainCurrentSortingFromPreferences<T>(preferences)
                     if (radioButton.id == currentEnum.obtainId()) radioButton.isChecked = true
-                    this@addRadioButton.addView(radioButton, (enum as Sorting).obtainId())
+                    this@addRadioButton.addView(radioButton, (enum as BaseSorting).obtainId())
                 }
             }
         }

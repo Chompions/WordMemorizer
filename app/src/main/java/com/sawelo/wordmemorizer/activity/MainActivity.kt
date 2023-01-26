@@ -22,8 +22,8 @@ import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.HomeFragment
-import com.sawelo.wordmemorizer.fragment.dialog.AddCategoryDialogFragment
-import com.sawelo.wordmemorizer.fragment.dialog.SortingSettingsDialogFragment
+import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
+import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
 import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel

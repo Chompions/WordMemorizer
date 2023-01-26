@@ -62,10 +62,4 @@ class MainViewModel @Inject constructor(
         }
     }
 
-//    fun deleteWord(word: Word) {
-//        viewModelScope.launch {
-//            wordRepository.deleteWord(word)
-//        }
-//    }
-
 }

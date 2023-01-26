@@ -18,7 +18,9 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.FragmentHomeBinding
-import com.sawelo.wordmemorizer.fragment.dialog.AddWordDialogFragment
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -30,6 +32,8 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
     private var adapter: CategoryAdapter? = null
     private var tabLayout: TabLayout? = null
     private var viewPager: ViewPager2? = null
+
+    private var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +55,8 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.getAllCategories().collectLatest { categories ->
                     asyncDiffer?.submitList(categories)
-                    viewPager?.offscreenPageLimit = if (categories.size > 1) categories.size - 1 else 1
+                    viewPager?.offscreenPageLimit =
+                        if (categories.size > 1) categories.size - 1 else 1
                 }
             }
         }
@@ -63,12 +68,11 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
             }
         })
 
+        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
+        floatingAddWordWindowReceiver?.registerReceiver(requireContext())
+
         binding?.fragmentMainFab?.setOnClickListener {
-            if (asyncDiffer != null) {
-                AddWordDialogFragment
-                    .newInstance(asyncDiffer!!.currentList)
-                    .show(childFragmentManager, null)
-            }
+            FloatingAddWordWindowReceiver.openWindow(requireContext())
         }
     }
 
@@ -79,6 +83,9 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         adapter = null
         tabLayout = null
         viewPager = null
+
+        floatingAddWordWindowReceiver?.unregisterReceiver(requireContext())
+        FloatingAddWordWindowReceiver.closeWindow(requireContext())
     }
 
     override fun onInserted(position: Int, count: Int) {

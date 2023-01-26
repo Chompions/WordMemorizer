@@ -9,11 +9,11 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterCallback
+import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import com.sawelo.wordmemorizer.util.callback.WordDiffUtilCallback
 
 class MainWordAdapter(
-    private val itemCallback: ItemWordAdapterCallback
+    private val itemCallback: ItemWordAdapterListener
 ) : PagingDataAdapter<Word, MainWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {

@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.util
+package com.sawelo.wordmemorizer.service
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -7,25 +7,39 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
+import com.sawelo.wordmemorizer.util.NotificationUtils
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
 
-class FloatingBubbleService : Service() {
+class FloatingBubbleService : Service(), OnTouchListener {
 
-    private var floatingDialogReceiver: FloatingDialogReceiver? = null
     private var floatingBubbleView: View? = null
     private var windowManager: WindowManager? = null
+    private var params:  WindowManager.LayoutParams? = null
+
+    private var mInitialX = 0
+    private var mInitialY = 0
+    private var mInitialTouchX: Float = 0.toFloat()
+    private var mInitialTouchY: Float = 0.toFloat()
+
+    private val maxClickDuration = 200L
+    private var startClickDuration = 0L
+
+    private var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver? = null
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -41,14 +55,8 @@ class FloatingBubbleService : Service() {
     }
 
     override fun onDestroy() {
-        if (floatingDialogReceiver != null) {
-            val receiverIntent = Intent()
-            receiverIntent.action = NOTIFICATION_STOP_ACTION
-            sendBroadcast(receiverIntent)
-
-            unregisterReceiver(floatingDialogReceiver)
-            floatingDialogReceiver = null
-        }
+        floatingAddWordWindowReceiver?.unregisterReceiver(this)
+        FloatingAddWordWindowReceiver.closeWindow(this)
 
         if (floatingBubbleView != null) {
             windowManager?.removeView(floatingBubbleView)
@@ -77,11 +85,8 @@ class FloatingBubbleService : Service() {
         }
         notificationManager.createNotificationChannel(channel)
 
-        floatingDialogReceiver = FloatingDialogReceiver()
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(NOTIFICATION_START_ACTION)
-        intentFilter.addAction(NOTIFICATION_STOP_ACTION)
-        registerReceiver(floatingDialogReceiver, intentFilter)
+        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
+        floatingAddWordWindowReceiver?.registerReceiver(this)
 
         val stopServiceIntent = Intent(this, FloatingBubbleService::class.java)
         stopServiceIntent.action = NOTIFICATION_STOP_ACTION
@@ -111,52 +116,17 @@ class FloatingBubbleService : Service() {
             layoutInflater.inflate(R.layout.window_floating_bubble, null)
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        val params = WindowManager.LayoutParams(
+        params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-
-        params.x = resources.displayMetrics.widthPixels / 2
-
-        var mInitialX = 0
-        var mInitialY = 0
-        var mInitialTouchX: Float = 0.toFloat()
-        var mInitialTouchY: Float = 0.toFloat()
-
-        val maxClickDuration = 200L
-        var startClickDuration = 0L
+        params?.x = resources.displayMetrics.widthPixels / 2
 
         if (floatingBubbleView != null) {
-            floatingBubbleView!!.setOnTouchListener { _, event ->
-                when (event?.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        startClickDuration = System.currentTimeMillis()
-
-                        mInitialX = params.x
-                        mInitialY = params.y
-                        mInitialTouchX = event.rawX
-                        mInitialTouchY = event.rawY
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        params.x = (mInitialX + (event.rawX - mInitialTouchX)).toInt()
-                        params.y = (mInitialY + (event.rawY - mInitialTouchY)).toInt()
-                        windowManager?.updateViewLayout(floatingBubbleView, params)
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        val endClickDuration = System.currentTimeMillis() - startClickDuration
-                        if (endClickDuration < maxClickDuration) {
-                            floatingBubbleView!!.performClick()
-                            val receiverIntent = Intent()
-                            receiverIntent.action = NOTIFICATION_START_ACTION
-                            sendBroadcast(receiverIntent)
-                        }
-                    }
-                }
-                false
-            }
+            floatingBubbleView!!.setOnTouchListener(this)
         }
         windowManager?.addView(floatingBubbleView, params)
     }
@@ -164,5 +134,31 @@ class FloatingBubbleService : Service() {
     companion object {
         private const val CHANNEL_ID = "FLOATING_BUBBLE_CHANNEL_ID"
         private const val NOTIFICATION_ID = 1
+    }
+
+    override fun onTouch(view: View, event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                startClickDuration = System.currentTimeMillis()
+
+                mInitialX = params?.x ?: 0
+                mInitialY = params?.y ?: 0
+                mInitialTouchX = event.rawX
+                mInitialTouchY = event.rawY
+            }
+            MotionEvent.ACTION_MOVE -> {
+                params?.x = (mInitialX + (event.rawX - mInitialTouchX)).toInt()
+                params?.y = (mInitialY + (event.rawY - mInitialTouchY)).toInt()
+                windowManager?.updateViewLayout(floatingBubbleView, params)
+            }
+            MotionEvent.ACTION_UP -> {
+                val endClickDuration = System.currentTimeMillis() - startClickDuration
+                if (endClickDuration < maxClickDuration) {
+                    floatingBubbleView!!.performClick()
+                    FloatingAddWordWindowReceiver.openWindow(this)
+                }
+            }
+        }
+        return false
     }
 }

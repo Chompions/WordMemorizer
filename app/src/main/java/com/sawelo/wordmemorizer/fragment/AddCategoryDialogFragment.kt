@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.fragment.dialog
+package com.sawelo.wordmemorizer.fragment
 
 import android.app.Dialog
 import android.os.Bundle
