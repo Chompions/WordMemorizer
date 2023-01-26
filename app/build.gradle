@@ -12,7 +12,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.sawelo.wordmemorizer_debug"
+        applicationId "com.sawelo.wordmemorizer"
         minSdk 29
         targetSdk 33
         versionCode 1
