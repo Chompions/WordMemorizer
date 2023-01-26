@@ -19,6 +19,7 @@ class MainViewModel @Inject constructor(
     private val wordRepository: WordRepository
 ) : ViewModel() {
     val asyncDifferConfig = AsyncDifferConfig.Builder(CategoryDiffUtilCallback).build()
+    var currentCategory: Category? = null
 
     fun getAllCategories(): Flow<List<Category>> {
         return wordRepository.getAllCategories()

@@ -4,9 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import androidx.appcompat.view.ContextThemeWrapper
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.WordRepository
+import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.window.FloatingAddWordWindow
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -23,14 +25,20 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
         when (intent.action) {
             CLOSE_ACTION -> closeInstance()
             OPEN_ACTION -> {
-                showInstance(contextThemeWrapper)
+                @Suppress("DEPRECATION")
+                val extra = if (Build.VERSION.SDK_INT >= 33) {
+                    intent.getParcelableExtra(CURRENT_CATEGORY_EXTRA, Category::class.java)
+                } else {
+                    intent.getParcelableExtra(CURRENT_CATEGORY_EXTRA)
+                }
+                showInstance(contextThemeWrapper, extra)
             }
         }
     }
 
-    private fun showInstance(context: Context) {
+    private fun showInstance(context: Context, currentCategory: Category?) {
         if (!FloatingAddWordWindow.getIsWindowActive()) {
-            windowInstance = FloatingAddWordWindow(context, wordRepository)
+            windowInstance = FloatingAddWordWindow(context, wordRepository, currentCategory)
             windowInstance?.showWindow()
         } else {
             windowInstance?.closeWindow()
@@ -44,12 +52,16 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
     }
 
     companion object {
+        private const val CURRENT_CATEGORY_EXTRA = "CURRENT_CATEGORY_EXTRA"
         const val OPEN_ACTION = "com.sawelo.wordmemorizer.action.OPEN_FLOATING_DIALOG"
         const val CLOSE_ACTION = "com.sawelo.wordmemorizer.action.CLOSE_FLOATING_DIALOG"
 
-        fun openWindow(context: Context) {
+        fun openWindow(context: Context, currentCategory: Category?) {
             val receiverIntent = Intent()
             receiverIntent.action = OPEN_ACTION
+            if (currentCategory != null) {
+                receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
+            }
             context.sendBroadcast(receiverIntent)
         }
 

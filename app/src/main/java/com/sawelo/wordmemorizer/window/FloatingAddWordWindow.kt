@@ -27,7 +27,8 @@ import kotlinx.coroutines.runBlocking
 
 class FloatingAddWordWindow(
     private val context: Context,
-    private val wordRepository: WordRepository
+    private val wordRepository: WordRepository,
+    private val currentCategory: Category?,
 ) : DialogWindow(context, R.layout.window_add_word_floating),
     ItemWordAdapterListener {
 
@@ -156,6 +157,9 @@ class FloatingAddWordWindow(
             categoryList = floatingAddWordUtils?.getAllCategories()
             if (categoryList != null) {
                 addCategoryGroup?.addCategoryList(context, categoryList!!)
+            }
+            if (currentCategory != null) {
+                addCategoryGroup?.check(currentCategory.categoryId)
             }
         }
     }

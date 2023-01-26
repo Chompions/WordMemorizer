@@ -44,22 +44,31 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
         return binding?.root
     }
 
-    override fun onItemHideBtnClickListener(item: Word) {
-        viewModel.updateHideForgotWord(item)
-    }
-
-    override fun onItemForgotBtnClickListener(item: Word) {
-        viewModel.updateShowForgotWord(item)
-    }
-
-    override fun onItemLongClickListener(item: Word) {
-        lifecycleScope.launch {
-            EditWordActivity.startActivity(
-                activity, item.wordId, viewModel.getAllCategories().first())
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setAdapter()
+        setRecyclerView()
+        getParcelable()
+        setListFromCategory()
+    }
+
+    override fun onResume() {
+        viewModel.currentCategory = currentCategory
+        super.onResume()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+        mainWordAdapter = null
+        mainWordRv = null
+        similarWordAdapter = null
+        similarWordRv = null
+
+        currentCategory = null
+        currentCategoryList = null
+    }
+
+    private fun setAdapter() {
         // Setting adapters
         mainWordAdapter = MainWordAdapter(this).apply {
             addOnPagesUpdatedListener {
@@ -71,7 +80,9 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
                 binding?.fragmentCategorySimilarWordsProgressIndicator?.hide()
             }
         }
+    }
 
+    private fun setRecyclerView() {
         // Setting recycler views
         mainWordRv = binding?.fragmentCategoryMainWordsRv?.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -81,10 +92,26 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = similarWordAdapter
         }
+    }
 
-        // Get parcelable
-        getParcelable()
+    @Suppress("DEPRECATION")
+    private fun getParcelable() {
+        // Get argument for currentCategory
+        currentCategory = if (Build.VERSION.SDK_INT >= 33) {
+            arguments?.getParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS, Category::class.java)
+        } else {
+            arguments?.getParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS)
+        }
 
+        // Get argument for currentCategory
+        currentCategoryList = if (Build.VERSION.SDK_INT >= 33) {
+            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS, Category::class.java)
+        } else {
+            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS)
+        }
+    }
+
+    private fun setListFromCategory() {
         // Set list depending on currentCategory
         currentCategory?.also { category ->
             viewLifecycleOwner.lifecycleScope.launch {
@@ -113,32 +140,18 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
-        mainWordAdapter = null
-        mainWordRv = null
-        similarWordAdapter = null
-        similarWordRv = null
-
-        currentCategory = null
-        currentCategoryList = null
+    override fun onItemHideBtnClickListener(item: Word) {
+        viewModel.updateHideForgotWord(item)
     }
 
-    @Suppress("DEPRECATION")
-    private fun getParcelable() {
-        // Get argument for currentCategory
-        currentCategory = if (Build.VERSION.SDK_INT >= 33) {
-            arguments?.getParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS, Category::class.java)
-        } else {
-            arguments?.getParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS)
-        }
+    override fun onItemForgotBtnClickListener(item: Word) {
+        viewModel.updateShowForgotWord(item)
+    }
 
-        // Get argument for currentCategory
-        currentCategoryList = if (Build.VERSION.SDK_INT >= 33) {
-            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS, Category::class.java)
-        } else {
-            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS)
+    override fun onItemLongClickListener(item: Word) {
+        lifecycleScope.launch {
+            EditWordActivity.startActivity(
+                activity, item.wordId, viewModel.getAllCategories().first())
         }
     }
 

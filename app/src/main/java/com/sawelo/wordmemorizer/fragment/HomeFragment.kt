@@ -72,7 +72,7 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         floatingAddWordWindowReceiver?.registerReceiver(requireContext())
 
         binding?.fragmentMainFab?.setOnClickListener {
-            FloatingAddWordWindowReceiver.openWindow(requireContext())
+            FloatingAddWordWindowReceiver.openWindow(requireContext(), viewModel.currentCategory)
         }
     }
 

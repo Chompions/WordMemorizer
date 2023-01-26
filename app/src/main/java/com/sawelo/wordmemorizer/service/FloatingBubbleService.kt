@@ -155,7 +155,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
                 val endClickDuration = System.currentTimeMillis() - startClickDuration
                 if (endClickDuration < maxClickDuration) {
                     floatingBubbleView!!.performClick()
-                    FloatingAddWordWindowReceiver.openWindow(this)
+                    FloatingAddWordWindowReceiver.openWindow(this, null)
                 }
             }
         }
