@@ -47,14 +47,6 @@
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
     </style>
 
-    <style name="Theme.WordMemorizer.Window" parent="Theme.WordMemorizer">
-        <item name="windowActionBar">true</item>
-        <item name="windowActionModeOverlay">true</item>
-        <item name="windowActionBarOverlay">true</item>
-        <item name="android:textIsSelectable">false</item>
-        <item name="actionModeBackground">@drawable/rounded_background</item>
-    </style>
-
     <style name="circleImageView">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>

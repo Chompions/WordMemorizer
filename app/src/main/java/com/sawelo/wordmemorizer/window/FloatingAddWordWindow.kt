@@ -1,6 +1,7 @@
 package com.sawelo.wordmemorizer.window
 
 import android.content.ClipData
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
@@ -12,8 +13,6 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -73,8 +72,6 @@ class FloatingAddWordWindow(
     private var floatingAddWordUtils: FloatingAddWordUtils? = null
     private var categoryList: List<Category>? = null
 
-    private var insets:  WindowInsetsCompat? = null
-
     override fun setViews(parent: ViewGroup) {
         wordEt = parent.findViewById(R.id.dialog_addWord_et)
         furiganaEt = parent.findViewById(R.id.dialog_addFurigana_et)
@@ -95,8 +92,6 @@ class FloatingAddWordWindow(
         addCategoryGroup = parent.findViewById(R.id.dialog_addCategory_group)
         addBtn = parent.findViewById(R.id.dialog_addWord_btn)
         cancelBtn = parent.findViewById(R.id.dialog_cancel_btn)
-
-        insets = ViewCompat.getRootWindowInsets(parent)
     }
 
     override fun clearViews() {
@@ -141,36 +136,35 @@ class FloatingAddWordWindow(
     }
 
     private fun TextInputLayout.checkCopyOrPaste() {
-        if (editText?.text.isNullOrBlank()) {
-            setEndIconDrawable(R.drawable.baseline_content_paste_24)
-            setEndIconOnClickListener {
-                val clipData = clipboardManager.primaryClip
-                val pastedText = clipData?.getItemAt(0)?.coerceToText(context)
-                this.editText?.setText(pastedText)
-                showToast("Text pasted")
+        when {
+            editText?.text.isNullOrBlank() && clipboardManager.primaryClipDescription
+                ?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true -> {
+                isEndIconVisible = true
+                setEndIconDrawable(R.drawable.baseline_content_paste_24)
+                setEndIconOnClickListener {
+                    val clipData = clipboardManager.primaryClip
+                    val pastedText = clipData?.getItemAt(0)?.coerceToText(context)
+                    this.editText?.setText(pastedText)
+                    showToast("Text pasted")
+                }
             }
-        } else {
-            setEndIconDrawable(R.drawable.baseline_content_copy_24)
-            setEndIconOnClickListener {
-                val clipData = ClipData.newPlainText("word", this.editText?.text)
-                clipboardManager.setPrimaryClip(clipData)
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) showToast("Text copied")
+            !editText?.text.isNullOrBlank() -> {
+                isEndIconVisible = true
+                setEndIconDrawable(R.drawable.baseline_content_copy_24)
+                setEndIconOnClickListener {
+                    val clipData = ClipData.newPlainText("word", this.editText?.text)
+                    clipboardManager.setPrimaryClip(clipData)
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) showToast("Text copied")
+                }
             }
+            else -> isEndIconVisible = false
         }
     }
 
     private fun TextInputLayout.setEndIcon() {
         editText?.setOnFocusChangeListener { _, isFocused ->
-            isEndIconVisible = if (isFocused) {
-                if (!clipboardManager.hasPrimaryClip()) {
-                    false
-                } else {
-                    checkCopyOrPaste()
-                    true
-                }
-            } else {
-                false
-            }
+            checkCopyOrPaste()
+            isEndIconVisible = isFocused
         }
 
         editText?.doOnTextChanged { _, _, _, _ ->

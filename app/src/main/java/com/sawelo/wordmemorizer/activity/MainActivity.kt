@@ -25,9 +25,6 @@ import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
@@ -40,7 +37,6 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver
     private val viewModel: MainViewModel by viewModels()
     private var asyncDiffer: AsyncListDiffer<Category>? = null
 
@@ -61,9 +57,6 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
             postNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
-        floatingAddWordWindowReceiver.registerReceiver(this)
-
         setNavigationListener()
 
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
@@ -74,11 +67,6 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 }
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        floatingAddWordWindowReceiver.unregisterReceiver(this)
     }
 
     private fun setNavigationListener() {

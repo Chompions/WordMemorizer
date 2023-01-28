@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.PixelFormat
 import android.os.IBinder
 import android.view.LayoutInflater
@@ -19,6 +20,8 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.util.NotificationUtils
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
@@ -37,11 +40,16 @@ class FloatingBubbleService : Service(), OnTouchListener {
     private val maxClickDuration = 200L
     private var startClickDuration = 0L
 
+    private lateinit var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver
+
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
+        floatingAddWordWindowReceiver.registerReceiver(this)
+
         when (intent.action) {
             NOTIFICATION_STOP_ACTION -> stopSelf()
             NOTIFICATION_START_ACTION -> createNotification()
@@ -51,6 +59,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
     }
 
     override fun onDestroy() {
+        floatingAddWordWindowReceiver.unregisterReceiver(this)
         FloatingAddWordWindowReceiver.closeWindow(this)
 
         if (floatingBubbleView != null) {
@@ -113,7 +122,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        params?.x = resources.displayMetrics.widthPixels / 2
+        params?.x = resources.displayMetrics.widthPixels / 2 - 100
 
         if (floatingBubbleView != null) {
             floatingBubbleView!!.setOnTouchListener(this)
@@ -127,6 +136,8 @@ class FloatingBubbleService : Service(), OnTouchListener {
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
+        val screenWidth = Resources.getSystem().displayMetrics.widthPixels / 2
+        val screenHeight = Resources.getSystem().displayMetrics.heightPixels / 2
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 startClickDuration = System.currentTimeMillis()
@@ -138,7 +149,9 @@ class FloatingBubbleService : Service(), OnTouchListener {
             }
             MotionEvent.ACTION_MOVE -> {
                 params?.x = (mInitialX + (event.rawX - mInitialTouchX)).toInt()
+                    .coerceIn(-screenWidth + 100, screenWidth - 100)
                 params?.y = (mInitialY + (event.rawY - mInitialTouchY)).toInt()
+                    .coerceIn(-screenHeight + 100, screenHeight - 100)
                 windowManager?.updateViewLayout(floatingBubbleView, params)
             }
             MotionEvent.ACTION_UP -> {
