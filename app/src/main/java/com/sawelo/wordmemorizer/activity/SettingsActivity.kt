@@ -23,7 +23,5 @@ class SettingsActivity : AppCompatActivity() {
         supportFragmentManager.commit {
             replace<SettingsFragment>(R.id.activitySettings_fcv, null)
         }
-
-
     }
 }

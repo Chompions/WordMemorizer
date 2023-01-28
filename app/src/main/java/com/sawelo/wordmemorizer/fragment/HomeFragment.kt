@@ -93,7 +93,6 @@ class HomeFragment : Fragment(), ListUpdateCallback {
 
     override fun onDestroy() {
         super.onDestroy()
-
         FloatingAddWordWindowReceiver.closeWindow(requireContext())
     }
 
@@ -157,9 +156,5 @@ class HomeFragment : Fragment(), ListUpdateCallback {
         if (currentCategory != null) {
             viewPager?.currentItem = currentCategory.indexOf(category)
         }
-    }
-
-    companion object {
-        const val MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT_TAG"
     }
 }

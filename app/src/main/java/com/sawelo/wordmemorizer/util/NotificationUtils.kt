@@ -11,6 +11,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
 import androidx.fragment.app.FragmentActivity
 import com.sawelo.wordmemorizer.service.FloatingBubbleService
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_STOP_ACTION
+import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
 
 object NotificationUtils {
 
@@ -65,9 +68,4 @@ object NotificationUtils {
             stopService(serviceIntent)
         }
     }
-
-    const val NOTIFICATION_START_ACTION = "NOTIFICATION_START_ACTION"
-    const val NOTIFICATION_STOP_ACTION = "NOTIFICATION_STOP_ACTION"
-
-    const val PREFERENCE_FLOATING_BUBBLE_KEY = "preference_floating_bubble_key"
 }

@@ -2,7 +2,10 @@ package com.sawelo.wordmemorizer.window
 
 import android.content.Context
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.view.isVisible
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.util.Constants.isDrawWindowFadeVisibility
@@ -17,6 +20,7 @@ import kotlinx.coroutines.launch
 
 class FloatingDrawWordWindow(
     private val context: Context,
+    private val initialText: String?,
     private val parentWindow: DialogWindow,
     private val result: ((wordText: String) -> Unit)
 ): DialogWindow(context, R.layout.window_draw_word_floating), StrokeCallback {
@@ -31,7 +35,7 @@ class FloatingDrawWordWindow(
     private var cancelBtn: Button? = null
     private var okBtn: Button? = null
 
-    private val drawnCharacterList: MutableList<String> = mutableListOf()
+    private val drawnCharacterList: MutableList<Char> = mutableListOf()
 
     override fun setViews(parent: ViewGroup) {
         scrollView = parent as DialogWindowScrollView
@@ -60,14 +64,10 @@ class FloatingDrawWordWindow(
         strokeManager = StrokeManager(this@FloatingDrawWordWindow)
         strokeManager.getDigitalInkRecognizer() { finishedDownloading ->
             if (!finishedDownloading) {
-                Toast.makeText(
-                    context, "Downloading character recognizer, please wait", Toast.LENGTH_SHORT
-                ).show()
+                showToast("Downloading character recognizer, please wait")
                 closeWindow()
             } else {
-                Toast.makeText(
-                    context, "Download complete", Toast.LENGTH_SHORT
-                ).show()
+                showToast("Download complete")
             }
         }
         drawingView?.setStrokeManager(strokeManager)
@@ -86,7 +86,7 @@ class FloatingDrawWordWindow(
                     // Add character candidates button in recommendation list
                     candidates.forEach {
                         recommendationLayout?.addButtonInLayout(context, it.text) {
-                            startTyping(it.text)
+                            startTyping(it.text.toList())
                         }
                     }
                 }
@@ -98,7 +98,6 @@ class FloatingDrawWordWindow(
             isDrawWindowFadeVisibility = !isDrawWindowFadeVisibility
             fadeVisibility()
         }
-
         drawnTextResetBtn?.setOnClickListener {
             backspaceTyping()
         }
@@ -108,6 +107,17 @@ class FloatingDrawWordWindow(
         okBtn?.setOnClickListener {
             result.invoke(drawnCharacterList.joinToString(""))
             closeWindow()
+        }
+
+        /**
+         * If initialText is provided and not null, then add text to drawnCharacterList and
+         * display it without initializing clearCanvas(). This is important because canvasBitmap
+         * has not been initialized at this point and will causes fatal exception
+         */
+        if (initialText != null) {
+            drawnCharacterList.addAll(initialText.toList())
+            drawingWordTv?.text = drawnCharacterList.joinToString("")
+            drawnTextResetBtn?.isVisible = true
         }
     }
 
@@ -125,8 +135,8 @@ class FloatingDrawWordWindow(
         }
     }
 
-    private fun startTyping(drawnText: String) {
-        drawnCharacterList.add(drawnText)
+    private fun startTyping(drawnText: List<Char>) {
+        drawnCharacterList.addAll(drawnText)
         updateDrawingWord()
     }
 
@@ -152,9 +162,7 @@ class FloatingDrawWordWindow(
     }
 
     override fun onFailure(message: String) {
-        Toast
-            .makeText(context, "Character recognition failed: $message", Toast.LENGTH_SHORT)
-            .show()
+        showToast("Character recognition failed: $message")
         closeWindow()
     }
 }

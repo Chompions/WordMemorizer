@@ -19,6 +19,8 @@ import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.databinding.FragmentWordListBinding
+import com.sawelo.wordmemorizer.util.Constants.WORD_LIST_FRAGMENT_CATEGORY_ARGS
+import com.sawelo.wordmemorizer.util.Constants.WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -177,8 +179,5 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
             }
             return dialogFragment
         }
-
-        const val WORD_LIST_FRAGMENT_CATEGORY_ARGS = "WORD_LIST_FRAGMENT_CATEGORY_ARGS"
-        const val WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS = "WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS"
     }
 }

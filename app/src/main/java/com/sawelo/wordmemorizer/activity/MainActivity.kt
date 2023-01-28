@@ -25,6 +25,10 @@ import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
+import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
+import com.sawelo.wordmemorizer.util.Constants.HOME_FRAGMENT_TAG
 import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
@@ -37,6 +41,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private lateinit var binding: ActivityMainBinding
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver
     private val viewModel: MainViewModel by viewModels()
     private var asyncDiffer: AsyncListDiffer<Category>? = null
 
@@ -46,19 +51,23 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         setContentView(binding.root)
 
         supportFragmentManager.commit {
-            replace<HomeFragment>(R.id.activityMain_fcv, HomeFragment.MAIN_FRAGMENT_TAG)
+            replace<HomeFragment>(R.id.activityMain_fcv, HOME_FRAGMENT_TAG)
         }
 
-        val postNotificationPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
+        floatingAddWordWindowReceiver.registerReceiver(this)
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        checkPermissionAndStartFloatingBubbleService(sharedPreferences) {
-            postNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-        }
-
+        setCategories()
+        setPermissionForPostNotifications()
         setNavigationListener()
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        floatingAddWordWindowReceiver.unregisterReceiver(this)
+    }
+
+    private fun setCategories() {
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -67,6 +76,16 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 }
             }
         }
+    }
+
+    private fun setPermissionForPostNotifications() {
+        val postNotificationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        checkPermissionAndStartFloatingBubbleService(sharedPreferences) {
+            postNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+
     }
 
     private fun setNavigationListener() {
@@ -159,7 +178,7 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private fun MenuItem.setClickListener(category: Category) {
         setOnMenuItemClickListener {
             val homeFragment = supportFragmentManager
-                .findFragmentByTag(HomeFragment.MAIN_FRAGMENT_TAG) as? HomeFragment
+                .findFragmentByTag(HOME_FRAGMENT_TAG) as? HomeFragment
             homeFragment?.setCurrentTab(category)
             binding.activityMainDrawerLayout.close()
             true

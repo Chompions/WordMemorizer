@@ -22,9 +22,9 @@ import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
-import com.sawelo.wordmemorizer.util.NotificationUtils
-import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_START_ACTION
-import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_STOP_ACTION
+import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
 
 class FloatingBubbleService : Service(), OnTouchListener {
 
@@ -70,7 +70,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         sharedPreferences.edit {
-            putBoolean(NotificationUtils.PREFERENCE_FLOATING_BUBBLE_KEY, false)
+            putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, false)
         }
 
         super.onDestroy()
@@ -130,11 +130,6 @@ class FloatingBubbleService : Service(), OnTouchListener {
         windowManager?.addView(floatingBubbleView, params)
     }
 
-    companion object {
-        private const val CHANNEL_ID = "FLOATING_BUBBLE_CHANNEL_ID"
-        private const val NOTIFICATION_ID = 1
-    }
-
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels / 2
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels / 2
@@ -163,5 +158,10 @@ class FloatingBubbleService : Service(), OnTouchListener {
             }
         }
         return false
+    }
+
+    companion object {
+        private const val CHANNEL_ID = "FLOATING_BUBBLE_CHANNEL_ID"
+        private const val NOTIFICATION_ID = 1
     }
 }

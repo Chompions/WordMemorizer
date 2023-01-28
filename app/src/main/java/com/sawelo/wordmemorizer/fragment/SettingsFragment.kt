@@ -7,7 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.util.NotificationUtils
+import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
 import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
 
 class SettingsFragment: PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -29,9 +29,8 @@ class SettingsFragment: PreferenceFragmentCompat(), SharedPreferences.OnSharedPr
         preferenceScreen = null
         addPreferencesFromResource(R.xml.preference_settings)
     }
-
     override fun onSharedPreferenceChanged(sharedPref: SharedPreferences, key: String) {
-        if (key == NotificationUtils.PREFERENCE_FLOATING_BUBBLE_KEY) {
+        if (key == PREFERENCE_FLOATING_BUBBLE_KEY) {
             activity?.checkPermissionAndStartFloatingBubbleService(sharedPref) {
                 postNotificationPermissionLauncher?.launch(
                     android.Manifest.permission.POST_NOTIFICATIONS)

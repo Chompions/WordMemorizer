@@ -86,4 +86,8 @@ abstract class DialogWindow(
     override fun onBackButtonListener() {
         closeWindow()
     }
+
+    fun showToast(text: String) {
+        ToastWindow(context, text)
+    }
 }

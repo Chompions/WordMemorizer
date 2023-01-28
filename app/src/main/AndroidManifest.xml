@@ -25,13 +25,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".activity.BubbleActivity"
-            android:allowEmbedded="true"
-            android:documentLaunchMode="always"
-            android:exported="false"
-
-            android:resizeableActivity="true" />
-        <activity
             android:name=".activity.SettingsActivity"
             android:exported="false" />
         <activity

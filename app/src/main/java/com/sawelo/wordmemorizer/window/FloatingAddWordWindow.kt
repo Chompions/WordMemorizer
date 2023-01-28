@@ -118,6 +118,10 @@ class FloatingAddWordWindow(
 
     override fun beforeShowWindow(coroutineScope: CoroutineScope) {
         this.coroutineScope = coroutineScope
+
+        /**
+         * All functionality that involves repository should only be managed through Utils
+         */
         floatingAddWordUtils = FloatingAddWordUtils(wordRepository)
 
         setAdapter()
@@ -174,7 +178,7 @@ class FloatingAddWordWindow(
 
     private fun setDrawWindow() {
         drawWordBtn?.setOnClickListener {
-            FloatingDrawWordWindow(context, this) {
+            FloatingDrawWordWindow(context, wordEt?.text.toString(), this) {
                 wordEt!!.setText(it)
             }.showWindow()
             hideWindow()
@@ -288,7 +292,6 @@ class FloatingAddWordWindow(
                             }
                         }
                     }
-                    searchWordBtn?.visibility = View.VISIBLE
                 }
                 progressIndicator?.isVisible = false
             } catch (_: CancellationException) {
@@ -323,10 +326,6 @@ class FloatingAddWordWindow(
             }
             closeWindow()
         }
-    }
-
-    private fun showToast(text: String) {
-        ToastWindow(context, text)
     }
 
     companion object {
