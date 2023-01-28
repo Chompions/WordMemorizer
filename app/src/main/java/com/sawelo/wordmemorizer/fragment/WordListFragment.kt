@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.map
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sawelo.wordmemorizer.activity.EditWordActivity
@@ -21,8 +22,8 @@ import com.sawelo.wordmemorizer.databinding.FragmentWordListBinding
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class WordListFragment : Fragment(), ItemWordAdapterListener {
@@ -105,7 +106,10 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
 
         // Get argument for currentCategory
         currentCategoryList = if (Build.VERSION.SDK_INT >= 33) {
-            arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS, Category::class.java)
+            arguments?.getParcelableArrayList(
+                WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS,
+                Category::class.java
+            )
         } else {
             arguments?.getParcelableArrayList(WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS)
         }
@@ -116,25 +120,27 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
         currentCategory?.also { category ->
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.getAllWordsPagingData(category)
-                        .onEach {
-                            binding?.fragmentCategoryMainWordsProgressIndicator?.show()
+                    viewModel.getAllWordsPagingData(category).distinctUntilChangedBy {
+                        it.map { word ->
+                            word.wordId
                         }
-                        .collectLatest {
-                            mainWordAdapter?.submitData(it)
-                        }
+                    }.collectLatest {
+                        binding?.fragmentCategoryMainWordsProgressIndicator?.show()
+                        mainWordAdapter?.submitData(it)
+                    }
                 }
             }
 
             viewLifecycleOwner.lifecycleScope.launch {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    viewModel.getAllForgottenWordsPagingData(category)
-                        .onEach {
-                            binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                    viewModel.getAllForgottenWordsPagingData(category).distinctUntilChangedBy {
+                        it.map { word ->
+                            word.wordId
                         }
-                        .collectLatest {
-                            similarWordAdapter?.submitData(it)
-                        }
+                    }.collectLatest {
+                        binding?.fragmentCategorySimilarWordsProgressIndicator?.show()
+                        similarWordAdapter?.submitData(it)
+                    }
                 }
             }
         }
@@ -151,7 +157,8 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
     override fun onItemLongClickListener(item: Word) {
         lifecycleScope.launch {
             EditWordActivity.startActivity(
-                activity, item.wordId, viewModel.getAllCategories().first())
+                activity, item.wordId, viewModel.getAllCategories().first()
+            )
         }
     }
 
@@ -163,7 +170,7 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
             val dialogFragment = WordListFragment()
             dialogFragment.arguments = Bundle().apply {
                 putParcelable(WORD_LIST_FRAGMENT_CATEGORY_ARGS, currentCategory)
-                putParcelableArrayList (
+                putParcelableArrayList(
                     WORD_LIST_FRAGMENT_CATEGORY_LIST_ARGS,
                     ArrayList(categoryList)
                 )

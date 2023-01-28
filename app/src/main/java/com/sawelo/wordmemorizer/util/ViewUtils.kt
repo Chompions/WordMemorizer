@@ -10,6 +10,7 @@ import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 
 object ViewUtils {
+
     fun LinearLayout.addButtonInLayout(
         context: Context,
         inputText: String,

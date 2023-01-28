@@ -2,17 +2,16 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menuOptions_sort"
+        android:id="@+id/menuHome_sort"
         android:icon="@drawable/ic_baseline_sort_24"
-        android:title="@string/reload"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/menuOptions_reload"
-        android:icon="@drawable/ic_baseline_change_circle_24"
-        android:title="@string/reload"
+        android:title="@string/sort"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/menuOptions_settings"
+        android:id="@+id/menuHome_reset"
+        android:title="@string/reset_word_count"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menuHome_settings"
         android:title="@string/settings"
         app:showAsAction="never"/>
 </menu>

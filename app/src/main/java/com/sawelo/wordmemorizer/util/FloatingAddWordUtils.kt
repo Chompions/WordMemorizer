@@ -4,15 +4,16 @@ import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.DataItem
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
-import com.sawelo.wordmemorizer.data.remote.ApiConfig
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
-class FloatingAddWordUtils(private val wordRepository: WordRepository) {
+class FloatingAddWordUtils(
+    private val wordRepository: WordRepository,
+) {
     val wordTextFlow = MutableStateFlow("")
     val furiganaTextFlow = MutableStateFlow("")
     val definitionTextFlow = MutableStateFlow("")
-    val progressIndicatorShowFlow = MutableStateFlow(false)
+
+    var latestTextInput = ""
 
     suspend fun getAllCategories() = wordRepository.getAllCategories().first()
 
@@ -20,6 +21,7 @@ class FloatingAddWordUtils(private val wordRepository: WordRepository) {
         merge(
             wordTextFlow, furiganaTextFlow, definitionTextFlow
         ).collectLatest {
+            latestTextInput = it
             send(
                 wordRepository.getAllWordsByText(
                     wordTextFlow.value, furiganaTextFlow.value, definitionTextFlow.value
@@ -28,46 +30,19 @@ class FloatingAddWordUtils(private val wordRepository: WordRepository) {
         }
     }
 
-    fun getRecommendationWordsFlow() = channelFlow {
-        var wordTextList = emptyList<DataItem>()
-        var furiganaTextList = emptyList<DataItem>()
-        var definitionTextList = emptyList<DataItem>()
-
-        suspend fun String.searchWord(method: (dataList: List<DataItem>) -> Unit) {
-            if (this.isNotBlank()) {
-                progressIndicatorShowFlow.value = true
-                val textList = ApiConfig.getApiService().searchWord(this).data
-                method.invoke(textList)
-                send((wordTextList + furiganaTextList + definitionTextList))
-            } else {
-                wordTextList = emptyList()
-                send((wordTextList + furiganaTextList + definitionTextList))
-            }
-            progressIndicatorShowFlow.value = false
+    suspend fun getTranslatedWord(): String? {
+        return if (latestTextInput.isNotBlank()) {
+            return wordRepository.translateWordFromLingvanex(latestTextInput)?.result
+        } else {
+            null
         }
+    }
 
-        launch {
-            wordTextFlow.collectLatest {
-                it.searchWord {dataList ->
-                    wordTextList = dataList
-                }
-            }
-        }
-
-        launch {
-            furiganaTextFlow.collectLatest {
-                it.searchWord {dataList ->
-                    furiganaTextList = dataList
-                }
-            }
-        }
-
-        launch {
-            definitionTextFlow.collectLatest {
-                it.searchWord {dataList ->
-                    definitionTextList = dataList
-                }
-            }
+    suspend fun getRecommendationsWords(): List<DataItem>? {
+        return if (latestTextInput.isNotBlank()) {
+            return wordRepository.searchWordFromJisho(latestTextInput)?.data
+        } else {
+            null
         }
     }
 

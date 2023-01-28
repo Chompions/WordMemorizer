@@ -9,7 +9,7 @@
     <string name="add_word">Add word</string>
     <string name="forgot">Forgot</string>
     <string name="hide">Hide</string>
-    <string name="reload">Reload</string>
+    <string name="reload">reload</string>
     <string name="different">Different</string>
     <string name="dialog_text">We found similar words. \nPlease select the same word if any</string>
     <string name="word">Word</string>
@@ -28,7 +28,7 @@
     <string name="delete_word">Delete word</string>
     <string name="update_word">Update word</string>
     <string name="editing">editing</string>
-    <string name="settings">settings</string>
+    <string name="settings">Settings</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="draw_word">Draw word</string>
@@ -36,4 +36,8 @@
     <string name="reset_drawing">Reset drawing</string>
     <string name="your_character_here">your character here</string>
     <string name="fade_visibility">Fade visibility</string>
+    <string name="search_word_in_jisho">Search word in Jisho</string>
+    <string name="sort">sort</string>
+    <string name="reset_word_count">Reset word count</string>
+    <string name="toast_display">Toast display</string>
 </resources>

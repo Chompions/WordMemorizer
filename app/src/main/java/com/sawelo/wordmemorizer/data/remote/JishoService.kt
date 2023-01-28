@@ -8,5 +8,5 @@ interface JishoService {
     @GET ("/api/v1/search/words")
     suspend fun searchWord(
         @Query("keyword") text: String
-    ): JishoResponse
+    ): JishoResponse?
 }

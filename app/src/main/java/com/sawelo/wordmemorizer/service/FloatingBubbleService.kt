@@ -19,8 +19,6 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.util.NotificationUtils
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.NotificationUtils.NOTIFICATION_STOP_ACTION
@@ -39,8 +37,6 @@ class FloatingBubbleService : Service(), OnTouchListener {
     private val maxClickDuration = 200L
     private var startClickDuration = 0L
 
-    private var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver? = null
-
     override fun onBind(intent: Intent): IBinder? {
         return null
     }
@@ -55,7 +51,6 @@ class FloatingBubbleService : Service(), OnTouchListener {
     }
 
     override fun onDestroy() {
-        floatingAddWordWindowReceiver?.unregisterReceiver(this)
         FloatingAddWordWindowReceiver.closeWindow(this)
 
         if (floatingBubbleView != null) {
@@ -85,9 +80,6 @@ class FloatingBubbleService : Service(), OnTouchListener {
             description = descriptionText
         }
         notificationManager.createNotificationChannel(channel)
-
-        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
-        floatingAddWordWindowReceiver?.registerReceiver(this)
 
         val stopServiceIntent = Intent(this, FloatingBubbleService::class.java)
         stopServiceIntent.action = NOTIFICATION_STOP_ACTION

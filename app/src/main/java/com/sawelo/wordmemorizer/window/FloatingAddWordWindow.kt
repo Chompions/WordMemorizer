@@ -1,15 +1,27 @@
 package com.sawelo.wordmemorizer.window
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Context.CLIPBOARD_SERVICE
+import android.os.Build
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.AddWordAdapter
@@ -34,14 +46,24 @@ class FloatingAddWordWindow(
 ) : DialogWindow(context, R.layout.window_add_word_floating),
     ItemWordAdapterListener {
 
-    private var wordEt: EditText? = null
+    private val clipboardManager = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+
+    private var wordEt: TextInputEditText? = null
+    private var furiganaEt: TextInputEditText? = null
+    private var definitionEt: TextInputEditText? = null
+
+    private var wordIl: TextInputLayout? = null
+    private var furiganaIl: TextInputLayout? = null
+    private var definitionIl: TextInputLayout? = null
+
     private var drawWordBtn: ImageButton? = null
-    private var furiganaEt: EditText? = null
-    private var definitionEt: EditText? = null
     private var similarWordRv: RecyclerView? = null
     private var similarWordTv: TextView? = null
+
     private var progressIndicator: LinearProgressIndicator? = null
     private var recommendationLayout: LinearLayout? = null
+    private var searchWordBtn: Button? = null
+
     private var addCategoryGroup: MaterialButtonToggleGroup? = null
     private var addBtn: Button? = null
     private var cancelBtn: Button? = null
@@ -51,29 +73,49 @@ class FloatingAddWordWindow(
     private var floatingAddWordUtils: FloatingAddWordUtils? = null
     private var categoryList: List<Category>? = null
 
+    private var insets:  WindowInsetsCompat? = null
+
     override fun setViews(parent: ViewGroup) {
         wordEt = parent.findViewById(R.id.dialog_addWord_et)
-        drawWordBtn = parent.findViewById(R.id.dialog_drawWord_btn)
         furiganaEt = parent.findViewById(R.id.dialog_addFurigana_et)
         definitionEt = parent.findViewById(R.id.dialog_addDefinition_et)
+
+        wordIl = parent.findViewById(R.id.dialog_addWord_il)
+        furiganaIl = parent.findViewById(R.id.dialog_addFurigana_il)
+        definitionIl = parent.findViewById(R.id.dialog_addDefinition_il)
+
+        drawWordBtn = parent.findViewById(R.id.dialog_drawWord_btn)
         similarWordRv = parent.findViewById(R.id.dialog_similarWord_rv)
         similarWordTv = parent.findViewById(R.id.dialog_similarWord_tv)
-        progressIndicator = parent.findViewById(R.id.dialog_addCategory_progressIndicator)
-        recommendationLayout = parent.findViewById(R.id.dialog_addCategory_recommendationLayout)
+
+        progressIndicator = parent.findViewById(R.id.dialog_progressIndicator)
+        recommendationLayout = parent.findViewById(R.id.dialog_recommendationLayout)
+        searchWordBtn = parent.findViewById(R.id.dialog_searchWord_btn)
+
         addCategoryGroup = parent.findViewById(R.id.dialog_addCategory_group)
         addBtn = parent.findViewById(R.id.dialog_addWord_btn)
         cancelBtn = parent.findViewById(R.id.dialog_cancel_btn)
+
+        insets = ViewCompat.getRootWindowInsets(parent)
     }
 
     override fun clearViews() {
         wordEt = null
-        drawWordBtn = null
         furiganaEt = null
         definitionEt = null
+
+        wordIl = null
+        furiganaIl = null
+        definitionIl = null
+
+        drawWordBtn = null
         similarWordRv = null
         similarWordTv = null
+
         progressIndicator = null
         recommendationLayout = null
+        searchWordBtn = null
+
         addCategoryGroup = null
         addBtn = null
         cancelBtn = null
@@ -82,10 +124,6 @@ class FloatingAddWordWindow(
     override fun beforeShowWindow(coroutineScope: CoroutineScope) {
         this.coroutineScope = coroutineScope
         floatingAddWordUtils = FloatingAddWordUtils(wordRepository)
-
-        wordEt?.setTextIsSelectable(true)
-        furiganaEt?.setTextIsSelectable(true)
-        definitionEt?.setTextIsSelectable(true)
 
         setAdapter()
         setDrawWindow()
@@ -102,6 +140,44 @@ class FloatingAddWordWindow(
         similarWordRv?.layoutManager = LinearLayoutManager(context)
     }
 
+    private fun TextInputLayout.checkCopyOrPaste() {
+        if (editText?.text.isNullOrBlank()) {
+            setEndIconDrawable(R.drawable.baseline_content_paste_24)
+            setEndIconOnClickListener {
+                val clipData = clipboardManager.primaryClip
+                val pastedText = clipData?.getItemAt(0)?.coerceToText(context)
+                this.editText?.setText(pastedText)
+                showToast("Text pasted")
+            }
+        } else {
+            setEndIconDrawable(R.drawable.baseline_content_copy_24)
+            setEndIconOnClickListener {
+                val clipData = ClipData.newPlainText("word", this.editText?.text)
+                clipboardManager.setPrimaryClip(clipData)
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) showToast("Text copied")
+            }
+        }
+    }
+
+    private fun TextInputLayout.setEndIcon() {
+        editText?.setOnFocusChangeListener { _, isFocused ->
+            isEndIconVisible = if (isFocused) {
+                if (!clipboardManager.hasPrimaryClip()) {
+                    false
+                } else {
+                    checkCopyOrPaste()
+                    true
+                }
+            } else {
+                false
+            }
+        }
+
+        editText?.doOnTextChanged { _, _, _, _ ->
+            checkCopyOrPaste()
+        }
+    }
+
     private fun setDrawWindow() {
         drawWordBtn?.setOnClickListener {
             FloatingDrawWordWindow(context, this) {
@@ -112,6 +188,10 @@ class FloatingAddWordWindow(
     }
 
     private fun setWordsChangeListener() {
+        wordIl?.setEndIcon()
+        furiganaIl?.setEndIcon()
+        definitionIl?.setEndIcon()
+
         wordEt?.doOnTextChanged { text, _, _, _ ->
             floatingAddWordUtils?.wordTextFlow?.value = text.toString()
         }
@@ -123,39 +203,11 @@ class FloatingAddWordWindow(
         }
 
         coroutineScope?.launch {
-            floatingAddWordUtils?.progressIndicatorShowFlow?.collectLatest {
-                progressIndicator?.isVisible = it
-            }
-        }
-
-        coroutineScope?.launch {
             floatingAddWordUtils?.getAllWordsByTextFlow()?.collectLatest {
+                recommendationLayout?.removeAllViews()
+                searchWordBtn?.visibility = View.VISIBLE
                 similarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
-            }
-        }
-
-        coroutineScope?.launch {
-            try {
-                floatingAddWordUtils?.getRecommendationWordsFlow()
-                    ?.collectLatest {
-                        recommendationLayout?.removeAllViews()
-                        it.forEach { data ->
-                            val wordText = data.japanese.first().word
-                            val furiganaText = data.japanese.first().reading
-                            val definitionText =
-                                data.senses.first().englishDefinitions.joinToString(" / ")
-                            recommendationLayout?.addButtonInLayout(context, wordText) {
-                                wordEt?.setText(wordText)
-                                furiganaEt?.setText(furiganaText)
-                                definitionEt?.setText(definitionText)
-                            }
-                        }
-                    }
-            } catch (_: CancellationException) {
-            } catch (e: Exception) {
-                showToast("Obtaining recommended words failed: ${e.message}")
-                Log.e(TAG, "Obtaining recommended words failed: ${e.message}")
             }
         }
     }
@@ -173,6 +225,11 @@ class FloatingAddWordWindow(
     }
 
     private fun setButton() {
+        searchWordBtn?.setOnClickListener {
+            searchWordBtn?.visibility = View.INVISIBLE
+            searchWordRecommendations()
+        }
+
         addBtn?.setOnClickListener {
             val wordWithCategories = WordWithCategories(
                 Word(
@@ -202,6 +259,54 @@ class FloatingAddWordWindow(
         }
     }
 
+    private fun searchWordRecommendations() {
+        progressIndicator?.isVisible = true
+        coroutineScope?.launch {
+            try {
+                recommendationLayout?.removeAllViews()
+                val recommendedWords = floatingAddWordUtils?.getRecommendationsWords()
+                if (!recommendedWords.isNullOrEmpty()) {
+                    recommendedWords.forEach { data ->
+                        val wordText = data.japanese?.first()?.word
+                        val furiganaText = data.japanese?.first()?.reading
+                        val definitionText =
+                            data.senses?.first()?.englishDefinitions?.joinToString(" / ")
+                        if (!wordText.isNullOrBlank()) {
+                            recommendationLayout?.addButtonInLayout(context, wordText) {
+                                wordEt?.setText(wordText)
+                                furiganaEt?.setText(furiganaText)
+                                definitionEt?.setText(definitionText)
+                            }
+                        }
+                    }
+                    recommendationLayout?.addButtonInLayout(context, "Translate with Lingvanex") {
+                        coroutineScope?.launch {
+                            floatingAddWordUtils?.getTranslatedWord()?.also {
+                                definitionEt?.setText(it)
+                            }
+                        }
+                    }
+                } else {
+                    recommendationLayout?.addButtonInLayout(context, "Translate with Lingvanex") {
+                        coroutineScope?.launch {
+                            floatingAddWordUtils?.getTranslatedWord()?.also {
+                                definitionEt?.setText(it)
+                            }
+                        }
+                    }
+                    searchWordBtn?.visibility = View.VISIBLE
+                }
+                progressIndicator?.isVisible = false
+            } catch (_: CancellationException) {
+            } catch (e: Exception) {
+                showToast("Obtaining recommended words failed: ${e.message}")
+                Log.e(TAG, "Obtaining recommended words failed: ${e.message}")
+            } finally {
+                progressIndicator?.isVisible = false
+            }
+        }
+    }
+
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
         floatingAddWordUtils = null
         IS_WINDOW_ACTIVE = false
@@ -219,16 +324,15 @@ class FloatingAddWordWindow(
         coroutineScope?.launch {
             if (categoryList != null) {
                 EditWordActivity.startActivity(
-                    context, item.wordId, categoryList!!)
+                    context, item.wordId, categoryList!!
+                )
             }
             closeWindow()
         }
     }
 
     private fun showToast(text: String) {
-        Toast
-            .makeText(context, text, Toast.LENGTH_SHORT)
-            .show()
+        ToastWindow(context, text)
     }
 
     companion object {

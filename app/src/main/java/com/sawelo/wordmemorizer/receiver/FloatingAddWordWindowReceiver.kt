@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import androidx.appcompat.view.ContextThemeWrapper
 import com.sawelo.wordmemorizer.MainApplication.Companion.PACKAGE_NAME
-import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.window.FloatingAddWordWindow
@@ -21,8 +19,6 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
     private var windowInstance: FloatingAddWordWindow? = null
 
     override fun onReceive(context: Context, intent: Intent) {
-        val contextThemeWrapper = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
-
         when (intent.action) {
             CLOSE_ACTION -> closeInstance()
             OPEN_ACTION -> {
@@ -32,7 +28,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
                 } else {
                     intent.getParcelableExtra(CURRENT_CATEGORY_EXTRA)
                 }
-                showInstance(contextThemeWrapper, extra)
+                showInstance(context, extra)
             }
         }
     }

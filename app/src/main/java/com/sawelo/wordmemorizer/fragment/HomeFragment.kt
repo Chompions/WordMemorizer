@@ -19,21 +19,18 @@ import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.FragmentHomeBinding
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
 
-class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
+class HomeFragment : Fragment(), ListUpdateCallback {
     private val viewModel: MainViewModel by activityViewModels()
     private var binding: FragmentHomeBinding? = null
     private var asyncDiffer: AsyncListDiffer<Category>? = null
     private var viewPagerAdapter: CategoryAdapter? = null
     private var tabLayout: TabLayout? = null
     private var viewPager: ViewPager2? = null
-
-    private var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,7 +50,11 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getAllCategories().collectLatest { categories ->
+                viewModel.getAllCategories().distinctUntilChangedBy {
+                    it.map { category ->
+                        category.categoryId
+                    }
+                }.collectLatest { categories ->
                     asyncDiffer?.submitList(categories)
                     viewPager?.offscreenPageLimit =
                         if (categories.size > 1) categories.size - 1 else 1
@@ -61,15 +62,20 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
             }
         }
 
-        tabLayout?.addOnTabSelectedListener(this)
+        tabLayout?.addOnTabSelectedListener(object : OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager?.currentItem = tab.position
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                viewPager?.currentItem = tab.position
+            }
+        })
         viewPager?.registerOnPageChangeCallback(object : OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 tabLayout?.selectTab(tabLayout?.getTabAt(position))
             }
         })
-
-        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
-        floatingAddWordWindowReceiver?.registerReceiver(requireContext())
 
         binding?.fragmentMainFab?.setOnClickListener {
             FloatingAddWordWindowReceiver.openWindow(requireContext(), viewModel.currentCategory)
@@ -83,8 +89,11 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         viewPagerAdapter = null
         tabLayout = null
         viewPager = null
+    }
 
-        floatingAddWordWindowReceiver?.unregisterReceiver(requireContext())
+    override fun onDestroy() {
+        super.onDestroy()
+
         FloatingAddWordWindowReceiver.closeWindow(requireContext())
     }
 
@@ -95,8 +104,10 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
                 tabLayout?.createTab(category, perPosition)
             }
         }
-        viewPagerAdapter?.setCategoryList(currentList)
-        viewPagerAdapter?.notifyItemRangeInserted(position, count)
+        if (currentList != null) {
+            viewPagerAdapter?.setCategoryList(currentList)
+            viewPagerAdapter?.notifyItemRangeInserted(position, count)
+        }
     }
 
     override fun onRemoved(position: Int, count: Int) {
@@ -104,30 +115,34 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
         (position until position + count).forEach { perPosition ->
             tabLayout?.removeTabAt(perPosition)
         }
-        viewPagerAdapter?.setCategoryList(currentList)
-        viewPagerAdapter?.notifyItemRangeRemoved(position, count)
-        viewPagerAdapter?.notifyItemChanged(position)
+        if (currentList != null) {
+            viewPagerAdapter?.setCategoryList(currentList)
+            viewPagerAdapter?.notifyItemRangeRemoved(position, count)
+            viewPagerAdapter?.notifyItemRangeChanged(position, count)
+        }
     }
-
     override fun onMoved(fromPosition: Int, toPosition: Int) {
         val currentList = asyncDiffer?.currentList
         tabLayout?.removeTabAt(fromPosition)
         currentList?.get(toPosition)?.let { category ->
             tabLayout?.createTab(category, toPosition)
         }
-        viewPagerAdapter?.setCategoryList(currentList)
-        viewPagerAdapter?.notifyItemMoved(fromPosition, toPosition)
+        if (currentList != null) {
+            viewPagerAdapter?.setCategoryList(currentList)
+            viewPagerAdapter?.notifyItemMoved(fromPosition, toPosition)
+        }
     }
     override fun onChanged(position: Int, count: Int, payload: Any?) {
         val currentList = asyncDiffer?.currentList
         (position until position + count).forEach { perPosition ->
-            tabLayout?.removeTabAt(perPosition)
-            currentList?.get(perPosition)?.let { category ->
-                tabLayout?.createTab(category, perPosition)
-            }
+            val perPositionTab = tabLayout?.getTabAt(perPosition)
+            val perPositionCategory = currentList?.get(perPosition)
+            perPositionTab?.text = perPositionCategory?.categoryName
         }
-        viewPagerAdapter?.setCategoryList(currentList)
-        viewPagerAdapter?.notifyItemRangeChanged(position, count)
+        if (currentList != null) {
+            viewPagerAdapter?.setCategoryList(currentList)
+            viewPagerAdapter?.notifyItemRangeChanged(position, count)
+        }
     }
 
     private fun TabLayout.createTab(category: Category, position: Int) {
@@ -136,13 +151,6 @@ class HomeFragment : Fragment(), ListUpdateCallback, OnTabSelectedListener {
             tabLayout?.addTab(it, position)
         }
     }
-
-    override fun onTabSelected(tab: TabLayout.Tab) {
-        viewPager?.currentItem = tab.position
-    }
-
-    override fun onTabUnselected(tab: TabLayout.Tab?) {}
-    override fun onTabReselected(tab: TabLayout.Tab?) {}
 
     fun setCurrentTab(category: Category) {
         val currentCategory = asyncDiffer?.currentList

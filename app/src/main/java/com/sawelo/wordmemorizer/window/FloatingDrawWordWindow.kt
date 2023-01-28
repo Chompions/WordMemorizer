@@ -116,7 +116,6 @@ class FloatingDrawWordWindow(
     }
 
     private fun fadeVisibility() {
-        println("SFIURF $isDrawWindowFadeVisibility")
         if (isDrawWindowFadeVisibility) {
             fadeVisibilityBtn?.setImageResource(R.drawable.baseline_visibility_24)
             scrollView?.alpha = .6F

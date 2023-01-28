@@ -151,6 +151,7 @@ class EditWordActivity : AppCompatActivity() {
     companion object {
         fun startActivity(context: Context?, wordId: Int, categoryList: List<Category>) {
             val intent = Intent(context, EditWordActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.putExtra(EDIT_WORD_ACTIVITY_ID_EXTRA, wordId)
             intent.putExtra(EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA, ArrayList(categoryList))
             context?.startActivity(intent)
