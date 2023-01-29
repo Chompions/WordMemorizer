@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -29,6 +30,7 @@ import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.util.Constants
 import com.sawelo.wordmemorizer.util.Constants.isAddWordWindowActive
 import com.sawelo.wordmemorizer.util.FloatingAddWordUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
@@ -46,6 +48,8 @@ class FloatingAddWordWindow(
     ItemWordAdapterListener {
 
     private val clipboardManager = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+    private val sharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(context)
 
     private var wordEt: TextInputEditText? = null
     private var furiganaEt: TextInputEditText? = null
@@ -61,7 +65,8 @@ class FloatingAddWordWindow(
 
     private var progressIndicator: LinearProgressIndicator? = null
     private var recommendationLayout: LinearLayout? = null
-    private var searchWordBtn: Button? = null
+    private var searchWordJishoBtn: Button? = null
+    private var searchWordTranslateBtn: Button? = null
 
     private var addCategoryGroup: MaterialButtonToggleGroup? = null
     private var addBtn: Button? = null
@@ -82,17 +87,28 @@ class FloatingAddWordWindow(
         furiganaIl = parent.findViewById(R.id.dialog_addFurigana_il)
         definitionIl = parent.findViewById(R.id.dialog_addDefinition_il)
 
-        drawWordBtn = parent.findViewById(R.id.dialog_drawWord_btn)
         similarWordRv = parent.findViewById(R.id.dialog_similarWord_rv)
         similarWordTv = parent.findViewById(R.id.dialog_similarWord_tv)
 
         progressIndicator = parent.findViewById(R.id.dialog_progressIndicator)
         recommendationLayout = parent.findViewById(R.id.dialog_recommendationLayout)
-        searchWordBtn = parent.findViewById(R.id.dialog_searchWord_btn)
+        searchWordJishoBtn = parent.findViewById(R.id.dialog_searchWordJisho_btn)
 
         addCategoryGroup = parent.findViewById(R.id.dialog_addCategory_group)
         addBtn = parent.findViewById(R.id.dialog_addWord_btn)
         cancelBtn = parent.findViewById(R.id.dialog_cancel_btn)
+
+        val currentDrawPreference =
+            sharedPreferences?.getBoolean(Constants.PREFERENCE_DRAW_CHARACTER_KEY, false)
+        if (currentDrawPreference == true) {
+            drawWordBtn = parent.findViewById(R.id.dialog_drawWord_btn)
+        }
+
+        val currentTranslatePreference =
+            sharedPreferences?.getBoolean(Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY, false)
+        if (currentTranslatePreference == true) {
+            searchWordTranslateBtn = parent.findViewById(R.id.dialog_searchWordTranslate_btn)
+        }
     }
 
     override fun clearViews() {
@@ -110,7 +126,8 @@ class FloatingAddWordWindow(
 
         progressIndicator = null
         recommendationLayout = null
-        searchWordBtn = null
+        searchWordJishoBtn = null
+        searchWordTranslateBtn = null
 
         addCategoryGroup = null
         addBtn = null
@@ -129,7 +146,8 @@ class FloatingAddWordWindow(
         setDrawWindow()
         setWordsChangeListener()
         setCategoryList()
-        setButton()
+        setSearchButton()
+        setActionButton()
 
         isAddWordWindowActive = true
     }
@@ -141,8 +159,11 @@ class FloatingAddWordWindow(
     }
 
     private fun setDrawWindow() {
+        drawWordBtn?.isVisible = true
         drawWordBtn?.setOnClickListener {
-            FloatingDrawWordWindow(context, wordEt?.text.toString(), this) {
+            FloatingDrawWordWindow(
+                context, wordEt?.text.toString(), this
+            ) {
                 wordEt!!.setText(it)
             }.showWindow()
             hideWindow()
@@ -179,7 +200,8 @@ class FloatingAddWordWindow(
         editText?.setOnFocusChangeListener { _, isFocused ->
             resetWordRecommendation()
             floatingAddWordUtils?.focusedTextInput = inputType
-            searchWordBtn?.isEnabled = !editText?.text.isNullOrBlank()
+            searchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
+            searchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
 
             checkCopyOrPaste()
             isEndIconVisible = isFocused
@@ -188,13 +210,12 @@ class FloatingAddWordWindow(
         editText?.doOnTextChanged { text, _, _, _ ->
             resetWordRecommendation()
             floatingAddWordUtils?.setWordFlow(inputType, text.toString())
-            searchWordBtn?.isEnabled = !editText?.text.isNullOrBlank()
+            searchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
+            searchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
 
             checkCopyOrPaste()
         }
     }
-
-    override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}
 
     private fun setWordsChangeListener() {
         wordEt?.requestFocus()
@@ -223,12 +244,65 @@ class FloatingAddWordWindow(
         }
     }
 
-    private fun setButton() {
-        searchWordBtn?.setOnClickListener {
-            searchWordBtn?.visibility = View.INVISIBLE
+    private fun setSearchButton() {
+        searchWordJishoBtn?.setOnClickListener {
             searchWordRecommendations()
         }
 
+        searchWordTranslateBtn?.isVisible = true
+        searchWordTranslateBtn?.setOnClickListener {
+            searchWordTranslate()
+        }
+    }
+
+    private fun searchWordTranslate() {
+        progressIndicator?.isVisible = true
+        floatingAddWordUtils?.getTranslatedWord { baseWord ->
+            progressIndicator?.isVisible = false
+            wordEt?.setText(baseWord?.wordText)
+            furiganaEt?.setText(baseWord?.furiganaText)
+            definitionEt?.setText(baseWord?.definitionText)
+        }
+    }
+
+    private fun searchWordRecommendations() {
+        searchWordJishoBtn?.visibility = View.INVISIBLE
+        searchWordTranslateBtn?.visibility = View.INVISIBLE
+
+        progressIndicator?.isVisible = true
+        searchJob = coroutineScope?.launch {
+            try {
+                recommendationLayout?.removeAllViews()
+                floatingAddWordUtils?.getRecommendationsWords() { result ->
+                    result?.forEach { baseWord ->
+                        recommendationLayout?.addButtonInLayout(context, baseWord.wordText) {
+                            wordEt?.setText(baseWord.wordText)
+                            furiganaEt?.setText(baseWord.furiganaText)
+                            definitionEt?.setText(baseWord.definitionText)
+                        }
+                    }
+                }
+            } catch (_: CancellationException) {
+            } catch (e: Exception) {
+                showToast("Obtaining recommended words failed: ${e.message}")
+                Log.e(TAG, "Obtaining recommended words failed: ${e.message}")
+                resetWordRecommendation()
+            }
+        }
+        searchJob?.invokeOnCompletion {
+            progressIndicator?.isVisible = false
+            searchJob = null
+        }
+    }
+
+    private fun resetWordRecommendation() {
+        searchJob?.cancel()
+        recommendationLayout?.removeAllViews()
+        searchWordJishoBtn?.visibility = View.VISIBLE
+        searchWordTranslateBtn?.visibility = View.VISIBLE
+    }
+
+    private fun setActionButton() {
         addBtn?.setOnClickListener {
             val wordWithCategories = WordWithCategories(
                 Word(
@@ -258,65 +332,10 @@ class FloatingAddWordWindow(
         }
     }
 
-    private fun searchWordRecommendations() {
-        progressIndicator?.isVisible = true
-        searchJob = coroutineScope?.launch {
-            try {
-                recommendationLayout?.removeAllViews()
-                val recommendedWords = floatingAddWordUtils?.getRecommendationsWords()
-                if (!recommendedWords.isNullOrEmpty()) {
-                    recommendedWords.forEach { data ->
-                        val wordText = data.japanese?.first()?.word
-                        val furiganaText = data.japanese?.first()?.reading
-                        val definitionText =
-                            data.senses?.first()?.englishDefinitions?.joinToString(" / ")
-                        if (!wordText.isNullOrBlank()) {
-                            recommendationLayout?.addButtonInLayout(context, wordText) {
-                                wordEt?.setText(wordText)
-                                furiganaEt?.setText(furiganaText)
-                                definitionEt?.setText(definitionText)
-                            }
-                        }
-                    }
-                    addTranslateButton()
-                } else {
-                    addTranslateButton()
-                }
-                progressIndicator?.isVisible = false
-            } catch (_: CancellationException) {
-            } catch (e: Exception) {
-                showToast("Obtaining recommended words failed: ${e.message}")
-                Log.e(TAG, "Obtaining recommended words failed: ${e.message}")
-                resetWordRecommendation()
-            }
-        }
-        searchJob?.invokeOnCompletion {
-            progressIndicator?.isVisible = false
-            searchJob = null
-        }
-    }
-
-    private fun addTranslateButton() {
-        recommendationLayout?.addButtonInLayout(
-            context, "Translate with Lingvanex",
-            com.google.android.material.R.attr.materialButtonOutlinedStyle
-        ) {
-            progressIndicator?.isVisible = true
-            coroutineScope?.launch {
-                val result = floatingAddWordUtils?.getTranslatedWord()
-                definitionEt?.setText(result)
-                progressIndicator?.isVisible = false
-            }
-        }
-    }
-
-    private fun resetWordRecommendation() {
-        searchJob?.cancel()
-        recommendationLayout?.removeAllViews()
-        searchWordBtn?.visibility = View.VISIBLE
-    }
+    override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}
 
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
+        floatingAddWordUtils?.destroyUtils()
         floatingAddWordUtils = null
         isAddWordWindowActive = false
     }

@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -16,7 +15,6 @@ import androidx.fragment.app.replace
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.sawelo.wordmemorizer.R
@@ -29,7 +27,7 @@ import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.util.Constants.HOME_FRAGMENT_TAG
-import com.sawelo.wordmemorizer.util.NotificationUtils.checkPermissionAndStartFloatingBubbleService
+import com.sawelo.wordmemorizer.util.SettingsUtils
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,8 +55,9 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
         floatingAddWordWindowReceiver.registerReceiver(this)
 
+        SettingsUtils(this).checkAll()
+
         setCategories()
-        setPermissionForPostNotifications()
         setNavigationListener()
     }
 
@@ -76,16 +75,6 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
                 }
             }
         }
-    }
-
-    private fun setPermissionForPostNotifications() {
-        val postNotificationPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        checkPermissionAndStartFloatingBubbleService(sharedPreferences) {
-            postNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-        }
-
     }
 
     private fun setNavigationListener() {

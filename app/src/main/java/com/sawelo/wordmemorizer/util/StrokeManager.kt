@@ -1,8 +1,6 @@
 package com.sawelo.wordmemorizer.util
 
 import android.view.MotionEvent
-import com.google.mlkit.common.model.DownloadConditions
-import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.vision.digitalink.*
 import com.sawelo.wordmemorizer.util.callback.StrokeCallback
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,10 +10,6 @@ class StrokeManager(private val callback: StrokeCallback) {
     private var inkBuilder = Ink.builder()
 
     private var recognizer: DigitalInkRecognizer? = null
-    private var modelIdentifier:  DigitalInkRecognitionModelIdentifier? = null
-    private var model: DigitalInkRecognitionModel? = null
-
-    private val remoteModelManager = RemoteModelManager.getInstance()
 
     val wordCandidates = MutableStateFlow(emptyList<RecognitionCandidate>())
 
@@ -50,25 +44,17 @@ class StrokeManager(private val callback: StrokeCallback) {
         wordCandidates.value = emptyList()
     }
 
-    fun getDigitalInkRecognizer(isModelDownloading: (finished: Boolean) -> Unit) {
-        modelIdentifier = DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja-JP")
-        model = DigitalInkRecognitionModel.builder(modelIdentifier!!).build()
-        remoteModelManager.isModelDownloaded(model!!).addOnSuccessListener {isDownloaded ->
-            if (!isDownloaded) {
-                isModelDownloading.invoke(false)
-                remoteModelManager.download(model!!, DownloadConditions.Builder().build())
-                    .addOnSuccessListener {
-                        isModelDownloading.invoke(true)
-                        recognizer = DigitalInkRecognition.getClient(
-                            DigitalInkRecognizerOptions.builder(model!!).build()
-                        )
-                    }
-            } else {
-                recognizer = DigitalInkRecognition.getClient(
-                    DigitalInkRecognizerOptions.builder(model!!).build()
-                )
-            }
-        }
+    fun getDigitalInkRecognizer() {
+        val modelIdentifier = DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja-JP")
+        val model = DigitalInkRecognitionModel.builder(modelIdentifier!!).build()
+        recognizer = DigitalInkRecognition.getClient(
+            DigitalInkRecognizerOptions.builder(model).build()
+        )
+    }
+
+    fun closeDigitalInkRecognizer() {
+        recognizer?.close()
+        recognizer = null
     }
 
 }

@@ -63,14 +63,7 @@ class FloatingDrawWordWindow(
     override fun beforeShowWindow(coroutineScope: CoroutineScope) {
         // Instancing strokeManager
         strokeManager = StrokeManager(this@FloatingDrawWordWindow)
-        strokeManager.getDigitalInkRecognizer() { finishedDownloading ->
-            if (!finishedDownloading) {
-                showToast("Downloading character recognizer, please wait")
-                closeWindow()
-            } else {
-                showToast("Download complete")
-            }
-        }
+        strokeManager.getDigitalInkRecognizer()
         drawingView?.setStrokeManager(strokeManager)
 
         // Collect changes in wordCandidates flow
@@ -124,6 +117,7 @@ class FloatingDrawWordWindow(
 
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
         parentWindow.revealWindow()
+        strokeManager.closeDigitalInkRecognizer()
     }
 
     override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}

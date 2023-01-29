@@ -47,7 +47,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginHorizontal="8dp"
             app:endIconMode="custom"
             android:hint="@string/word"
             app:layout_constraintTop_toBottomOf="@id/dialog_addWord_fl"
@@ -68,6 +68,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:src="@drawable/baseline_draw_24"
+            android:visibility="gone"
             style="@style/Widget.Material3.Button.IconButton"
             app:layout_constraintTop_toTopOf="@id/dialog_addWord_il"
             app:layout_constraintEnd_toEndOf="parent"
@@ -117,22 +118,39 @@
             />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/dialog_searchWord_btn"
+            android:id="@+id/dialog_searchWordJisho_btn"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:layout_marginHorizontal="8dp"
             android:enabled="false"
-            android:text="@string/search_word_in_jisho"
+            android:text="Jisho search"
             app:layout_constraintTop_toBottomOf="@id/dialog_addDefinition_il"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/dialog_searchWordTranslate_btn"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dialog_searchWordTranslate_btn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginHorizontal="8dp"
+            android:enabled="false"
+            android:visibility="gone"
+            android:text="Translate"
+            app:layout_constraintTop_toBottomOf="@id/dialog_addDefinition_il"
+            app:layout_constraintStart_toEndOf="@id/dialog_searchWordJisho_btn"
+            app:layout_constraintEnd_toEndOf="parent"
             />
 
         <HorizontalScrollView
             android:id="@+id/dialog_recommendationScrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="@id/dialog_searchWord_btn">
+            app:layout_constraintTop_toTopOf="@id/dialog_searchWordJisho_btn">
 
             <LinearLayout
                 android:id="@+id/dialog_recommendationLayout"
@@ -147,7 +165,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            app:layout_constraintTop_toBottomOf="@id/dialog_searchWord_btn">
+            app:layout_constraintTop_toBottomOf="@id/dialog_searchWordJisho_btn">
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/dialog_addCategory_group"

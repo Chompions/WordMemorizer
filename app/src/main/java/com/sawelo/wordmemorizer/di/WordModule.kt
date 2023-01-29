@@ -4,7 +4,6 @@ import android.content.Context
 import com.sawelo.wordmemorizer.data.AppDatabase
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.remote.JishoService
-import com.sawelo.wordmemorizer.data.remote.LingvanexService
 import com.sawelo.wordmemorizer.dataStore
 import dagger.Module
 import dagger.Provides
@@ -24,8 +23,7 @@ object WordModule {
         val appDatabase = AppDatabase.getInstance(context)
         val dataStore = context.dataStore
         val jishoService = provideJishoService()
-        val lingvanexService = provideLingvanexService()
-        return WordRepository(appDatabase, dataStore, jishoService, lingvanexService)
+        return WordRepository(appDatabase, dataStore, jishoService)
     }
 
     @Provides
@@ -35,14 +33,6 @@ object WordModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(JishoService::class.java)
-    }
-    @Provides
-    fun provideLingvanexService(): LingvanexService {
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://lingvanex-translate.p.rapidapi.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        return retrofit.create(LingvanexService::class.java)
     }
 
 }

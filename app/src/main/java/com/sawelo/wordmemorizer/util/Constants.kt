@@ -6,6 +6,8 @@ object Constants {
      */
     var PACKAGE_NAME = ""
     var PREFERENCE_FLOATING_BUBBLE_KEY = ""
+    var PREFERENCE_OFFLINE_TRANSLATION_KEY = ""
+    var PREFERENCE_DRAW_CHARACTER_KEY = ""
 
     const val HOME_FRAGMENT_TAG = "HOME_FRAGMENT_TAG"
 

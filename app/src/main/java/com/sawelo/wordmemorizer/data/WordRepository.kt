@@ -6,9 +6,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.sqlite.db.SimpleSQLiteQuery
-import com.sawelo.wordmemorizer.data.data_class.*
+import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.JishoResponse
+import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.data.remote.JishoService
-import com.sawelo.wordmemorizer.data.remote.LingvanexService
 import com.sawelo.wordmemorizer.util.PreferencesUtils
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.util.sorting_utils.SortingAnchor
@@ -21,15 +23,10 @@ class WordRepository(
     private val database: AppDatabase,
     private val dataStore: DataStore<Preferences>,
     private val jishoService: JishoService,
-    private val lingvanexService: LingvanexService
 ) {
 
     suspend fun searchWordFromJisho(word: String): JishoResponse? {
         return jishoService.searchWord(word)
-    }
-
-    suspend fun translateWordFromLingvanex(word: String): LingvanexResponse? {
-        return lingvanexService.translateWord(LingvanexBody(word))
     }
 
     fun getAllWordsPagingData(
