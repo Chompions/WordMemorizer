@@ -40,4 +40,5 @@
     <string name="sort">sort</string>
     <string name="reset_word_count">Reset word count</string>
     <string name="toast_display">Toast display</string>
+    <string name="preference_floating_bubble_key">preference_floating_bubble_key</string>
 </resources>

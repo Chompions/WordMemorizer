@@ -9,11 +9,27 @@ import kotlinx.coroutines.flow.*
 class FloatingAddWordUtils(
     private val wordRepository: WordRepository,
 ) {
-    val wordTextFlow = MutableStateFlow("")
-    val furiganaTextFlow = MutableStateFlow("")
-    val definitionTextFlow = MutableStateFlow("")
+    private val wordTextFlow = MutableStateFlow("")
+    private val furiganaTextFlow = MutableStateFlow("")
+    private val definitionTextFlow = MutableStateFlow("")
 
-    var latestTextInput = ""
+    var focusedTextInput = InputType.WORD_INPUT
+
+    fun setWordFlow(inputType: InputType, text: String) {
+        when (inputType) {
+            InputType.WORD_INPUT -> wordTextFlow.value = text
+            InputType.FURIGANA_INPUT -> furiganaTextFlow.value = text
+            InputType.DEFINITION_INPUT -> definitionTextFlow.value = text
+        }
+    }
+
+    fun getFocusedWordText(): String {
+        return when (focusedTextInput) {
+            InputType.WORD_INPUT -> wordTextFlow.value
+            InputType.FURIGANA_INPUT -> furiganaTextFlow.value
+            InputType.DEFINITION_INPUT -> definitionTextFlow.value
+        }
+    }
 
     suspend fun getAllCategories() = wordRepository.getAllCategories().first()
 
@@ -21,7 +37,6 @@ class FloatingAddWordUtils(
         merge(
             wordTextFlow, furiganaTextFlow, definitionTextFlow
         ).collectLatest {
-            latestTextInput = it
             send(
                 wordRepository.getAllWordsByText(
                     wordTextFlow.value, furiganaTextFlow.value, definitionTextFlow.value
@@ -31,16 +46,18 @@ class FloatingAddWordUtils(
     }
 
     suspend fun getTranslatedWord(): String? {
-        return if (latestTextInput.isNotBlank()) {
-            return wordRepository.translateWordFromLingvanex(latestTextInput)?.result
+        val focusedText = getFocusedWordText()
+        return if (focusedText.isNotBlank()) {
+            return wordRepository.translateWordFromLingvanex(focusedText)?.result
         } else {
             null
         }
     }
 
     suspend fun getRecommendationsWords(): List<DataItem>? {
-        return if (latestTextInput.isNotBlank()) {
-            return wordRepository.searchWordFromJisho(latestTextInput)?.data
+        val focusedText = getFocusedWordText()
+        return if (focusedText.isNotBlank()) {
+            return wordRepository.searchWordFromJisho(focusedText)?.data
         } else {
             null
         }
@@ -56,5 +73,11 @@ class FloatingAddWordUtils(
 
     suspend fun updateShowForgotWord(word: Word) {
         wordRepository.updateShowForgotWord(word)
+    }
+
+    enum class InputType {
+        WORD_INPUT,
+        FURIGANA_INPUT,
+        DEFINITION_INPUT,
     }
 }

@@ -11,6 +11,7 @@ import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_CLOSE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_ACTION
+import com.sawelo.wordmemorizer.util.Constants.isAddWordWindowActive
 import com.sawelo.wordmemorizer.window.FloatingAddWordWindow
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -43,7 +44,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
      * showWindow() and closeWindow()
      */
     private fun showInstance(context: Context, currentCategory: Category?) {
-        if (!FloatingAddWordWindow.getIsWindowActive()) {
+        if (!isAddWordWindowActive) {
             windowInstance = FloatingAddWordWindow(context, wordRepository, currentCategory)
             windowInstance?.showWindow()
         } else {

@@ -14,11 +14,12 @@ object ViewUtils {
     fun LinearLayout.addButtonInLayout(
         context: Context,
         inputText: String,
+        defStyleAttr: Int = R.attr.materialIconButtonFilledTonalStyle,
         onClick: () -> Unit
     ) {
         val recommendationButton = MaterialButton(
             context, null,
-            R.attr.materialIconButtonFilledTonalStyle
+            defStyleAttr
         ).apply {
             val params = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,

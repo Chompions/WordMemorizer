@@ -2,6 +2,7 @@ package com.sawelo.wordmemorizer.window
 
 import android.content.Context
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -124,6 +125,8 @@ class FloatingDrawWordWindow(
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
         parentWindow.revealWindow()
     }
+
+    override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}
 
     private fun fadeVisibility() {
         if (isDrawWindowFadeVisibility) {

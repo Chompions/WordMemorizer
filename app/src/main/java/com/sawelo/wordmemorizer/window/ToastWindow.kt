@@ -24,7 +24,7 @@ class ToastWindow(
     init {
         coroutineScope.launch {
             showWindow()
-            delay(2000L)
+            delay(4000L)
             closeWindow()
         }
     }

@@ -25,6 +25,7 @@ abstract class DialogWindow(
 
     abstract fun beforeShowWindow(coroutineScope: CoroutineScope)
     abstract fun beforeCloseWindow(coroutineScope: CoroutineScope)
+    abstract fun setAdditionalParams(params: WindowManager.LayoutParams?)
 
     fun setWidth(widthPixels: Int) {
         params?.width = widthPixels
@@ -53,6 +54,7 @@ abstract class DialogWindow(
     override fun showWindow() {
         view = layoutInflater.inflate(layout, null) as DialogWindowScrollView
         setParams()
+        setAdditionalParams(params)
         setViews(view!!)
         beforeShowWindow(coroutineScope)
         windowManager.addView(view, params)

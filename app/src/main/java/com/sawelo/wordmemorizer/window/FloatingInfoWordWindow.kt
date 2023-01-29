@@ -2,6 +2,7 @@ package com.sawelo.wordmemorizer.window
 
 import android.content.Context
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import com.sawelo.wordmemorizer.R
@@ -43,5 +44,5 @@ class FloatingInfoWordWindow(
     }
 
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {}
-
+    override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}
 }

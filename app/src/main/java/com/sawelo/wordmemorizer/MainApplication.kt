@@ -5,6 +5,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.sawelo.wordmemorizer.util.Constants.PACKAGE_NAME
+import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
 import dagger.hilt.android.HiltAndroidApp
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -14,9 +16,6 @@ class MainApplication: Application() {
     override fun onCreate() {
         super.onCreate()
         PACKAGE_NAME = applicationContext.packageName
-    }
-
-    companion object {
-        lateinit var PACKAGE_NAME: String
+        PREFERENCE_FLOATING_BUBBLE_KEY = getString(R.string.preference_floating_bubble_key)
     }
 }

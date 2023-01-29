@@ -9,6 +9,7 @@ import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -28,15 +29,14 @@ import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.util.Constants.isAddWordWindowActive
 import com.sawelo.wordmemorizer.util.FloatingAddWordUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
 import com.sawelo.wordmemorizer.util.ViewUtils.addCategoryList
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+
 
 class FloatingAddWordWindow(
     private val context: Context,
@@ -68,6 +68,7 @@ class FloatingAddWordWindow(
     private var cancelBtn: Button? = null
 
     private var coroutineScope: CoroutineScope? = null
+    private var searchJob: Job? = null
     private var adapter: AddWordAdapter? = null
     private var floatingAddWordUtils: FloatingAddWordUtils? = null
     private var categoryList: List<Category>? = null
@@ -130,13 +131,22 @@ class FloatingAddWordWindow(
         setCategoryList()
         setButton()
 
-        IS_WINDOW_ACTIVE = true
+        isAddWordWindowActive = true
     }
 
     private fun setAdapter() {
         adapter = AddWordAdapter(this)
         similarWordRv?.adapter = adapter
         similarWordRv?.layoutManager = LinearLayoutManager(context)
+    }
+
+    private fun setDrawWindow() {
+        drawWordBtn?.setOnClickListener {
+            FloatingDrawWordWindow(context, wordEt?.text.toString(), this) {
+                wordEt!!.setText(it)
+            }.showWindow()
+            hideWindow()
+        }
     }
 
     private fun TextInputLayout.checkCopyOrPaste() {
@@ -165,45 +175,36 @@ class FloatingAddWordWindow(
         }
     }
 
-    private fun TextInputLayout.setEndIcon() {
+    private fun TextInputLayout.setListener(inputType: FloatingAddWordUtils.InputType) {
         editText?.setOnFocusChangeListener { _, isFocused ->
+            resetWordRecommendation()
+            floatingAddWordUtils?.focusedTextInput = inputType
+            searchWordBtn?.isEnabled = !editText?.text.isNullOrBlank()
+
             checkCopyOrPaste()
             isEndIconVisible = isFocused
         }
 
-        editText?.doOnTextChanged { _, _, _, _ ->
+        editText?.doOnTextChanged { text, _, _, _ ->
+            resetWordRecommendation()
+            floatingAddWordUtils?.setWordFlow(inputType, text.toString())
+            searchWordBtn?.isEnabled = !editText?.text.isNullOrBlank()
+
             checkCopyOrPaste()
         }
     }
 
-    private fun setDrawWindow() {
-        drawWordBtn?.setOnClickListener {
-            FloatingDrawWordWindow(context, wordEt?.text.toString(), this) {
-                wordEt!!.setText(it)
-            }.showWindow()
-            hideWindow()
-        }
-    }
+    override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}
 
     private fun setWordsChangeListener() {
-        wordIl?.setEndIcon()
-        furiganaIl?.setEndIcon()
-        definitionIl?.setEndIcon()
+        wordEt?.requestFocus()
 
-        wordEt?.doOnTextChanged { text, _, _, _ ->
-            floatingAddWordUtils?.wordTextFlow?.value = text.toString()
-        }
-        furiganaEt?.doOnTextChanged { text, _, _, _ ->
-            floatingAddWordUtils?.furiganaTextFlow?.value = text.toString()
-        }
-        definitionEt?.doOnTextChanged { text, _, _, _ ->
-            floatingAddWordUtils?.definitionTextFlow?.value = text.toString()
-        }
+        wordIl?.setListener(FloatingAddWordUtils.InputType.WORD_INPUT)
+        furiganaIl?.setListener(FloatingAddWordUtils.InputType.FURIGANA_INPUT)
+        definitionIl?.setListener(FloatingAddWordUtils.InputType.DEFINITION_INPUT)
 
         coroutineScope?.launch {
             floatingAddWordUtils?.getAllWordsByTextFlow()?.collectLatest {
-                recommendationLayout?.removeAllViews()
-                searchWordBtn?.visibility = View.VISIBLE
                 similarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
             }
@@ -259,7 +260,7 @@ class FloatingAddWordWindow(
 
     private fun searchWordRecommendations() {
         progressIndicator?.isVisible = true
-        coroutineScope?.launch {
+        searchJob = coroutineScope?.launch {
             try {
                 recommendationLayout?.removeAllViews()
                 val recommendedWords = floatingAddWordUtils?.getRecommendationsWords()
@@ -277,36 +278,47 @@ class FloatingAddWordWindow(
                             }
                         }
                     }
-                    recommendationLayout?.addButtonInLayout(context, "Translate with Lingvanex") {
-                        coroutineScope?.launch {
-                            floatingAddWordUtils?.getTranslatedWord()?.also {
-                                definitionEt?.setText(it)
-                            }
-                        }
-                    }
+                    addTranslateButton()
                 } else {
-                    recommendationLayout?.addButtonInLayout(context, "Translate with Lingvanex") {
-                        coroutineScope?.launch {
-                            floatingAddWordUtils?.getTranslatedWord()?.also {
-                                definitionEt?.setText(it)
-                            }
-                        }
-                    }
+                    addTranslateButton()
                 }
                 progressIndicator?.isVisible = false
             } catch (_: CancellationException) {
             } catch (e: Exception) {
                 showToast("Obtaining recommended words failed: ${e.message}")
                 Log.e(TAG, "Obtaining recommended words failed: ${e.message}")
-            } finally {
+                resetWordRecommendation()
+            }
+        }
+        searchJob?.invokeOnCompletion {
+            progressIndicator?.isVisible = false
+            searchJob = null
+        }
+    }
+
+    private fun addTranslateButton() {
+        recommendationLayout?.addButtonInLayout(
+            context, "Translate with Lingvanex",
+            com.google.android.material.R.attr.materialButtonOutlinedStyle
+        ) {
+            progressIndicator?.isVisible = true
+            coroutineScope?.launch {
+                val result = floatingAddWordUtils?.getTranslatedWord()
+                definitionEt?.setText(result)
                 progressIndicator?.isVisible = false
             }
         }
     }
 
+    private fun resetWordRecommendation() {
+        searchJob?.cancel()
+        recommendationLayout?.removeAllViews()
+        searchWordBtn?.visibility = View.VISIBLE
+    }
+
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
         floatingAddWordUtils = null
-        IS_WINDOW_ACTIVE = false
+        isAddWordWindowActive = false
     }
 
     override fun onItemClickListener(item: Word) {
@@ -330,7 +342,5 @@ class FloatingAddWordWindow(
 
     companion object {
         private const val TAG = "FloatingAddWordWindow"
-        private var IS_WINDOW_ACTIVE = false
-        fun getIsWindowActive() = IS_WINDOW_ACTIVE
     }
 }
