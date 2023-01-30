@@ -10,9 +10,14 @@ import com.sawelo.wordmemorizer.data.data_class.BaseWord
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import dev.esnault.wanakana.core.Wanakana
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
-class FloatingAddWordUtils(
+class FloatingUtils(
     private val wordRepository: WordRepository,
 ) {
     private val wordTextFlow = MutableStateFlow("")
@@ -51,7 +56,7 @@ class FloatingAddWordUtils(
         }
     }
 
-    fun getTranslatedWord(result: (BaseWord?) -> Unit) {
+    suspend fun getTranslatedWord(): BaseWord = suspendCancellableCoroutine { continuation ->
         val tokenizer = Tokenizer()
         val focusedText = getFocusedWordText()
         if (focusedText.isNotBlank()) {
@@ -64,7 +69,7 @@ class FloatingAddWordUtils(
                 translatorClient?.translate(focusedText)
                     ?.addOnSuccessListener { translatedText ->
                         val readingText = tokenizer.tokenize(focusedText)
-                            .joinToString(", ") {
+                            .joinToString(",") {
                                 it.reading
                             }
                         val baseWord = BaseWord(
@@ -72,10 +77,10 @@ class FloatingAddWordUtils(
                             Wanakana.toHiragana(readingText),
                             translatedText
                         )
-                        result.invoke(baseWord)
+                        continuation.resume(baseWord)
                     }
                     ?.addOnFailureListener {
-                        result.invoke(null)
+                        continuation.resumeWithException(it)
                     }
             } else {
                 val options = TranslatorOptions.Builder()
@@ -86,7 +91,7 @@ class FloatingAddWordUtils(
                 translatorClient?.translate(focusedText)
                     ?.addOnSuccessListener { translatedText ->
                         val readingText = tokenizer.tokenize(translatedText)
-                            .joinToString(" , ") {
+                            .joinToString(",") {
                                 it.reading
                             }
                         val baseWord = BaseWord(
@@ -94,14 +99,16 @@ class FloatingAddWordUtils(
                             Wanakana.toHiragana(readingText),
                             focusedText
                         )
-                        result.invoke(baseWord)
+                        continuation.resume(baseWord)
                     }
                     ?.addOnFailureListener {
-                        result.invoke(null)
+                        continuation.resumeWithException(it)
                     }
             }
         } else {
-            result.invoke(null)
+            continuation.resumeWithException(
+                Throwable("Focused text is empty")
+            )
         }
     }
 
@@ -112,9 +119,9 @@ class FloatingAddWordUtils(
 
     suspend fun getAllCategories() = wordRepository.getAllCategories().first()
 
-    suspend fun getRecommendationsWords(result: (List<BaseWord>?) -> Unit) {
+    suspend fun getRecommendationsWords(): List<BaseWord> = withContext(Dispatchers.IO) {
         val focusedText = getFocusedWordText()
-        if (focusedText.isNotBlank()) {
+        return@withContext if (focusedText.isNotBlank()) {
             val baseWordList = mutableListOf<BaseWord>()
             wordRepository.searchWordFromJisho(focusedText)?.data?.forEach { data ->
                 val wordText = data.japanese?.first()?.word
@@ -129,9 +136,9 @@ class FloatingAddWordUtils(
                 )
                 baseWordList.add(baseWord)
             }
-            result.invoke(baseWordList)
+            baseWordList
         } else {
-            result.invoke(null)
+            throw Throwable("Focused text is empty")
         }
     }
 

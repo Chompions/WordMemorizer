@@ -27,12 +27,13 @@ import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.AddWordAdapter
 import com.sawelo.wordmemorizer.data.WordRepository
+import com.sawelo.wordmemorizer.data.data_class.BaseWord
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.util.Constants
 import com.sawelo.wordmemorizer.util.Constants.isAddWordWindowActive
-import com.sawelo.wordmemorizer.util.FloatingAddWordUtils
+import com.sawelo.wordmemorizer.util.FloatingUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
 import com.sawelo.wordmemorizer.util.ViewUtils.addCategoryList
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
@@ -75,7 +76,7 @@ class FloatingAddWordWindow(
     private var coroutineScope: CoroutineScope? = null
     private var searchJob: Job? = null
     private var adapter: AddWordAdapter? = null
-    private var floatingAddWordUtils: FloatingAddWordUtils? = null
+    private var floatingUtils: FloatingUtils? = null
     private var categoryList: List<Category>? = null
 
     override fun setViews(parent: ViewGroup) {
@@ -140,7 +141,7 @@ class FloatingAddWordWindow(
         /**
          * All functionality that involves repository should only be managed through Utils
          */
-        floatingAddWordUtils = FloatingAddWordUtils(wordRepository)
+        floatingUtils = FloatingUtils(wordRepository)
 
         setAdapter()
         setDrawWindow()
@@ -196,10 +197,10 @@ class FloatingAddWordWindow(
         }
     }
 
-    private fun TextInputLayout.setListener(inputType: FloatingAddWordUtils.InputType) {
+    private fun TextInputLayout.setListener(inputType: FloatingUtils.InputType) {
         editText?.setOnFocusChangeListener { _, isFocused ->
             resetWordRecommendation()
-            floatingAddWordUtils?.focusedTextInput = inputType
+            floatingUtils?.focusedTextInput = inputType
             searchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
             searchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
 
@@ -209,7 +210,7 @@ class FloatingAddWordWindow(
 
         editText?.doOnTextChanged { text, _, _, _ ->
             resetWordRecommendation()
-            floatingAddWordUtils?.setWordFlow(inputType, text.toString())
+            floatingUtils?.setWordFlow(inputType, text.toString())
             searchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
             searchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
 
@@ -218,14 +219,12 @@ class FloatingAddWordWindow(
     }
 
     private fun setWordsChangeListener() {
-        wordEt?.requestFocus()
-
-        wordIl?.setListener(FloatingAddWordUtils.InputType.WORD_INPUT)
-        furiganaIl?.setListener(FloatingAddWordUtils.InputType.FURIGANA_INPUT)
-        definitionIl?.setListener(FloatingAddWordUtils.InputType.DEFINITION_INPUT)
+        wordIl?.setListener(FloatingUtils.InputType.WORD_INPUT)
+        furiganaIl?.setListener(FloatingUtils.InputType.FURIGANA_INPUT)
+        definitionIl?.setListener(FloatingUtils.InputType.DEFINITION_INPUT)
 
         coroutineScope?.launch {
-            floatingAddWordUtils?.getAllWordsByTextFlow()?.collectLatest {
+            floatingUtils?.getAllWordsByTextFlow()?.collectLatest {
                 similarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
             }
@@ -234,7 +233,7 @@ class FloatingAddWordWindow(
 
     private fun setCategoryList() {
         runBlocking {
-            categoryList = floatingAddWordUtils?.getAllCategories()
+            categoryList = floatingUtils?.getAllCategories()
             if (categoryList != null) {
                 addCategoryGroup?.addCategoryList(context, categoryList!!)
             }
@@ -256,30 +255,36 @@ class FloatingAddWordWindow(
     }
 
     private fun searchWordTranslate() {
-        progressIndicator?.isVisible = true
-        floatingAddWordUtils?.getTranslatedWord { baseWord ->
-            progressIndicator?.isVisible = false
-            wordEt?.setText(baseWord?.wordText)
-            furiganaEt?.setText(baseWord?.furiganaText)
-            definitionEt?.setText(baseWord?.definitionText)
+        prepareSearch()
+        searchJob = coroutineScope?.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {floatingUtils?.getTranslatedWord()}
+                progressIndicator?.isVisible = false
+                result?.let { showSearch(it) }
+            } catch (_: CancellationException) {
+            } catch (e: Exception) {
+                showToast("Obtaining translated word failed: ${e.message}")
+                Log.e(TAG, "Obtaining translated word failed: ${e.message}")
+                resetWordRecommendation()
+            }
+        }
+        searchJob?.invokeOnCompletion {
+            afterSearch()
         }
     }
 
     private fun searchWordRecommendations() {
-        searchWordJishoBtn?.visibility = View.INVISIBLE
-        searchWordTranslateBtn?.visibility = View.INVISIBLE
-
-        progressIndicator?.isVisible = true
+        prepareSearch()
         searchJob = coroutineScope?.launch {
             try {
-                recommendationLayout?.removeAllViews()
-                floatingAddWordUtils?.getRecommendationsWords() { result ->
-                    result?.forEach { baseWord ->
-                        recommendationLayout?.addButtonInLayout(context, baseWord.wordText) {
-                            wordEt?.setText(baseWord.wordText)
-                            furiganaEt?.setText(baseWord.furiganaText)
-                            definitionEt?.setText(baseWord.definitionText)
-                        }
+                val result = floatingUtils?.getRecommendationsWords()
+                progressIndicator?.isVisible = false
+                searchWordJishoBtn?.visibility = View.INVISIBLE
+                searchWordTranslateBtn?.visibility = View.INVISIBLE
+
+                result?.forEach { baseWord ->
+                    recommendationLayout?.addButtonInLayout(context, baseWord.wordText) {
+                        showSearch(baseWord)
                     }
                 }
             } catch (_: CancellationException) {
@@ -290,9 +295,31 @@ class FloatingAddWordWindow(
             }
         }
         searchJob?.invokeOnCompletion {
-            progressIndicator?.isVisible = false
-            searchJob = null
+            afterSearch()
         }
+    }
+
+    private fun prepareSearch() {
+        searchJob?.cancel()
+        recommendationLayout?.removeAllViews()
+        searchWordJishoBtn?.isEnabled = false
+        searchWordTranslateBtn?.isEnabled = false
+
+        progressIndicator?.isVisible = true
+    }
+
+    private fun showSearch(baseWord: BaseWord) {
+        wordEt?.setText(baseWord.wordText)
+        furiganaEt?.setText(baseWord.furiganaText)
+        definitionEt?.setText(baseWord.definitionText)
+    }
+
+    private fun afterSearch() {
+        searchWordJishoBtn?.isEnabled = true
+        searchWordTranslateBtn?.isEnabled = true
+
+        progressIndicator?.isVisible = false
+        searchJob = null
     }
 
     private fun resetWordRecommendation() {
@@ -300,6 +327,7 @@ class FloatingAddWordWindow(
         recommendationLayout?.removeAllViews()
         searchWordJishoBtn?.visibility = View.VISIBLE
         searchWordTranslateBtn?.visibility = View.VISIBLE
+        afterSearch()
     }
 
     private fun setActionButton() {
@@ -321,7 +349,7 @@ class FloatingAddWordWindow(
                 wordWithCategories.word.definitionText.isBlank() -> showToast("Definition cannot be empty")
                 else -> {
                     coroutineScope?.launch {
-                        floatingAddWordUtils?.addWord(wordWithCategories)
+                        floatingUtils?.addWord(wordWithCategories)
                         closeWindow()
                     }
                 }
@@ -335,15 +363,15 @@ class FloatingAddWordWindow(
     override fun setAdditionalParams(params: WindowManager.LayoutParams?) {}
 
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
-        floatingAddWordUtils?.destroyUtils()
-        floatingAddWordUtils = null
+        floatingUtils?.destroyUtils()
+        floatingUtils = null
         isAddWordWindowActive = false
     }
 
     override fun onItemClickListener(item: Word) {
         coroutineScope?.launch {
-            floatingAddWordUtils?.updateShowForgotWord(item)
-            FloatingInfoWordWindow(context, item).showWindow()
+            floatingUtils?.updateShowForgotWord(item)
+            FloatingInfoWordWindow(context, wordRepository, item).showWindow()
             closeWindow()
         }
     }

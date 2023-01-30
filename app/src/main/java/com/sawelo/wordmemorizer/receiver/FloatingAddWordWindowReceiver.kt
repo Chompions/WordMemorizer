@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.receiver
 
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,6 +10,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.util.Constants.OPEN_FLOATING_RECEIVER_REQUEST_CODE
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_CLOSE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_ACTION
 import com.sawelo.wordmemorizer.util.Constants.isAddWordWindowActive
@@ -61,6 +63,20 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
     companion object {
         private const val CURRENT_CATEGORY_EXTRA = "CURRENT_CATEGORY_EXTRA"
 
+        fun openWindowPendingIntent(context: Context, currentCategory: Category?): PendingIntent {
+            val receiverIntent = Intent()
+            receiverIntent.action = RECEIVER_OPEN_ACTION
+            if (currentCategory != null) {
+                receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
+            }
+            return PendingIntent.getBroadcast(
+                context,
+                OPEN_FLOATING_RECEIVER_REQUEST_CODE,
+                receiverIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+
         fun openWindow(context: Context, currentCategory: Category?) {
             val receiverIntent = Intent()
             receiverIntent.action = RECEIVER_OPEN_ACTION
@@ -80,11 +96,11 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
             val intentFilter = IntentFilter()
             intentFilter.addAction(RECEIVER_OPEN_ACTION)
             intentFilter.addAction(RECEIVER_CLOSE_ACTION)
-            context.registerReceiver(this, intentFilter)
+            context.applicationContext.registerReceiver(this, intentFilter)
         }
 
         fun FloatingAddWordWindowReceiver.unregisterReceiver(context: Context) {
-            context.unregisterReceiver(this)
+            context.applicationContext.unregisterReceiver(this)
         }
     }
 }

@@ -69,15 +69,11 @@ class FloatingDrawWordWindow(
         // Collect changes in wordCandidates flow
         coroutineScope.launch {
             strokeManager.wordCandidates.collectLatest { candidates ->
-                // Remove all button before adding new ones
                 recommendationLayout?.removeAllViews()
-
                 if (candidates.isNotEmpty()) {
-                    // Add clear button in recommendation list
                     recommendationLayout?.addButtonInLayout(context, "Reset") {
                         clearCanvas()
                     }
-                    // Add character candidates button in recommendation list
                     candidates.forEach {
                         recommendationLayout?.addButtonInLayout(context, it.text) {
                             startTyping(it.text.toList())

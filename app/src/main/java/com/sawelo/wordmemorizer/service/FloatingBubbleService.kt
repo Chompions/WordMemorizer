@@ -22,6 +22,7 @@ import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
+import com.sawelo.wordmemorizer.util.Constants.CLOSE_FLOATING_SERVICE_REQUEST_CODE
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_STOP_ACTION
 import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
@@ -30,7 +31,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
 
     private var floatingBubbleView: View? = null
     private var windowManager: WindowManager? = null
-    private var params:  WindowManager.LayoutParams? = null
+    private var params: WindowManager.LayoutParams? = null
 
     private var mInitialX = 0
     private var mInitialY = 0
@@ -40,7 +41,7 @@ class FloatingBubbleService : Service(), OnTouchListener {
     private val maxClickDuration = 200L
     private var startClickDuration = 0L
 
-    private lateinit var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver
+    private var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver? = null
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -48,20 +49,22 @@ class FloatingBubbleService : Service(), OnTouchListener {
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
-        floatingAddWordWindowReceiver.registerReceiver(this)
+        floatingAddWordWindowReceiver?.registerReceiver(this)
 
         when (intent.action) {
-            NOTIFICATION_STOP_ACTION -> stopSelf()
+            NOTIFICATION_STOP_ACTION -> {
+                FloatingAddWordWindowReceiver.closeWindow(this)
+                floatingAddWordWindowReceiver?.unregisterReceiver(this)
+                floatingAddWordWindowReceiver = null
+                stopSelf()
+            }
             NOTIFICATION_START_ACTION -> createNotification()
         }
 
-        return START_NOT_STICKY
+        return START_STICKY
     }
 
     override fun onDestroy() {
-        floatingAddWordWindowReceiver.unregisterReceiver(this)
-        FloatingAddWordWindowReceiver.closeWindow(this)
-
         if (floatingBubbleView != null) {
             windowManager?.removeView(floatingBubbleView)
             floatingBubbleView = null
@@ -76,7 +79,6 @@ class FloatingBubbleService : Service(), OnTouchListener {
         super.onDestroy()
     }
 
-    @SuppressLint("LaunchActivityFromNotification")
     private fun createNotification() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -93,16 +95,27 @@ class FloatingBubbleService : Service(), OnTouchListener {
         val stopServiceIntent = Intent(this, FloatingBubbleService::class.java)
         stopServiceIntent.action = NOTIFICATION_STOP_ACTION
         val stopServicePendingIntent = PendingIntent.getService(
-            this, 0, stopServiceIntent, PendingIntent.FLAG_IMMUTABLE
+            this,
+            CLOSE_FLOATING_SERVICE_REQUEST_CODE,
+            stopServiceIntent,
+            PendingIntent.FLAG_IMMUTABLE
         )
+
+        val openDialogPendingIntent =
+            FloatingAddWordWindowReceiver.openWindowPendingIntent(this, null)
 
         // Create notification builder
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Floating bubble")
-            .setContentText("Tap here to stop the floating bubble")
+            .setContentText("Tap here to open the add dialog")
             .setShowWhen(false)
-            .setContentIntent(stopServicePendingIntent)
+            .setContentIntent(openDialogPendingIntent)
+            .addAction(
+                R.drawable.ic_baseline_close_24,
+                "Close the floating bubble",
+                stopServicePendingIntent
+            )
 
         startForeground(NOTIFICATION_ID, builder.build())
         addFloatingBubble()
@@ -163,5 +176,17 @@ class FloatingBubbleService : Service(), OnTouchListener {
     companion object {
         private const val CHANNEL_ID = "FLOATING_BUBBLE_CHANNEL_ID"
         private const val NOTIFICATION_ID = 1
+
+        fun startService(context: Context) {
+            val serviceIntent = Intent(context, FloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_START_ACTION
+            context.startForegroundService(serviceIntent)
+        }
+
+        fun stopService(context: Context) {
+            val serviceIntent = Intent(context, FloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_STOP_ACTION
+            context.stopService(serviceIntent)
+        }
     }
 }

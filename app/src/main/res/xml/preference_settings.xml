@@ -2,20 +2,23 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="General">
         <SwitchPreference
+            android:enabled="true"
             android:key="@string/preference_floating_bubble_key"
-            android:summary="Use the floating bubble to open add dialog anywhere"
+            android:summary="Use the floating bubble to open Add dialog anywhere"
             android:title="Activate floating bubble" />
     </PreferenceCategory>
 
 
     <PreferenceCategory android:title="Dialog">
         <SwitchPreference
+            android:enabled="true"
             android:key="@string/preference_draw_character_key"
             android:summary="Enable this option to draw Japanese character for input"
             android:title="Add draw character option" />
         <SwitchPreference
+            android:enabled="true"
             android:key="@string/preference_offline_translation_key"
-            android:summary="Enable this option to use google offline translation"
+            android:summary="Enable this option to download Google language model for offline translation (±30MB)"
             android:title="Add offline Google translation" />
     </PreferenceCategory>
 

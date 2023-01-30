@@ -5,7 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.TYPE_APPLICATION_OVERLAY" />
 
     <application
         android:name=".MainApplication"
@@ -17,8 +18,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WordMemorizer"
-        tools:targetApi="31" >
-
+        tools:targetApi="31">
+        <service
+            android:name=".service.DownloadService"
+            android:enabled="true"
+            android:exported="false"/>
         <service
             android:name=".service.FloatingBubbleService"
             android:enabled="true"

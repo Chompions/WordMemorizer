@@ -3,6 +3,8 @@ package com.sawelo.wordmemorizer.util
 import android.content.Context
 import android.widget.Toast
 import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 
 object WordUtils {
     fun Context.showToast(text: String?) {
@@ -14,6 +16,19 @@ object WordUtils {
     fun Category.isAll(): Boolean = this.categoryName == defaultCategoryList.first()
 
     val defaultCategoryList = listOf("All", "Important", "Names")
+    val defaultWordList = listOf(
+        WordWithCategories(
+            Word(
+                wordText = "お早うございます",
+                furiganaText = "おはようございます",
+                definitionText = "good morning",
+                createdTimeMillis = System.currentTimeMillis(),
+            ),
+            listOf(Category(
+                2, "Important"
+            ))
+        )
+    )
 
     val hiraganaTable = listOf(
         'あ', 'い', 'う', 'え', 'お',

@@ -42,6 +42,10 @@ abstract class AppDatabase : RoomDatabase() {
                             getInstance(context).categoryDao()
                                 .insertCategory(category)
                         }
+                        WordUtils.defaultWordList.forEach {
+                            getInstance(context).wordDao()
+                                .insertWordWithCategories(it)
+                        }
                     }
                 }
             }
