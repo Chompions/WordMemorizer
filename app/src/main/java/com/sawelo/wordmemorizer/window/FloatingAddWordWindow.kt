@@ -5,11 +5,14 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Build
+import android.os.LocaleList
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -39,6 +42,7 @@ import com.sawelo.wordmemorizer.util.ViewUtils.addCategoryList
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
+import java.util.*
 
 
 class FloatingAddWordWindow(
@@ -48,7 +52,10 @@ class FloatingAddWordWindow(
 ) : DialogWindow(context, R.layout.window_add_word_floating),
     ItemWordAdapterListener {
 
-    private val clipboardManager = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+    private val inputMethodManager =
+        context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+    private val clipboardManager =
+        context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
     private val sharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -219,6 +226,29 @@ class FloatingAddWordWindow(
     }
 
     private fun setWordsChangeListener() {
+        wordEt?.apply {
+            imeHintLocales = LocaleList(Locale.JAPANESE)
+            setOnEditorActionListener {_,_,_ ->
+                furiganaEt?.requestFocus()
+                true
+            }
+        }
+        furiganaEt?.apply {
+            imeHintLocales = LocaleList(Locale.JAPANESE)
+            setOnEditorActionListener {_,_,_ ->
+                definitionEt?.requestFocus()
+                true
+            }
+        }
+        definitionEt?.apply {
+            imeHintLocales = LocaleList(Locale.ENGLISH)
+            setOnEditorActionListener { view ,_,_ ->
+                definitionEt?.clearFocus()
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+                true
+            }
+        }
+
         wordIl?.setListener(FloatingUtils.InputType.WORD_INPUT)
         furiganaIl?.setListener(FloatingUtils.InputType.FURIGANA_INPUT)
         definitionIl?.setListener(FloatingUtils.InputType.DEFINITION_INPUT)
