@@ -17,12 +17,15 @@ import android.view.View.OnTouchListener
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
+import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.util.Constants.CLOSE_FLOATING_SERVICE_REQUEST_CODE
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_HIDE_ACTION
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_REVEAL_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_STOP_ACTION
 import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
@@ -59,6 +62,8 @@ class FloatingBubbleService : Service(), OnTouchListener {
                 stopSelf()
             }
             NOTIFICATION_START_ACTION -> createNotification()
+            NOTIFICATION_HIDE_ACTION -> hideFloatingBubble()
+            NOTIFICATION_REVEAL_ACTION -> revealFloatingBubble()
         }
 
         return START_STICKY
@@ -143,6 +148,14 @@ class FloatingBubbleService : Service(), OnTouchListener {
         windowManager?.addView(floatingBubbleView, params)
     }
 
+    private fun hideFloatingBubble() {
+        floatingBubbleView?.isVisible = false
+    }
+
+    private fun revealFloatingBubble() {
+        floatingBubbleView?.isVisible = true
+    }
+
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels / 2
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels / 2
@@ -180,6 +193,18 @@ class FloatingBubbleService : Service(), OnTouchListener {
         fun startService(context: Context) {
             val serviceIntent = Intent(context, FloatingBubbleService::class.java)
             serviceIntent.action = NOTIFICATION_START_ACTION
+            context.startForegroundService(serviceIntent)
+        }
+
+        fun hideBubbleService(context: Context) {
+            val serviceIntent = Intent(context, FloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_HIDE_ACTION
+            context.startForegroundService(serviceIntent)
+        }
+
+        fun revealBubbleService(context: Context) {
+            val serviceIntent = Intent(context, FloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_REVEAL_ACTION
             context.startForegroundService(serviceIntent)
         }
 

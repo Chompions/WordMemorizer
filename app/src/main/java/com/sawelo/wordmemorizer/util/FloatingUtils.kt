@@ -68,10 +68,10 @@ class FloatingUtils(
                 translatorClient = Translation.getClient(options)
                 translatorClient?.translate(focusedText)
                     ?.addOnSuccessListener { translatedText ->
-                        val readingText = tokenizer.tokenize(focusedText)
-                            .joinToString(",") {
-                                it.reading
-                            }
+                        val readingText = if (!Wanakana.isKatakana(focusedText)) {
+                            tokenizer.tokenize(focusedText)
+                                .joinToString(",") { it.reading }
+                        } else focusedText
                         val baseWord = BaseWord(
                             focusedText,
                             Wanakana.toHiragana(readingText),
@@ -90,10 +90,10 @@ class FloatingUtils(
                 translatorClient = Translation.getClient(options)
                 translatorClient?.translate(focusedText)
                     ?.addOnSuccessListener { translatedText ->
-                        val readingText = tokenizer.tokenize(translatedText)
-                            .joinToString(",") {
-                                it.reading
-                            }
+                        val readingText = if (!Wanakana.isKatakana(focusedText)) {
+                            tokenizer.tokenize(focusedText)
+                                .joinToString(",") { it.reading }
+                        } else focusedText
                         val baseWord = BaseWord(
                             translatedText,
                             Wanakana.toHiragana(readingText),

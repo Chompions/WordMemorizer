@@ -282,11 +282,19 @@ class FloatingAddWordWindow(
                 searchWordJishoBtn?.visibility = View.INVISIBLE
                 searchWordTranslateBtn?.visibility = View.INVISIBLE
 
-                result?.forEach { baseWord ->
-                    recommendationLayout?.addButtonInLayout(context, baseWord.wordText) {
-                        showSearch(baseWord)
+                if (result?.isNotEmpty() == true) {
+                    result.forEach { baseWord ->
+                        val fixedBaseWord = baseWord.copy(
+                            wordText = baseWord.wordText.ifBlank { baseWord.furiganaText }
+                        )
+                        recommendationLayout?.addButtonInLayout(context, fixedBaseWord.wordText) {
+                            showSearch(fixedBaseWord)
+                        }
                     }
+                } else {
+                    resetWordRecommendation()
                 }
+
             } catch (_: CancellationException) {
             } catch (e: Exception) {
                 showToast("Obtaining recommended words failed: ${e.message}")

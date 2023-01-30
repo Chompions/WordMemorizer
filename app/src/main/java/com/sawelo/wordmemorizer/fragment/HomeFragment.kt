@@ -19,6 +19,7 @@ import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.FragmentHomeBinding
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
+import com.sawelo.wordmemorizer.service.FloatingBubbleService
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChangedBy
@@ -80,6 +81,16 @@ class HomeFragment : Fragment(), ListUpdateCallback {
         binding?.fragmentMainFab?.setOnClickListener {
             FloatingAddWordWindowReceiver.openWindow(requireContext(), viewModel.currentCategory)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        FloatingBubbleService.hideBubbleService(requireContext())
+    }
+
+    override fun onStop() {
+        super.onStop()
+        FloatingBubbleService.revealBubbleService(requireContext())
     }
 
     override fun onDestroyView() {

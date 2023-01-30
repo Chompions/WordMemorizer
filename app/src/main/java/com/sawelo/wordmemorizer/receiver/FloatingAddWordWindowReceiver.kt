@@ -70,10 +70,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
                 receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
             }
             return PendingIntent.getBroadcast(
-                context,
-                OPEN_FLOATING_RECEIVER_REQUEST_CODE,
-                receiverIntent,
-                PendingIntent.FLAG_IMMUTABLE
+                context, OPEN_FLOATING_RECEIVER_REQUEST_CODE, receiverIntent, PendingIntent.FLAG_IMMUTABLE
             )
         }
 
@@ -96,11 +93,11 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
             val intentFilter = IntentFilter()
             intentFilter.addAction(RECEIVER_OPEN_ACTION)
             intentFilter.addAction(RECEIVER_CLOSE_ACTION)
-            context.applicationContext.registerReceiver(this, intentFilter)
+            context.registerReceiver(this, intentFilter)
         }
 
         fun FloatingAddWordWindowReceiver.unregisterReceiver(context: Context) {
-            context.applicationContext.unregisterReceiver(this)
+            context.unregisterReceiver(this)
         }
     }
 }
