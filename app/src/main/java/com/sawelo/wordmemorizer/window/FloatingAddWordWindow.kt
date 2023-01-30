@@ -8,6 +8,7 @@ import android.content.Context.CLIPBOARD_SERVICE
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Build
 import android.os.LocaleList
+import android.text.InputType
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -227,22 +228,25 @@ class FloatingAddWordWindow(
 
     private fun setWordsChangeListener() {
         wordEt?.apply {
+            setRawInputType(InputType.TYPE_CLASS_TEXT)
             imeHintLocales = LocaleList(Locale.JAPANESE)
-            setOnEditorActionListener {_,_,_ ->
+            setOnEditorActionListener { _, _, _ ->
                 furiganaEt?.requestFocus()
                 true
             }
         }
         furiganaEt?.apply {
+            setRawInputType(InputType.TYPE_CLASS_TEXT)
             imeHintLocales = LocaleList(Locale.JAPANESE)
-            setOnEditorActionListener {_,_,_ ->
+            setOnEditorActionListener { _, _, _ ->
                 definitionEt?.requestFocus()
                 true
             }
         }
         definitionEt?.apply {
+            setRawInputType(InputType.TYPE_CLASS_TEXT)
             imeHintLocales = LocaleList(Locale.ENGLISH)
-            setOnEditorActionListener { view ,_,_ ->
+            setOnEditorActionListener { view, _, _ ->
                 definitionEt?.clearFocus()
                 inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
                 true
@@ -288,7 +292,7 @@ class FloatingAddWordWindow(
         prepareSearch()
         searchJob = coroutineScope?.launch {
             try {
-                val result = withContext(Dispatchers.IO) {floatingUtils?.getTranslatedWord()}
+                val result = withContext(Dispatchers.IO) { floatingUtils?.getTranslatedWord() }
                 progressIndicator?.isVisible = false
                 result?.let { showSearch(it) }
             } catch (_: CancellationException) {

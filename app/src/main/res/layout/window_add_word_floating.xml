@@ -58,7 +58,7 @@
                 android:id="@+id/dialog_addWord_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
+                android:inputType="textMultiLine"
                 android:imeOptions="actionNext"/>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -90,7 +90,7 @@
                 android:id="@+id/dialog_addFurigana_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
+                android:inputType="textMultiLine"
                 android:imeOptions="actionNext"/>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -108,7 +108,7 @@
                 android:id="@+id/dialog_addDefinition_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text"
+                android:inputType="textMultiLine"
                 android:imeOptions="actionDone"/>
 
         </com.google.android.material.textfield.TextInputLayout>
