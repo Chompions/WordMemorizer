@@ -1,7 +1,7 @@
 package com.sawelo.wordmemorizer.activity
 
+import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -17,6 +17,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.ListUpdateCallback
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+import com.sawelo.wordmemorizer.BuildConfig
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
@@ -38,7 +41,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver
     private val viewModel: MainViewModel by viewModels()
     private var asyncDiffer: AsyncListDiffer<Category>? = null
@@ -57,6 +59,7 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
 
         SettingsUtils(this).checkAll()
 
+        setAds()
         setCategories()
         setNavigationListener()
     }
@@ -64,6 +67,15 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
     override fun onDestroy() {
         super.onDestroy()
         floatingAddWordWindowReceiver.unregisterReceiver(this)
+    }
+
+    @SuppressLint("VisibleForTests")
+    private fun setAds() {
+        if (BuildConfig.BUILD_TYPE != "cleanRelease") {
+            MobileAds.initialize(this)
+            val adRequest = AdRequest.Builder().build()
+            binding.adView.loadAd(adRequest)
+        }
     }
 
     private fun setCategories() {

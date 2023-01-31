@@ -4,9 +4,9 @@ import android.content.Context
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.core.view.isVisible
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.util.Constants.isDrawWindowFadeVisibility
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 class FloatingDrawWordWindow(
     private val context: Context,
-    private val initialText: String?,
+    private var initialText: String = "",
     private val parentWindow: DialogWindow,
     private val result: ((wordText: String) -> Unit)
 ): DialogWindow(context, R.layout.window_draw_word_floating), StrokeCallback {
@@ -29,19 +29,17 @@ class FloatingDrawWordWindow(
 
     private var scrollView: DialogWindowScrollView? = null
     private var drawingView: DrawingView? = null
-    private var drawingWordTv: TextView? = null
+    private var drawingWordEt: EditText? = null
     private var drawnTextResetBtn: ImageButton? = null
     private var fadeVisibilityBtn: ImageButton? = null
     private var recommendationLayout: LinearLayout? = null
     private var cancelBtn: Button? = null
     private var okBtn: Button? = null
 
-    private val drawnCharacterList: MutableList<Char> = mutableListOf()
-
     override fun setViews(parent: ViewGroup) {
         scrollView = parent as DialogWindowScrollView
         drawingView = parent.findViewById(R.id.windowDraw_drawingView)
-        drawingWordTv = parent.findViewById(R.id.windowDraw_drawingWord)
+        drawingWordEt = parent.findViewById(R.id.windowDraw_drawingWordEt)
         drawnTextResetBtn = parent.findViewById(R.id.windowDraw_reset_btn)
         fadeVisibilityBtn = parent.findViewById(R.id.windowDraw_fadeWindow_btn)
         recommendationLayout = parent.findViewById(R.id.windowDraw_recommendationLayout)
@@ -52,7 +50,7 @@ class FloatingDrawWordWindow(
     override fun clearViews() {
         scrollView = null
         drawingView = null
-        drawingWordTv = null
+        drawingWordEt = null
         drawnTextResetBtn = null
         fadeVisibilityBtn = null
         recommendationLayout = null
@@ -76,7 +74,7 @@ class FloatingDrawWordWindow(
                     }
                     candidates.forEach {
                         recommendationLayout?.addButtonInLayout(context, it.text) {
-                            startTyping(it.text.toList())
+                            startTyping(it.text)
                         }
                     }
                 }
@@ -95,20 +93,11 @@ class FloatingDrawWordWindow(
             closeWindow()
         }
         okBtn?.setOnClickListener {
-            result.invoke(drawnCharacterList.joinToString(""))
+            result.invoke(initialText)
             closeWindow()
         }
 
-        /**
-         * If initialText is provided and not null, then add text to drawnCharacterList and
-         * display it without initializing clearCanvas(). This is important because canvasBitmap
-         * has not been initialized at this point and will causes fatal exception
-         */
-        if (initialText != null) {
-            drawnCharacterList.addAll(initialText.toList())
-            drawingWordTv?.text = drawnCharacterList.joinToString("")
-            drawnTextResetBtn?.isVisible = true
-        }
+        updateDrawingWord()
     }
 
     override fun beforeCloseWindow(coroutineScope: CoroutineScope) {
@@ -128,14 +117,18 @@ class FloatingDrawWordWindow(
         }
     }
 
-    private fun startTyping(drawnText: List<Char>) {
-        drawnCharacterList.addAll(drawnText)
+    private fun startTyping(drawnText: String) {
+        initialText += drawnText
+        clearCanvas()
         updateDrawingWord()
     }
 
     private fun backspaceTyping() {
-        drawnCharacterList.removeLast()
-        updateDrawingWord()
+        if (initialText.isNotBlank()) {
+            initialText = initialText.dropLast(1)
+            clearCanvas()
+            updateDrawingWord()
+        }
     }
 
     private fun clearCanvas() {
@@ -144,14 +137,8 @@ class FloatingDrawWordWindow(
     }
 
     private fun updateDrawingWord() {
-        clearCanvas()
-        if (drawnCharacterList.isNotEmpty()) {
-            drawingWordTv?.text = drawnCharacterList.joinToString("")
-            drawnTextResetBtn?.isVisible = true
-        } else {
-            drawingWordTv?.text = context.getText(R.string.your_character_here)
-            drawnTextResetBtn?.isVisible = false
-        }
+        drawingWordEt?.setText(initialText)
+        drawnTextResetBtn?.isVisible = initialText.isNotBlank()
     }
 
     override fun onFailure(message: String) {

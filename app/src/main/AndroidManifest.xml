@@ -19,6 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WordMemorizer"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3161498246882165~1811137470"/>
         <service
             android:name=".service.DownloadService"
             android:enabled="true"

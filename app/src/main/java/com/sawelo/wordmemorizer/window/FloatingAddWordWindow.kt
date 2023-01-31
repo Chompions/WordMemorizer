@@ -145,7 +145,6 @@ class FloatingAddWordWindow(
 
     override fun beforeShowWindow(coroutineScope: CoroutineScope) {
         this.coroutineScope = coroutineScope
-
         /**
          * All functionality that involves repository should only be managed through Utils
          */
@@ -179,9 +178,9 @@ class FloatingAddWordWindow(
         }
     }
 
-    private fun TextInputLayout.checkCopyOrPaste() {
+    private fun TextInputLayout.checkCopyOrPaste(isFocused: Boolean) {
         when {
-            editText?.text.isNullOrBlank() && clipboardManager.primaryClipDescription
+            editText?.text.isNullOrBlank() && isFocused && clipboardManager.primaryClipDescription
                 ?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true -> {
                 isEndIconVisible = true
                 setEndIconDrawable(R.drawable.baseline_content_paste_24)
@@ -192,7 +191,7 @@ class FloatingAddWordWindow(
                     showToast("Text pasted")
                 }
             }
-            !editText?.text.isNullOrBlank() -> {
+            !editText?.text.isNullOrBlank() && isFocused -> {
                 isEndIconVisible = true
                 setEndIconDrawable(R.drawable.baseline_content_copy_24)
                 setEndIconOnClickListener {
@@ -212,8 +211,7 @@ class FloatingAddWordWindow(
             searchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
             searchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
 
-            checkCopyOrPaste()
-            isEndIconVisible = isFocused
+            checkCopyOrPaste(isFocused)
         }
 
         editText?.doOnTextChanged { text, _, _, _ ->
@@ -222,7 +220,7 @@ class FloatingAddWordWindow(
             searchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
             searchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
 
-            checkCopyOrPaste()
+            checkCopyOrPaste(true)
         }
     }
 
@@ -317,6 +315,9 @@ class FloatingAddWordWindow(
                 searchWordTranslateBtn?.visibility = View.INVISIBLE
 
                 if (result?.isNotEmpty() == true) {
+                    recommendationLayout?.addButtonInLayout(context, "Reset") {
+                        resetWordRecommendation()
+                    }
                     result.forEach { baseWord ->
                         val fixedBaseWord = baseWord.copy(
                             wordText = baseWord.wordText.ifBlank { baseWord.furiganaText }

@@ -33,6 +33,7 @@ import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
 class FloatingBubbleService : Service(), OnTouchListener {
 
     private var floatingBubbleView: View? = null
+
     private var windowManager: WindowManager? = null
     private var params: WindowManager.LayoutParams? = null
 
@@ -199,13 +200,13 @@ class FloatingBubbleService : Service(), OnTouchListener {
         fun hideBubbleService(context: Context) {
             val serviceIntent = Intent(context, FloatingBubbleService::class.java)
             serviceIntent.action = NOTIFICATION_HIDE_ACTION
-            context.startForegroundService(serviceIntent)
+            context.startService(serviceIntent)
         }
 
         fun revealBubbleService(context: Context) {
             val serviceIntent = Intent(context, FloatingBubbleService::class.java)
             serviceIntent.action = NOTIFICATION_REVEAL_ACTION
-            context.startForegroundService(serviceIntent)
+            context.startService(serviceIntent)
         }
 
         fun stopService(context: Context) {

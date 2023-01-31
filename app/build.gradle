@@ -22,11 +22,18 @@ android {
     }
 
     buildTypes {
+        cleanRelease {
+            applicationIdSuffix ".clean"
+            versionNameSuffix "-clean"
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     buildFeatures {
         viewBinding true
     }
@@ -73,6 +80,7 @@ dependencies {
     implementation 'com.google.dagger:hilt-android:2.44.2'
     implementation 'com.google.mlkit:digital-ink-recognition:18.0.0'
     implementation 'com.google.mlkit:translate:17.0.1'
+    implementation 'com.google.android.gms:play-services-ads:21.4.0'
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation "com.squareup.retrofit2:converter-gson:2.9.0"

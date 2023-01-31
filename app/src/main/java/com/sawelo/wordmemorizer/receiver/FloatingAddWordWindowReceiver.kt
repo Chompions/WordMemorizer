@@ -50,8 +50,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
             windowInstance = FloatingAddWordWindow(context, wordRepository, currentCategory)
             windowInstance?.showWindow()
         } else {
-            windowInstance?.closeWindow()
-            windowInstance = null
+            closeInstance()
         }
     }
 

@@ -156,6 +156,7 @@
             android:id="@+id/dialog_recommendationScrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="8dp"
             app:layout_constraintTop_toTopOf="@id/dialog_searchWordJisho_btn">
 
             <LinearLayout
