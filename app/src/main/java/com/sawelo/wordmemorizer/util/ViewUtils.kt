@@ -1,15 +1,31 @@
 package com.sawelo.wordmemorizer.util
 
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
+import android.provider.Settings
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import com.google.android.material.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.textfield.TextInputLayout
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
+import com.sawelo.wordmemorizer.window.ToastWindow
 
 object ViewUtils {
+
+    fun Context.showToast(toast: String?) {
+        if (Settings.canDrawOverlays(this)) {
+            toast?.let { ToastWindow(this, it) }
+        } else {
+            Toast.makeText(this, toast, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     fun LinearLayout.addButtonInLayout(
         context: Context,
@@ -56,4 +72,34 @@ object ViewUtils {
             }
         }
     }
+
+    fun TextInputLayout.checkCopyOrPaste(isFocused: Boolean) {
+        val clipboardManager =
+            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        when {
+            editText?.text.isNullOrBlank() && isFocused && clipboardManager.primaryClipDescription
+                ?.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN) == true -> {
+                isEndIconVisible = true
+                setEndIconDrawable(com.sawelo.wordmemorizer.R.drawable.baseline_content_paste_24)
+                setEndIconOnClickListener {
+                    val clipData = clipboardManager.primaryClip
+                    val pastedText = clipData?.getItemAt(0)?.coerceToText(context)
+                    this.editText?.setText(pastedText)
+                    context.showToast("Text pasted")
+                }
+            }
+            !editText?.text.isNullOrBlank() && isFocused -> {
+                isEndIconVisible = true
+                setEndIconDrawable(com.sawelo.wordmemorizer.R.drawable.baseline_content_copy_24)
+                setEndIconOnClickListener {
+                    val clipData = ClipData.newPlainText("word", this.editText?.text)
+                    clipboardManager.setPrimaryClip(clipData)
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
+                        context.showToast("Text copied")
+                }
+            }
+            else -> isEndIconVisible = false
+        }
+    }
+
 }

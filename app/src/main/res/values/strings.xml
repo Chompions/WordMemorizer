@@ -44,4 +44,9 @@
     <string name="preference_offline_translation_key">preference_offline_translation_key</string>
     <string name="preference_draw_character_key">preference_draw_character_key</string>
     <string name="long_press_to_edit">Long-press to edit</string>
+    <string name="close_floating_bubble">Close floating bubble</string>
+    <string name="hide_floating_bubble">Hide floating bubble</string>
+    <string name="turn_off">Turn off</string>
+    <string name="tap_to_add_word">Tap to add word</string>
+    <string name="tap_here_to_open_the_add_dialog">Tap here to open the add dialog</string>
 </resources>

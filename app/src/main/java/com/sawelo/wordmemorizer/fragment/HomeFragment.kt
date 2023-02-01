@@ -16,16 +16,24 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
+import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.FragmentHomeBinding
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
-import com.sawelo.wordmemorizer.service.FloatingBubbleService
+import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
+import com.sawelo.wordmemorizer.window.dialog.FloatingAddWordWindowInstance
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class HomeFragment : Fragment(), ListUpdateCallback {
+    @Inject
+    lateinit var wordRepository: WordRepository
+
     private val viewModel: MainViewModel by activityViewModels()
     private var binding: FragmentHomeBinding? = null
     private var asyncDiffer: AsyncListDiffer<Category>? = null
@@ -67,6 +75,7 @@ class HomeFragment : Fragment(), ListUpdateCallback {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 viewPager?.currentItem = tab.position
             }
+
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab) {
                 viewPager?.currentItem = tab.position
@@ -79,18 +88,22 @@ class HomeFragment : Fragment(), ListUpdateCallback {
         })
 
         binding?.fragmentMainFab?.setOnClickListener {
-            FloatingAddWordWindowReceiver.openWindow(requireContext(), viewModel.currentCategory)
+            FloatingAddWordWindowInstance(
+                requireActivity(), wordRepository, viewModel.currentCategory
+            ).also { instance ->
+                instance.showInstance()
+            }
         }
     }
 
     override fun onStart() {
         super.onStart()
-        FloatingBubbleService.hideBubbleService(requireContext())
+        NotificationFloatingBubbleService.hideBubbleService(requireContext())
     }
 
     override fun onStop() {
         super.onStop()
-        FloatingBubbleService.revealBubbleService(requireContext())
+        NotificationFloatingBubbleService.revealBubbleService(requireContext())
     }
 
     override fun onDestroyView() {
@@ -131,6 +144,7 @@ class HomeFragment : Fragment(), ListUpdateCallback {
             viewPagerAdapter?.notifyItemRangeChanged(position, count)
         }
     }
+
     override fun onMoved(fromPosition: Int, toPosition: Int) {
         val currentList = asyncDiffer?.currentList
         tabLayout?.removeTabAt(fromPosition)
@@ -142,6 +156,7 @@ class HomeFragment : Fragment(), ListUpdateCallback {
             viewPagerAdapter?.notifyItemMoved(fromPosition, toPosition)
         }
     }
+
     override fun onChanged(position: Int, count: Int, payload: Any?) {
         val currentList = asyncDiffer?.currentList
         (position until position + count).forEach { perPosition ->

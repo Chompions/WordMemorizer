@@ -26,9 +26,6 @@ import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.registerReceiver
-import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver.Companion.unregisterReceiver
 import com.sawelo.wordmemorizer.util.Constants.HOME_FRAGMENT_TAG
 import com.sawelo.wordmemorizer.util.SettingsUtils
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
@@ -41,7 +38,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ListUpdateCallback {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var floatingAddWordWindowReceiver: FloatingAddWordWindowReceiver
     private val viewModel: MainViewModel by viewModels()
     private var asyncDiffer: AsyncListDiffer<Category>? = null
 
@@ -54,19 +50,11 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
             replace<HomeFragment>(R.id.activityMain_fcv, HOME_FRAGMENT_TAG)
         }
 
-        floatingAddWordWindowReceiver = FloatingAddWordWindowReceiver()
-        floatingAddWordWindowReceiver.registerReceiver(this)
-
         SettingsUtils(this).checkAll()
 
         setAds()
         setCategories()
         setNavigationListener()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        floatingAddWordWindowReceiver.unregisterReceiver(this)
     }
 
     @SuppressLint("VisibleForTests")

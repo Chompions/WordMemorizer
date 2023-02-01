@@ -1,18 +1,9 @@
 package com.sawelo.wordmemorizer.util
 
-import android.content.Context
-import android.widget.Toast
 import com.sawelo.wordmemorizer.data.data_class.Category
 
 object WordUtils {
-    fun Context.showToast(text: String?) {
-        Toast
-            .makeText(this, text, Toast.LENGTH_SHORT)
-            .show()
-    }
-
     fun Category.isAll(): Boolean = this.categoryName == "All"
-
 
     val hiraganaTable = listOf(
         'あ', 'い', 'う', 'え', 'お',

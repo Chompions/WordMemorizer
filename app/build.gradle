@@ -22,6 +22,11 @@ android {
     }
 
     buildTypes {
+        cleanDebug {
+            applicationIdSuffix ".clean"
+            versionNameSuffix "-clean"
+            debuggable true
+        }
         cleanRelease {
             applicationIdSuffix ".clean"
             versionNameSuffix "-clean"

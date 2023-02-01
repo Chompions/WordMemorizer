@@ -25,8 +25,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
 
-        private val defaultCategoryList = listOf("All", "Important", "Names")
-        private val defaultWordList = listOf(
+        private const val DATABASE_NAME = "word-memorizer-database"
+        private val DEFAULT_CATEGORY_LIST = listOf("All", "Important", "Names")
+        private val DEFAULT_WORD_LIST = listOf(
             WordWithCategories(
                 Word(
                     wordText = "お早うございます",
@@ -39,8 +40,11 @@ abstract class AppDatabase : RoomDatabase() {
                 ))
             )
         )
-
         private var INSTANCE: AppDatabase? = null
+
+        fun isDatabaseExist(context: Context): Boolean =
+            context.getDatabasePath(DATABASE_NAME).exists()
+
         fun getInstance(context: Context): AppDatabase {
             if (INSTANCE == null) {
                 INSTANCE = buildDatabase(context, CoroutineScope(Dispatchers.IO))
@@ -48,16 +52,24 @@ abstract class AppDatabase : RoomDatabase() {
             return INSTANCE as AppDatabase
         }
 
+//        private fun importDatabase(context: Context) {
+//            return Room.databaseBuilder(
+//                context,
+//                AppDatabase::class.java,
+//                DATABASE_NAME
+//            ).createFromFile()
+//        }
+
         private fun buildDatabase(context: Context, coroutineScope: CoroutineScope): AppDatabase {
             val callback = object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     coroutineScope.launch {
-                        defaultCategoryList.forEach {
+                        DEFAULT_CATEGORY_LIST.forEach {
                             val category = Category(categoryName = it)
                             getInstance(context).categoryDao()
                                 .insertCategory(category)
                         }
-                        defaultWordList.forEach {
+                        DEFAULT_WORD_LIST.forEach {
                             getInstance(context).wordDao()
                                 .insertWordWithCategories(it)
                         }
@@ -68,7 +80,7 @@ abstract class AppDatabase : RoomDatabase() {
             return Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
-                "word-memorizer-database"
+                DATABASE_NAME
             )
                 .addCallback(callback)
                 .build()

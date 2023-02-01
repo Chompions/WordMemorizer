@@ -8,7 +8,6 @@
             android:title="Activate floating bubble" />
     </PreferenceCategory>
 
-
     <PreferenceCategory android:title="Dialog">
         <SwitchPreference
             android:enabled="true"

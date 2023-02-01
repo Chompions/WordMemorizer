@@ -10,7 +10,7 @@ import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.util.WordUtils.showToast
+import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 
 class AddCategoryDialogFragment : DialogFragment() {

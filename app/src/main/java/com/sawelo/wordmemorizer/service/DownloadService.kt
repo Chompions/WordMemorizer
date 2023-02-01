@@ -23,7 +23,7 @@ import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DOWNLOAD_DRAW_DIGITA
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DOWNLOAD_EXTRA
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DOWNLOAD_TRANSLATOR
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
-import com.sawelo.wordmemorizer.window.ToastWindow
+import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 
 class DownloadService: Service() {
 
@@ -160,7 +160,7 @@ class DownloadService: Service() {
         sharedPreferences?.edit {
             putBoolean(key, false)
         }
-        ToastWindow(this, toast)
+        showToast(toast)
     }
 
     companion object {

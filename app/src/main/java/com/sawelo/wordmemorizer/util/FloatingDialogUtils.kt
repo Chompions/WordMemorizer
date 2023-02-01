@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class FloatingUtils(
+class FloatingDialogUtils(
     private val wordRepository: WordRepository,
 ) {
     private val wordTextFlow = MutableStateFlow("")

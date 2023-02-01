@@ -17,11 +17,11 @@ import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModel
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
 import com.sawelo.wordmemorizer.activity.SettingsActivity
 import com.sawelo.wordmemorizer.service.DownloadService
-import com.sawelo.wordmemorizer.service.FloatingBubbleService
+import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
 import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_DRAW_CHARACTER_KEY
 import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
 import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY
-import com.sawelo.wordmemorizer.window.ToastWindow
+import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 
 class SettingsUtils(private val activity: FragmentActivity) {
     private var sharedPreferences = PreferenceManager.getDefaultSharedPreferences(activity)
@@ -87,7 +87,7 @@ class SettingsUtils(private val activity: FragmentActivity) {
                     sharedPreferences?.edit {
                         putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, false)
                     }
-                    ToastWindow(activity, "Notification permission required")
+                    activity.showToast("Notification permission required")
                     postNotificationPermissionLauncher.launch(
                         android.Manifest.permission.POST_NOTIFICATIONS
                     )
@@ -97,7 +97,7 @@ class SettingsUtils(private val activity: FragmentActivity) {
                 sharedPreferences?.edit {
                     putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, false)
                 }
-                ToastWindow(activity, "Draw overlay permission required")
+                activity.showToast("Draw overlay permission required")
                 val overlayIntent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                     Uri.parse("package:${Constants.PACKAGE_NAME}")
@@ -107,10 +107,10 @@ class SettingsUtils(private val activity: FragmentActivity) {
                 sharedPreferences?.edit {
                     putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, true)
                 }
-                FloatingBubbleService.startService(activity)
+                NotificationFloatingBubbleService.startService(activity)
             }
         } else {
-            FloatingBubbleService.stopService(activity)
+            NotificationFloatingBubbleService.stopService(activity)
         }
     }
 

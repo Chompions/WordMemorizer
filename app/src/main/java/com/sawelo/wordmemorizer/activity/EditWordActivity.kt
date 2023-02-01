@@ -15,8 +15,8 @@ import com.google.android.material.button.MaterialButton
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.databinding.ActivityEditWordBinding
+import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
-import com.sawelo.wordmemorizer.util.WordUtils.showToast
 import com.sawelo.wordmemorizer.viewmodel.UpdateWordViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

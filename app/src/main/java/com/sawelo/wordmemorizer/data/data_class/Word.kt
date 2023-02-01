@@ -15,6 +15,6 @@ data class Word(
     val createdTimeMillis: Long,
 ) {
     companion object {
-        const val TABLE_NAME = "word_table"
+        const val TABLE_NAME = "word"
     }
 }
