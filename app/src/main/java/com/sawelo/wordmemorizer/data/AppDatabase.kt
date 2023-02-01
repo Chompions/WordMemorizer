@@ -10,7 +10,7 @@ import com.sawelo.wordmemorizer.data.dao.WordDao
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordCategoryMap
-import com.sawelo.wordmemorizer.util.WordUtils
+import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +25,21 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
 
+        private val defaultCategoryList = listOf("All", "Important", "Names")
+        private val defaultWordList = listOf(
+            WordWithCategories(
+                Word(
+                    wordText = "お早うございます",
+                    furiganaText = "おはようございます",
+                    definitionText = "good morning",
+                    createdTimeMillis = System.currentTimeMillis(),
+                ),
+                listOf(Category(
+                    2, "Important"
+                ))
+            )
+        )
+
         private var INSTANCE: AppDatabase? = null
         fun getInstance(context: Context): AppDatabase {
             if (INSTANCE == null) {
@@ -37,12 +52,12 @@ abstract class AppDatabase : RoomDatabase() {
             val callback = object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     coroutineScope.launch {
-                        WordUtils.defaultCategoryList.forEach {
+                        defaultCategoryList.forEach {
                             val category = Category(categoryName = it)
                             getInstance(context).categoryDao()
                                 .insertCategory(category)
                         }
-                        WordUtils.defaultWordList.forEach {
+                        defaultWordList.forEach {
                             getInstance(context).wordDao()
                                 .insertWordWithCategories(it)
                         }
