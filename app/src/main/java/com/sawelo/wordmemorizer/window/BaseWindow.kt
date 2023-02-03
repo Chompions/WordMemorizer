@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.PixelFormat
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,10 +40,15 @@ abstract class BaseWindow(private val context: Context) {
         }
     }
     fun showWindow() {
-        viewGroup = setViews(layoutInflater)
-        val params = setParams(initialParams())
-        beforeShowWindow()
-        windowManager.addView(viewGroup, params)
+        try {
+            viewGroup = setViews(layoutInflater)
+            val params = setParams(initialParams())
+            beforeShowWindow()
+            windowManager.addView(viewGroup, params)
+        } catch (e: Exception) {
+            Log.e("BaseWindow", "Exception in openWindow: ${e.message}")
+        }
+
     }
 
     fun hideWindow() {
@@ -54,10 +60,14 @@ abstract class BaseWindow(private val context: Context) {
     }
 
     fun closeWindow() {
-        windowCoroutineScope.cancel()
-        beforeCloseWindow()
-        windowManager.removeView(viewGroup)
-        viewGroup = null
+        try {
+            windowCoroutineScope.cancel()
+            beforeCloseWindow()
+            windowManager.removeView(viewGroup)
+            viewGroup = null
+        } catch (e: Exception) {
+            Log.e("BaseWindow", "Exception in closeWindow: ${e.message}")
+        }
     }
 
     abstract fun setViews(layoutInflater: LayoutInflater): ViewGroup

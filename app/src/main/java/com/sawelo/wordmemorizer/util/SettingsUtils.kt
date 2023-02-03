@@ -35,7 +35,7 @@ class SettingsUtils(private val activity: FragmentActivity) {
         }
     }
 
-    fun checkAll() {
+    fun checkAllSettings() {
         checkPermissionForFloatingBubble()
         checkDownloadForDrawDigitalInk()
         checkDownloadForTranslator()

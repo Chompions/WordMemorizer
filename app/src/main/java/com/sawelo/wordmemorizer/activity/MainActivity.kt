@@ -1,11 +1,15 @@
 package com.sawelo.wordmemorizer.activity
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -21,13 +25,16 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.sawelo.wordmemorizer.BuildConfig
 import com.sawelo.wordmemorizer.R
+import com.sawelo.wordmemorizer.data.DatabaseHelper
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
+import com.sawelo.wordmemorizer.util.Constants
 import com.sawelo.wordmemorizer.util.Constants.HOME_FRAGMENT_TAG
 import com.sawelo.wordmemorizer.util.SettingsUtils
+import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,19 +57,74 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
             replace<HomeFragment>(R.id.activityMain_fcv, HOME_FRAGMENT_TAG)
         }
 
-        SettingsUtils(this).checkAll()
+        SettingsUtils(this).checkAllSettings()
 
         setAds()
         setCategories()
         setNavigationListener()
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkForOtherPackageDb()
+    }
+
+    private val otherExportedDbLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) {
+            showToast("Failed to get result from other application")
+            return@registerForActivityResult
+        }
+        val databaseHelper = DatabaseHelper(this)
+        result.data?.clipData?.also { clipData ->
+            for (i in 0 until clipData.itemCount) {
+                databaseHelper.importDb(
+                    databaseHelper.databaseNameList[i],
+                    clipData.getItemAt(i).uri)
+            }
+            finish()
+        }
+    }
+
+    private fun checkForOtherPackageDb() {
+        if (Constants.isOtherPackageExistInNewInstall && !isPackageCheckDialogVisible) {
+            val alertDialog = AlertDialog.Builder(this).apply {
+                setTitle("Duplicate app detected")
+                setMessage(
+                    "You have already installed WordMemorizer before, " +
+                            "would you like to copy your words into this application?"
+                )
+                setPositiveButton(R.string.ok) { dialog, _ ->
+                    Constants.isOtherPackageExistInNewInstall = false
+                    val backupIntent = Intent()
+                    backupIntent.component = ComponentName(
+                        Constants.OTHER_PACKAGE_NAME,
+                        "com.sawelo.wordmemorizer.activity.BackupActivity"
+                    )
+                    backupIntent.action = Constants.ACTIVITY_OTHER_CREATE_BACKUP_DB
+                    otherExportedDbLauncher.launch(backupIntent)
+                    dialog.dismiss()
+                }
+                setNegativeButton(R.string.cancel) { dialog, _ ->
+                    Constants.isOtherPackageExistInNewInstall = false
+                    dialog.cancel()
+                }
+            }.create()
+            alertDialog.show()
+            isPackageCheckDialogVisible = true
+        }
+    }
+
     @SuppressLint("VisibleForTests")
     private fun setAds() {
-        if (BuildConfig.BUILD_TYPE != "cleanRelease") {
+        if (BuildConfig.BUILD_TYPE != "cleanRelease" && BuildConfig.BUILD_TYPE != "cleanDebug") {
             MobileAds.initialize(this)
             val adRequest = AdRequest.Builder().build()
             binding.adView.loadAd(adRequest)
+            binding.adView.isVisible = true
+        } else {
+            binding.adView.isVisible = false
         }
     }
 
@@ -172,5 +234,9 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
             binding.activityMainDrawerLayout.close()
             true
         }
+    }
+
+    companion object {
+        var isPackageCheckDialogVisible = false
     }
 }

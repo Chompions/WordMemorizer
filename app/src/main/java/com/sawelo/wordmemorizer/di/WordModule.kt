@@ -15,7 +15,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 @Module
 @InstallIn(SingletonComponent::class)
-object WordModule {
+class WordModule {
+
     @Provides
     fun provideWordRepository(
         @ApplicationContext context: Context

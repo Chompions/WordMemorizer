@@ -29,6 +29,7 @@ class ToastWindow(
 
     override fun setParams(params: WindowManager.LayoutParams): WindowManager.LayoutParams {
         return params.apply {
+            type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
             gravity = Gravity.BOTTOM

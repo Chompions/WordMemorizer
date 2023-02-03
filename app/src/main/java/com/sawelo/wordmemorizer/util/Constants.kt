@@ -12,6 +12,10 @@ object Constants {
     var PREFERENCE_FLOATING_BUBBLE_KEY = ""
     var PREFERENCE_OFFLINE_TRANSLATION_KEY = ""
     var PREFERENCE_DRAW_CHARACTER_KEY = ""
+    var isOtherPackageExistInNewInstall = false
+
+    var OTHER_PACKAGE_NAME = ""
+    var ACTIVITY_OTHER_CREATE_BACKUP_DB = ""
 
     // Fragment tags and args
     const val HOME_FRAGMENT_TAG = "HOME_FRAGMENT_TAG"

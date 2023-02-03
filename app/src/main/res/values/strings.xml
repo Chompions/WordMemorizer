@@ -49,4 +49,5 @@
     <string name="turn_off">Turn off</string>
     <string name="tap_to_add_word">Tap to add word</string>
     <string name="tap_here_to_open_the_add_dialog">Tap here to open the add dialog</string>
+    <string name="please_wait_while_backup_is_running">Please wait while backup is running</string>
 </resources>

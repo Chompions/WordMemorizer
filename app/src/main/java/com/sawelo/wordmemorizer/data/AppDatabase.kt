@@ -11,6 +11,7 @@ import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordCategoryMap
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,8 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
 
     companion object {
-
-        private const val DATABASE_NAME = "word-memorizer-database"
+        const val DATABASE_NAME = "word-memorizer-database"
         private val DEFAULT_CATEGORY_LIST = listOf("All", "Important", "Names")
         private val DEFAULT_WORD_LIST = listOf(
             WordWithCategories(
@@ -35,54 +35,60 @@ abstract class AppDatabase : RoomDatabase() {
                     definitionText = "good morning",
                     createdTimeMillis = System.currentTimeMillis(),
                 ),
-                listOf(Category(
-                    2, "Important"
-                ))
+                listOf(
+                    Category(
+                        2, "Important"
+                    )
+                )
             )
         )
         private var INSTANCE: AppDatabase? = null
 
-        fun isDatabaseExist(context: Context): Boolean =
-            context.getDatabasePath(DATABASE_NAME).exists()
-
         fun getInstance(context: Context): AppDatabase {
             if (INSTANCE == null) {
-                INSTANCE = buildDatabase(context, CoroutineScope(Dispatchers.IO))
+                if (context.getDatabasePath(DATABASE_NAME)?.exists() == false) {
+                    Constants.isOtherPackageExistInNewInstall =
+                        DatabaseHelper(context).checkIsOtherPackageInstalled()
+                }
+                INSTANCE = buildBlankDatabase(context)
             }
             return INSTANCE as AppDatabase
         }
 
-//        private fun importDatabase(context: Context) {
-//            return Room.databaseBuilder(
-//                context,
-//                AppDatabase::class.java,
-//                DATABASE_NAME
-//            ).createFromFile()
-//        }
-
-        private fun buildDatabase(context: Context, coroutineScope: CoroutineScope): AppDatabase {
+        private fun buildBlankDatabase(
+            context: Context,
+        ): AppDatabase {
+            val coroutineScope = CoroutineScope(Dispatchers.IO)
+//            val backupDir = File("${context.filesDir}/databases_backup", "${DATABASE_NAME}_backup.db")
             val callback = object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     coroutineScope.launch {
                         DEFAULT_CATEGORY_LIST.forEach {
                             val category = Category(categoryName = it)
-                            getInstance(context).categoryDao()
-                                .insertCategory(category)
+                            getInstance(context).categoryDao().insertCategory(category)
                         }
                         DEFAULT_WORD_LIST.forEach {
-                            getInstance(context).wordDao()
-                                .insertWordWithCategories(it)
+                            getInstance(context).wordDao().insertWordWithCategories(it)
                         }
                     }
                 }
             }
-
+//            return if (backupDir.exists()) {
+//                Room.databaseBuilder(
+//                    context,
+//                    AppDatabase::class.java,
+//                    DATABASE_NAME
+//                ).addCallback(callback)
+//                    .createFromFile(backupDir)
+//                    .build()
+//            } else {
+//
+//            }
             return Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
                 DATABASE_NAME
-            )
-                .addCallback(callback)
+            ).addCallback(callback)
                 .build()
         }
     }
