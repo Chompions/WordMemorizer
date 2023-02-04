@@ -6,13 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.view.ContextThemeWrapper
+import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.util.Constants
-import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_FLOATING_DIALOG_REQUEST_CODE
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_CLOSE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_ACTION
+import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_FLOATING_DIALOG_REQUEST_CODE
 import com.sawelo.wordmemorizer.window.dialog.FloatingAddWordWindowInstance
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -49,7 +49,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
         fun openWindowPendingIntent(context: Context, currentCategory: Category?): PendingIntent {
             val receiverIntent = Intent()
             receiverIntent.action = RECEIVER_OPEN_ACTION
-            receiverIntent.`package` = Constants.PACKAGE_NAME
+            receiverIntent.`package` = MainApplication.PACKAGE_NAME
             if (currentCategory != null) {
                 receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
             }
@@ -61,7 +61,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
         fun openWindow(context: Context, currentCategory: Category?) {
             val receiverIntent = Intent()
             receiverIntent.action = RECEIVER_OPEN_ACTION
-            receiverIntent.`package` = Constants.PACKAGE_NAME
+            receiverIntent.`package` = MainApplication.PACKAGE_NAME
             if (currentCategory != null) {
                 receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
             }
@@ -71,7 +71,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
         fun closeWindow(context: Context) {
             val receiverIntent = Intent()
             receiverIntent.action = RECEIVER_CLOSE_ACTION
-            receiverIntent.`package` = Constants.PACKAGE_NAME
+            receiverIntent.`package` = MainApplication.PACKAGE_NAME
             context.sendBroadcast(receiverIntent)
         }
     }

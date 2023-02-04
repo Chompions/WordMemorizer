@@ -4,7 +4,7 @@
         <SwitchPreference
             android:enabled="true"
             android:key="@string/preference_floating_bubble_key"
-            android:summary="Use the floating bubble to open Add dialog anywhere"
+            android:summary="Use the floating bubble to open Add Word dialog anywhere. Also accessible from notification bar"
             android:title="Activate floating bubble" />
     </PreferenceCategory>
 
@@ -12,12 +12,12 @@
         <SwitchPreference
             android:enabled="true"
             android:key="@string/preference_draw_character_key"
-            android:summary="Enable this option to download Japanese character recognizer to draw for input"
+            android:summary="Enable this option to draw Japanese character in Add Word dialog"
             android:title="Add draw character option" />
         <SwitchPreference
             android:enabled="true"
             android:key="@string/preference_offline_translation_key"
-            android:summary="Enable this option to download Google language model for offline translation (±30MB)"
+            android:summary="Enable this option to use Google offline translation in Add Word dialog"
             android:title="Add offline Google translation" />
     </PreferenceCategory>
 

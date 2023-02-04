@@ -7,7 +7,10 @@ import androidx.fragment.app.replace
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.databinding.ActivitySettingsBinding
 import com.sawelo.wordmemorizer.fragment.SettingsFragment
+import com.sawelo.wordmemorizer.util.Constants
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
 
@@ -21,7 +24,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         supportFragmentManager.commit {
-            replace<SettingsFragment>(R.id.activitySettings_fcv, null)
+            replace<SettingsFragment>(R.id.activitySettings_fcv, Constants.SETTINGS_FRAGMENT_TAG)
         }
     }
 }

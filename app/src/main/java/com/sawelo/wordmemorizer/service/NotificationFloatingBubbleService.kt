@@ -12,21 +12,32 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
+import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
-import com.sawelo.wordmemorizer.util.Constants.SERVICE_CLOSE_FLOATING_BUBBLE_REQUEST_CODE
-import com.sawelo.wordmemorizer.util.Constants.SERVICE_HIDE_SHOW_FLOATING_BUBBLE_REQUEST_CODE
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_HIDE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_REVEAL_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_STOP_ACTION
-import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_UNWRAP_ACTION
+import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_WRAP_ACTION
+import com.sawelo.wordmemorizer.util.Constants.SERVICE_CLOSE_FLOATING_BUBBLE_REQUEST_CODE
+import com.sawelo.wordmemorizer.util.Constants.SERVICE_WRAP_FLOATING_BUBBLE_REQUEST_CODE
+import com.sawelo.wordmemorizer.util.FloatingBubbleProcess
+import com.sawelo.wordmemorizer.util.PreferencesUtils.getProcess
+import com.sawelo.wordmemorizer.util.PreferencesUtils.setProcess
 import com.sawelo.wordmemorizer.window.BaseWindow
 import com.sawelo.wordmemorizer.window.FloatingBubbleWindow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class NotificationFloatingBubbleService : Service() {
 
     private var floatingBubbleWindow: BaseWindow? = null
     private var notificationManager: NotificationManager? = null
+    private var coroutineScope: CoroutineScope? = null
+
+    private val service = this
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -35,47 +46,101 @@ class NotificationFloatingBubbleService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        coroutineScope = CoroutineScope(Dispatchers.Main)
 
         when (intent.action) {
-            NOTIFICATION_STOP_ACTION -> {
-                isFloatingBubbleVisible = false
-                stopSelf()
-            }
+            NOTIFICATION_STOP_ACTION -> if (floatingBubbleWindow != null) stopSelf()
             NOTIFICATION_START_ACTION -> {
-                isFloatingBubbleVisible = true
-                floatingBubbleWindow = FloatingBubbleWindow(this)
-                startForeground(NOTIFICATION_ID, createNotificationBuilder().build())
-                floatingBubbleWindow?.showWindow()
+                if (floatingBubbleWindow == null) {
+                    coroutineScope?.launch {
+                        FloatingBubbleProcess.IsRunning.setProcess(service, true)
+                        FloatingBubbleProcess.IsUnwrapped.setProcess(service, true)
+                        FloatingBubbleProcess.IsVisible.setProcess(service, true)
+                        startForeground(NOTIFICATION_ID, createNotificationBuilder().build())
+                    }
+                    floatingBubbleWindow = FloatingBubbleWindow(service)
+                    floatingBubbleWindow?.showWindow()
+                }
             }
-            NOTIFICATION_HIDE_ACTION -> {
-                isFloatingBubbleVisible = false
-                notificationManager?.notify(NOTIFICATION_ID, createNotificationBuilder().build())
-                floatingBubbleWindow?.hideWindow()
+            NOTIFICATION_UNWRAP_ACTION -> {
+                if (floatingBubbleWindow != null) {
+                    coroutineScope?.launch {
+                        FloatingBubbleProcess.IsUnwrapped.setProcess(service, true)
+                        FloatingBubbleProcess.IsVisible.setProcess(service, true)
+                        notificationManager?.notify(
+                            NOTIFICATION_ID,
+                            createNotificationBuilder().build()
+                        )
+                    }
+                    floatingBubbleWindow?.revealWindow()
+                }
+            }
+            NOTIFICATION_WRAP_ACTION -> {
+                if (floatingBubbleWindow != null) {
+                    coroutineScope?.launch {
+                        FloatingBubbleProcess.IsUnwrapped.setProcess(service, false)
+                        FloatingBubbleProcess.IsVisible.setProcess(service, false)
+                        notificationManager?.notify(
+                            NOTIFICATION_ID,
+                            createNotificationBuilder().build()
+                        )
+                    }
+                    floatingBubbleWindow?.hideWindow()
+                }
             }
             NOTIFICATION_REVEAL_ACTION -> {
-                isFloatingBubbleVisible = true
-                notificationManager?.notify(NOTIFICATION_ID, createNotificationBuilder().build())
-                floatingBubbleWindow?.revealWindow()
+                if (floatingBubbleWindow != null) {
+                    coroutineScope?.launch {
+                        FloatingBubbleProcess.IsVisible.setProcess(service, true)
+                        notificationManager?.notify(
+                            NOTIFICATION_ID,
+                            createNotificationBuilder().build()
+                        )
+                        if (FloatingBubbleProcess.IsUnwrapped.getProcess(service)) {
+                            floatingBubbleWindow?.revealWindow()
+                        }
+                    }
+                }
             }
+            NOTIFICATION_HIDE_ACTION -> {
+                if (floatingBubbleWindow != null) {
+                    coroutineScope?.launch {
+                        FloatingBubbleProcess.IsVisible.setProcess(service, false)
+                        notificationManager?.notify(
+                            NOTIFICATION_ID,
+                            createNotificationBuilder().build()
+                        )
+                        if (FloatingBubbleProcess.IsUnwrapped.getProcess(service)) {
+                            floatingBubbleWindow?.hideWindow()
+                        }
+                    }
+                }
+            }
+            else -> throw Exception("Intent action is not recognizable")
         }
 
         return START_STICKY
     }
 
     override fun onDestroy() {
+        coroutineScope?.launch {
+            PreferenceManager.getDefaultSharedPreferences(service).edit {
+                putBoolean(SettingsSwitch.FloatingBubbleSwitch.switchKey, false)
+            }
+            FloatingBubbleProcess.IsRunning.setProcess(service, false)
+            FloatingBubbleProcess.IsUnwrapped.setProcess(service, false)
+            FloatingBubbleProcess.IsVisible.setProcess(service, false)
+        }
+
         FloatingAddWordWindowReceiver.closeWindow(this)
         floatingBubbleWindow?.closeWindow()
         floatingBubbleWindow = null
-
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        sharedPreferences.edit {
-            putBoolean(PREFERENCE_FLOATING_BUBBLE_KEY, false)
-        }
-
+        notificationManager = null
+        coroutineScope = null
         super.onDestroy()
     }
 
-    private fun createNotificationBuilder(): NotificationCompat.Builder {
+    private suspend fun createNotificationBuilder(): NotificationCompat.Builder {
         // Create notification channel
         val name = "Floating Bubble Channel"
         val descriptionText = "Channel for adjusting floating bubble"
@@ -85,12 +150,13 @@ class NotificationFloatingBubbleService : Service() {
         }
         notificationManager?.createNotificationChannel(channel)
 
-        val hideServiceIntent = Intent(this, NotificationFloatingBubbleService::class.java)
-        hideServiceIntent.action = if (isFloatingBubbleVisible) NOTIFICATION_HIDE_ACTION else NOTIFICATION_REVEAL_ACTION
-        val hideServicePendingIntent = PendingIntent.getService(
+        val wrapServiceIntent = Intent(this, NotificationFloatingBubbleService::class.java)
+        wrapServiceIntent.action = if (FloatingBubbleProcess.IsUnwrapped.getProcess(this))
+            NOTIFICATION_WRAP_ACTION else NOTIFICATION_UNWRAP_ACTION
+        val wrapServicePendingIntent = PendingIntent.getService(
             this,
-            SERVICE_HIDE_SHOW_FLOATING_BUBBLE_REQUEST_CODE,
-            hideServiceIntent,
+            SERVICE_WRAP_FLOATING_BUBBLE_REQUEST_CODE,
+            wrapServiceIntent,
             PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -118,8 +184,9 @@ class NotificationFloatingBubbleService : Service() {
             .setContentIntent(openDialogPendingIntent)
             .addAction(
                 R.drawable.baseline_visibility_24,
-                if (isFloatingBubbleVisible) "Hide floating bubble" else "Show floating bubble",
-                hideServicePendingIntent
+                if (FloatingBubbleProcess.IsUnwrapped.getProcess(this))
+                    "Hide floating bubble" else "Show floating bubble",
+                wrapServicePendingIntent
             )
             .addAction(
                 R.drawable.ic_baseline_close_24,
@@ -131,12 +198,13 @@ class NotificationFloatingBubbleService : Service() {
     companion object {
         private const val CHANNEL_ID = "FLOATING_BUBBLE_CHANNEL_ID"
         private const val NOTIFICATION_ID = 1
-        private var isFloatingBubbleVisible = false
 
-        fun startService(context: Context) {
-            val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
-            serviceIntent.action = NOTIFICATION_START_ACTION
-            context.startForegroundService(serviceIntent)
+        suspend fun startService(context: Context) {
+            if (!FloatingBubbleProcess.IsRunning.getProcess(context)) {
+                val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
+                serviceIntent.action = NOTIFICATION_START_ACTION
+                context.startForegroundService(serviceIntent)
+            }
         }
 
         fun hideBubbleService(context: Context) {
@@ -151,10 +219,12 @@ class NotificationFloatingBubbleService : Service() {
             context.startService(serviceIntent)
         }
 
-        fun stopService(context: Context) {
-            val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
-            serviceIntent.action = NOTIFICATION_STOP_ACTION
-            context.stopService(serviceIntent)
+        suspend fun stopService(context: Context) {
+            if (FloatingBubbleProcess.IsRunning.getProcess(context)) {
+                val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
+                serviceIntent.action = NOTIFICATION_STOP_ACTION
+                context.stopService(serviceIntent)
+            }
         }
     }
 }

@@ -22,9 +22,8 @@ import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
 import com.sawelo.wordmemorizer.databinding.WindowAddWordFloatingBinding
+import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
-import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_DRAW_CHARACTER_KEY
-import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY
 import com.sawelo.wordmemorizer.util.FloatingDialogUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
 import com.sawelo.wordmemorizer.util.ViewUtils.addCategoryList
@@ -52,9 +51,9 @@ class FloatingAddWordWindow(
     private val sharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
     private val isDrawBtnOn =
-        sharedPreferences?.getBoolean(PREFERENCE_DRAW_CHARACTER_KEY, false) == true
+        sharedPreferences?.getBoolean(SettingsSwitch.DrawSwitch.switchKey, false) == true
     private val isTranslateBtnOn =
-        sharedPreferences?.getBoolean(PREFERENCE_OFFLINE_TRANSLATION_KEY, false) == true
+        sharedPreferences?.getBoolean(SettingsSwitch.TranslationSwitch.switchKey, false) == true
 
     override fun setViews(layoutInflater: LayoutInflater): ViewGroup {
         binding = WindowAddWordFloatingBinding.inflate(layoutInflater)
@@ -78,6 +77,7 @@ class FloatingAddWordWindow(
         setActionButton()
 
         NotificationFloatingBubbleService.hideBubbleService(context)
+
         isAddWordWindowActive = true
     }
 
@@ -87,6 +87,7 @@ class FloatingAddWordWindow(
         binding = null
 
         NotificationFloatingBubbleService.revealBubbleService(context)
+
         isAddWordWindowActive = false
     }
 

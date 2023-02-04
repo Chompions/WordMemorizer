@@ -40,9 +40,6 @@
     <string name="sort">sort</string>
     <string name="reset_word_count">Reset word count</string>
     <string name="toast_display">Toast display</string>
-    <string name="preference_floating_bubble_key">preference_floating_bubble_key</string>
-    <string name="preference_offline_translation_key">preference_offline_translation_key</string>
-    <string name="preference_draw_character_key">preference_draw_character_key</string>
     <string name="long_press_to_edit">Long-press to edit</string>
     <string name="close_floating_bubble">Close floating bubble</string>
     <string name="hide_floating_bubble">Hide floating bubble</string>
@@ -50,4 +47,8 @@
     <string name="tap_to_add_word">Tap to add word</string>
     <string name="tap_here_to_open_the_add_dialog">Tap here to open the add dialog</string>
     <string name="please_wait_while_backup_is_running">Please wait while backup is running</string>
+
+    <string name="preference_floating_bubble_key">SETTINGS_PREFERENCE_FLOATING_BUBBLE_KEY</string>
+    <string name="preference_offline_translation_key">SETTINGS_PREFERENCE_OFFLINE_TRANSLATION_KEY</string>
+    <string name="preference_draw_character_key">SETTINGS_PREFERENCE_DRAW_CHARACTER_KEY</string>
 </resources>

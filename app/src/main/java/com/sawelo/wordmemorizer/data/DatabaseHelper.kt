@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.content.FileProvider.getUriForFile
-import com.sawelo.wordmemorizer.util.Constants
+import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import java.io.File
 import java.io.FileOutputStream
@@ -32,11 +32,10 @@ class DatabaseHelper(private val context: Context) {
     private fun copyWithFileUri(fileName: String, sourceDir: File, targetDir: File): Uri {
         val targetFile = File(targetDir, fileName)
         File(sourceDir, fileName).copyTo(targetFile, true)
-        return getUriForFile(context, "${Constants.PACKAGE_NAME}.file-provider", targetFile)
+        return getUriForFile(context, "${MainApplication.PACKAGE_NAME}.file-provider", targetFile)
     }
 
     fun importDb(fileName: String, uri: Uri) {
-        context.showToast("Import backup")
         try {
             val targetFile = File("${context.dataDir}/databases/", fileName)
             val outputStream = FileOutputStream(targetFile)
@@ -52,11 +51,11 @@ class DatabaseHelper(private val context: Context) {
     fun checkIsOtherPackageInstalled(): Boolean {
         return try {
             if (Build.VERSION.SDK_INT >= 33) {
-                context.packageManager.getPackageInfo(Constants.OTHER_PACKAGE_NAME, PackageManager.PackageInfoFlags.of(0L))
+                context.packageManager.getPackageInfo(MainApplication.OTHER_PACKAGE_NAME, PackageManager.PackageInfoFlags.of(0L))
                 true
             } else {
                 @Suppress("DEPRECATION")
-                context.packageManager.getPackageInfo(Constants.OTHER_PACKAGE_NAME, 0)
+                context.packageManager.getPackageInfo(MainApplication.OTHER_PACKAGE_NAME, 0)
                 true
             }
         } catch (e: PackageManager.NameNotFoundException) {

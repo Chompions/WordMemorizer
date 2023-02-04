@@ -1,6 +1,8 @@
 package com.sawelo.wordmemorizer.di
 
 import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.data.AppDatabase
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.remote.JishoService
@@ -34,6 +36,13 @@ class WordModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(JishoService::class.java)
+    }
+
+    @Provides
+    fun provideSharedPreferences(
+        @ApplicationContext context: Context
+    ): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
     }
 
 }

@@ -7,9 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
-import androidx.preference.PreferenceManager
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.nl.translate.TranslateLanguage
@@ -18,17 +20,25 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModel
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.util.Constants
+import com.sawelo.wordmemorizer.dataStore
+import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DOWNLOAD_DRAW_DIGITAL_INK
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DOWNLOAD_EXTRA
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DOWNLOAD_TRANSLATOR
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
+import com.sawelo.wordmemorizer.util.SettingsProcess
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DownloadService: Service() {
-
-    private var sharedPreferences: SharedPreferences? = null
+@AndroidEntryPoint
+class DownloadService : Service() {
     private var notificationManager: NotificationManager? = null
+    @Inject
+    lateinit var sharedPreferences: SharedPreferences
 
     override fun onBind(intent: Intent): IBinder? {
         return null
@@ -37,7 +47,6 @@ class DownloadService: Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         when (intent?.action) {
             NOTIFICATION_START_ACTION -> {
                 createGeneralNotification()
@@ -52,7 +61,6 @@ class DownloadService: Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        sharedPreferences = null
         notificationManager = null
     }
 
@@ -83,9 +91,8 @@ class DownloadService: Service() {
 
 
     private fun downloadForTranslator() {
-        editPrefWithToast(
-            Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY,
-            "Downloading Japanese translator, please wait")
+        showToast("Downloading Japanese translator, please wait")
+        SettingsSwitch.TranslationSwitch.isChecked = false
         val options = TranslatorOptions.Builder()
             .setSourceLanguage(TranslateLanguage.JAPANESE)
             .setTargetLanguage(TranslateLanguage.ENGLISH)
@@ -93,23 +100,22 @@ class DownloadService: Service() {
         val japaneseEnglishTranslator = Translation.getClient(options)
         japaneseEnglishTranslator.downloadModelIfNeeded()
             .addOnFailureListener {
-                editPrefWithToast(
-                    Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY,
-                    "Download failed: ${it.message}")
+                showToast("Download failed: ${it.message}")
+                SettingsSwitch.TranslationSwitch.isChecked = false
+                Log.e("DownloadService", "Download failed: ${it.message}")
             }
             .addOnSuccessListener {
-                editPrefWithToast(
-                    Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY,
-                    "Download complete")
+                showToast("Download complete")
+                SettingsSwitch.TranslationSwitch.isChecked = true
             }
             .addOnCanceledListener {
-                Constants.isOfflineTranslationDownloadingFlow.value = false
+                SettingsProcess.TranslationDownload.setCurrentProcess(false)
                 japaneseEnglishTranslator.close()
                 notificationManager?.cancel(NOTIFICATION_TRANSLATOR_ID)
                 stopDownloadTranslatorService(this)
             }
             .addOnCompleteListener {
-                Constants.isOfflineTranslationDownloadingFlow.value = false
+                SettingsProcess.TranslationDownload.setCurrentProcess(false)
                 japaneseEnglishTranslator.close()
                 notificationManager?.cancel(NOTIFICATION_TRANSLATOR_ID)
                 stopDownloadTranslatorService(this)
@@ -117,29 +123,27 @@ class DownloadService: Service() {
     }
 
     private fun downloadForDrawDigitalInk() {
-        editPrefWithToast(
-            Constants.PREFERENCE_DRAW_CHARACTER_KEY,
-            "Downloading character recognizer, please wait")
+        showToast("Downloading character recognizer, please wait")
+        SettingsSwitch.DrawSwitch.isChecked = false
         val modelIdentifier = DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja-JP")
         val model = DigitalInkRecognitionModel.builder(modelIdentifier!!).build()
         RemoteModelManager.getInstance().download(model, DownloadConditions.Builder().build())
             .addOnFailureListener {
-                editPrefWithToast(
-                    Constants.PREFERENCE_DRAW_CHARACTER_KEY,
-                    "Download failed: ${it.message}")
+                showToast("Download failed: ${it.message}")
+                SettingsSwitch.DrawSwitch.isChecked = false
+                Log.e("DownloadService", "Download failed: ${it.message}")
             }
             .addOnSuccessListener {
-                editPrefWithToast(
-                    Constants.PREFERENCE_DRAW_CHARACTER_KEY,
-                    "Download complete")
+                showToast("Download complete")
+                SettingsSwitch.DrawSwitch.isChecked = true
             }
             .addOnCanceledListener {
-                Constants.isDrawDigitalInkDownloadingFlow.value = false
+                SettingsProcess.DrawDownload.setCurrentProcess(false)
                 notificationManager?.cancel(NOTIFICATION_DRAW_DIGITAL_INK_ID)
                 stopDownloadDrawDigitalInkService(this)
             }
             .addOnCompleteListener {
-                Constants.isDrawDigitalInkDownloadingFlow.value = false
+                SettingsProcess.DrawDownload.setCurrentProcess(false)
                 notificationManager?.cancel(NOTIFICATION_DRAW_DIGITAL_INK_ID)
                 stopDownloadDrawDigitalInkService(this)
             }
@@ -156,12 +160,17 @@ class DownloadService: Service() {
         notificationManager?.createNotificationChannel(channel)
     }
 
-    private fun editPrefWithToast(key: String, toast: String,) {
-        sharedPreferences?.edit {
-            putBoolean(key, false)
+    private fun SettingsProcess.setCurrentProcess(boolean: Boolean) {
+        CoroutineScope(Dispatchers.IO).launch {
+            applicationContext.dataStore.edit { preferences ->
+                preferences[booleanPreferencesKey(processKey)] = boolean
+            }
         }
-        showToast(toast)
     }
+
+    private var SettingsSwitch.isChecked: Boolean
+        get() = sharedPreferences.getBoolean(switchKey, false)
+        set(value) = sharedPreferences.edit { putBoolean(switchKey, value) }
 
     companion object {
         private const val CHANNEL_ID = "DOWNLOAD_CHANNEL_ID"
@@ -175,14 +184,20 @@ class DownloadService: Service() {
         fun startDownloadTranslatorService(context: Context) {
             translatorIntent = Intent(context, DownloadService::class.java)
             translatorIntent?.action = NOTIFICATION_START_ACTION
-            translatorIntent?.putExtra(NOTIFICATION_DOWNLOAD_EXTRA, NOTIFICATION_DOWNLOAD_TRANSLATOR)
+            translatorIntent?.putExtra(
+                NOTIFICATION_DOWNLOAD_EXTRA,
+                NOTIFICATION_DOWNLOAD_TRANSLATOR
+            )
             context.startForegroundService(translatorIntent)
         }
 
         fun startDownloadDrawDigitalInkService(context: Context) {
             drawDigitalInkIntent = Intent(context, DownloadService::class.java)
             drawDigitalInkIntent?.action = NOTIFICATION_START_ACTION
-            drawDigitalInkIntent?.putExtra(NOTIFICATION_DOWNLOAD_EXTRA, NOTIFICATION_DOWNLOAD_DRAW_DIGITAL_INK)
+            drawDigitalInkIntent?.putExtra(
+                NOTIFICATION_DOWNLOAD_EXTRA,
+                NOTIFICATION_DOWNLOAD_DRAW_DIGITAL_INK
+            )
             context.startForegroundService(drawDigitalInkIntent)
         }
 

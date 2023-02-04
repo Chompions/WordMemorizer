@@ -5,12 +5,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.sawelo.wordmemorizer.util.Constants.ACTIVITY_OTHER_CREATE_BACKUP_DB
-import com.sawelo.wordmemorizer.util.Constants.OTHER_PACKAGE_NAME
-import com.sawelo.wordmemorizer.util.Constants.PACKAGE_NAME
-import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_DRAW_CHARACTER_KEY
-import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_FLOATING_BUBBLE_KEY
-import com.sawelo.wordmemorizer.util.Constants.PREFERENCE_OFFLINE_TRANSLATION_KEY
 import dagger.hilt.android.HiltAndroidApp
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -21,12 +15,15 @@ class MainApplication: Application() {
         super.onCreate()
 
         PACKAGE_NAME = applicationContext.packageName
-        PREFERENCE_FLOATING_BUBBLE_KEY = getString(R.string.preference_floating_bubble_key)
-        PREFERENCE_OFFLINE_TRANSLATION_KEY = getString(R.string.preference_offline_translation_key)
-        PREFERENCE_DRAW_CHARACTER_KEY = getString(R.string.preference_draw_character_key)
-
         OTHER_PACKAGE_NAME = if (applicationContext.packageName == "com.sawelo.wordmemorizer")
             "com.sawelo.wordmemorizer.clean" else "com.sawelo.wordmemorizer"
         ACTIVITY_OTHER_CREATE_BACKUP_DB = "$OTHER_PACKAGE_NAME.action.CREATE_BACKUP_DB"
+    }
+
+    companion object {
+        var PACKAGE_NAME = ""
+        var OTHER_PACKAGE_NAME = ""
+        var ACTIVITY_OTHER_CREATE_BACKUP_DB = ""
+        var isOtherPackageExistInNewInstall = false
     }
 }

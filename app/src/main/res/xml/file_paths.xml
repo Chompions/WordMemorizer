@@ -2,5 +2,5 @@
 <paths>
     <files-path
         name="database_path"
-        path="."/>
+        path="databases_backup/"/>
 </paths>

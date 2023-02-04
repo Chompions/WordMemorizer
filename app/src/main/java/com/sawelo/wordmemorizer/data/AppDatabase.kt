@@ -5,13 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.data.dao.CategoryDao
 import com.sawelo.wordmemorizer.data.dao.WordDao
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.data.data_class.WordCategoryMap
 import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
-import com.sawelo.wordmemorizer.util.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,7 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
         fun getInstance(context: Context): AppDatabase {
             if (INSTANCE == null) {
                 if (context.getDatabasePath(DATABASE_NAME)?.exists() == false) {
-                    Constants.isOtherPackageExistInNewInstall =
+                    MainApplication.isOtherPackageExistInNewInstall =
                         DatabaseHelper(context).checkIsOtherPackageInstalled()
                 }
                 INSTANCE = buildBlankDatabase(context)
@@ -59,7 +59,6 @@ abstract class AppDatabase : RoomDatabase() {
             context: Context,
         ): AppDatabase {
             val coroutineScope = CoroutineScope(Dispatchers.IO)
-//            val backupDir = File("${context.filesDir}/databases_backup", "${DATABASE_NAME}_backup.db")
             val callback = object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     coroutineScope.launch {
@@ -73,17 +72,6 @@ abstract class AppDatabase : RoomDatabase() {
                     }
                 }
             }
-//            return if (backupDir.exists()) {
-//                Room.databaseBuilder(
-//                    context,
-//                    AppDatabase::class.java,
-//                    DATABASE_NAME
-//                ).addCallback(callback)
-//                    .createFromFile(backupDir)
-//                    .build()
-//            } else {
-//
-//            }
             return Room.databaseBuilder(
                 context,
                 AppDatabase::class.java,
