@@ -48,10 +48,10 @@
             android:id="@+id/windowDraw_line"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="?colorOnSecondary"
+            android:background="?colorControlHighlight"
+            android:alpha=".2"
             app:layout_constraintTop_toTopOf="@id/windowDraw_recommendationScrollView"
             app:layout_constraintBottom_toBottomOf="@id/windowDraw_recommendationScrollView">
-
         </View>
 
         <ImageButton

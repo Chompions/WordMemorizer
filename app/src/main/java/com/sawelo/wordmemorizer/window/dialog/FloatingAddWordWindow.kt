@@ -98,10 +98,9 @@ class FloatingAddWordWindow(
     }
 
     private fun setDrawWindow() {
-        val currentWordText = binding?.dialogAddWordEt?.text.toString()
         if (isDrawBtnOn) binding?.dialogDrawWordBtn?.setOnClickListener {
             FloatingDrawWordWindow(
-                context, currentWordText, this
+                context, binding?.dialogAddWordEt?.text.toString(), this
             ) {
                 binding?.dialogAddWordEt?.setText(it)
             }.showWindow()
@@ -248,7 +247,7 @@ class FloatingAddWordWindow(
                 binding?.dialogSearchWordJishoBtn?.visibility = View.INVISIBLE
                 if (isTranslateBtnOn) binding?.dialogSearchWordTranslateBtn?.visibility = View.INVISIBLE
 
-                binding?.dialogRecommendationLayout?.addButtonInLayout(context, "Reset") {
+                binding?.dialogRecommendationLayout?.addButtonInLayout(context, "Back") {
                     resetWordRecommendation()
                 }
                 result?.forEach { baseWord ->

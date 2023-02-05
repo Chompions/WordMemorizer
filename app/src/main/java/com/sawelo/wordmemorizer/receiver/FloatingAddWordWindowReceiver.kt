@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.appcompat.view.ContextThemeWrapper
 import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
@@ -23,7 +24,7 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
     lateinit var wordRepository: WordRepository
 
     override fun onReceive(context: Context, intent: Intent) {
-        println("you receive something")
+        Log.d("FloatingAddWordWindowReceiver", "Receiver receive broadcast")
 
         @Suppress("DEPRECATION")
         val extra = if (Build.VERSION.SDK_INT >= 33) {

@@ -48,6 +48,6 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintBottom_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

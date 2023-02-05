@@ -6,9 +6,12 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
+import android.util.TypedValue
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 import com.google.android.material.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -18,6 +21,16 @@ import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.window.ToastWindow
 
 object ViewUtils {
+
+    @ColorInt
+    fun Context.getColorFromAttr(
+        @AttrRes attrColor: Int,
+        typedValue: TypedValue = TypedValue(),
+        resolveRefs: Boolean = true
+    ): Int {
+        theme.resolveAttribute(attrColor, typedValue, resolveRefs)
+        return typedValue.data
+    }
 
     fun Context.showToast(toast: String?) {
         if (Settings.canDrawOverlays(this)) {

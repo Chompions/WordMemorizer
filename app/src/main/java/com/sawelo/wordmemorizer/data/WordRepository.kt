@@ -136,8 +136,8 @@ class WordRepository(
 
     fun getAllCategories(): Flow<List<Category>> = database.categoryDao().getCategoryList()
 
-    suspend fun addCategory(category: Category) {
-        database.categoryDao().insertCategory(category)
+    suspend fun addCategory(category: Category): Long {
+        return database.categoryDao().insertCategory(category)
     }
 
     suspend fun deleteCategory(category: Category) {

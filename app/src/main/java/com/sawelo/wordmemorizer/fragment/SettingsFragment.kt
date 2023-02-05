@@ -47,9 +47,12 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
         lifecycleScope.launch {
             when (key) {
-                floatingBubbleSwitchView.key -> settingsUtils.checkPermissionForFloatingBubble()
-                drawCharacterSwitchView.key -> settingsUtils.checkDownloadForDrawDigitalInk()
-                translateSwitchView.key -> settingsUtils.checkDownloadForTranslator()
+                floatingBubbleSwitchView.key -> if (SettingsSwitch.FloatingBubbleSwitch.isChecked)
+                    settingsUtils.checkPermissionForFloatingBubble()
+                drawCharacterSwitchView.key -> if (SettingsSwitch.DrawSwitch.isChecked)
+                    settingsUtils.checkDownloadForDrawDigitalInk()
+                translateSwitchView.key -> if (SettingsSwitch.TranslationSwitch.isChecked)
+                    settingsUtils.checkDownloadForTranslator()
             }
         }
     }

@@ -55,6 +55,7 @@
             android:layout_width="95dp"
             android:layout_height="wrap_content"
             android:contentDescription="@string/remember_button"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:text="@string/hide"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

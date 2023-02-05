@@ -43,6 +43,7 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/forgot_button"
             android:text="@string/forgot"
+            style="@style/Widget.Material3.Button.TonalButton"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

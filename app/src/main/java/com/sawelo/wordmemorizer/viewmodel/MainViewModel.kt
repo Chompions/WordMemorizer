@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.AsyncDifferConfig
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.callback.CategoryDiffUtilCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -33,9 +35,12 @@ class MainViewModel @Inject constructor(
         return wordRepository.getAllForgottenWordsPagingData(category).cachedIn(viewModelScope)
     }
 
-    fun addCategory(category: Category) {
+    fun addCategory(context: Context, category: Category) {
         viewModelScope.launch {
-            wordRepository.addCategory(category)
+            val resultId = wordRepository.addCategory(category)
+            if (resultId == -1L) {
+                context.showToast("You already have a category with this name")
+            }
         }
     }
 

@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class FloatingDrawWordWindow(
     private val context: Context,
-    private var initialText: String = "",
+    private var initialText: String,
     private val parentWindow: DialogWindow,
     private val result: ((wordText: String) -> Unit)
 ) : DialogWindow(context), StrokeCallback {
@@ -44,15 +44,11 @@ class FloatingDrawWordWindow(
                 if (candidates.isNotEmpty()) {
                     binding?.windowDrawRecommendationLayout?.addButtonInLayout(
                         context, "Reset"
-                    ) {
-                        clearCanvas()
-                    }
+                    ) { clearCanvas() }
                     candidates.forEach {
                         binding?.windowDrawRecommendationLayout?.addButtonInLayout(
                             context, it.text
-                        ) {
-                            startTyping(it.text)
-                        }
+                        ) { startTyping(it.text) }
                     }
                 }
             }

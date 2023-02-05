@@ -13,16 +13,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.core.view.removeItemAt
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.AsyncListDiffer
-import androidx.recyclerview.widget.ListUpdateCallback
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sawelo.wordmemorizer.BuildConfig
 import com.sawelo.wordmemorizer.MainApplication
@@ -45,13 +43,12 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), ListUpdateCallback {
+class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var settingsUtils: SettingsUtils
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
-    private var asyncDiffer: AsyncListDiffer<Category>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,11 +140,14 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
     }
 
     private fun setCategories() {
-        asyncDiffer = AsyncListDiffer(this, viewModel.asyncDifferConfig)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.getAllCategories().collectLatest { categories ->
-                    asyncDiffer?.submitList(categories)
+                    val menu = binding.activityMainNavigationView.menu
+                    menu.clear()
+                    categories.forEachIndexed { index, it ->
+                        menu.createTab(it, index)
+                    }
                 }
             }
         }
@@ -163,9 +163,11 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
             true
         }
 
-        binding.activityMainNavigationViewAddCategoryBtn.setOnClickListener {
-            AddCategoryDialogFragment().show(supportFragmentManager, null)
-        }
+        val header = binding.activityMainNavigationView.getHeaderView(0)
+        header.findViewById<MaterialButton>(R.id.drawerNavigationHeader_addCategory_btn)
+            .setOnClickListener {
+                AddCategoryDialogFragment().show(supportFragmentManager, null)
+            }
 
         binding.activityMainToolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -187,49 +189,12 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
-    override fun onInserted(position: Int, count: Int) {
-        val menu = binding.activityMainNavigationView.menu
-        val currentList = asyncDiffer?.currentList
-        (position until position + count).forEach { perPosition ->
-            currentList?.get(perPosition)?.let { category ->
-                menu.createTab(category, perPosition)
-            }
-        }
-    }
-
-    override fun onRemoved(position: Int, count: Int) {
-        val menu = binding.activityMainNavigationView.menu
-        (position until position + count).forEach { perPosition ->
-            menu.removeItemAt(perPosition)
-        }
-    }
-
-    override fun onMoved(fromPosition: Int, toPosition: Int) {
-        val menu = binding.activityMainNavigationView.menu
-        val currentList = asyncDiffer?.currentList
-        menu.removeItemAt(fromPosition)
-        currentList?.get(toPosition)?.let { category ->
-            menu.createTab(category, toPosition)
-        }
-    }
-
-    override fun onChanged(position: Int, count: Int, payload: Any?) {
-        val menu = binding.activityMainNavigationView.menu
-        val currentList = asyncDiffer?.currentList
-        (position until position + count).forEach { perPosition ->
-            menu.removeItemAt(perPosition)
-            currentList?.get(perPosition)?.let { category ->
-                menu.createTab(category, perPosition)
-            }
-        }
-    }
-
     private fun Menu.createTab(category: Category, position: Int) {
         val text = "${category.categoryName} (${category.wordCount})"
         add(Menu.NONE, category.categoryId, position, text)
 
         val item = this.findItem(category.categoryId)
-        item.setClickListener(category)
+        item.setClickListener(category.categoryName)
         item.setActionView(R.layout.item_drawer_category)
         item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
             ?.setOnClickListener {
@@ -240,11 +205,11 @@ class MainActivity : AppCompatActivity(), ListUpdateCallback {
         }
     }
 
-    private fun MenuItem.setClickListener(category: Category) {
+    private fun MenuItem.setClickListener(categoryName: String) {
         setOnMenuItemClickListener {
             val homeFragment = supportFragmentManager
                 .findFragmentByTag(HOME_FRAGMENT_TAG) as? HomeFragment
-            homeFragment?.setCurrentTab(category)
+            homeFragment?.setCurrentTab(categoryName)
             binding.activityMainDrawerLayout.close()
             true
         }

@@ -59,7 +59,7 @@ class SettingsUtils @Inject constructor(
                         createDialog(
                             "This feature will need to download additional files, " +
                                     "this is a one-time download, and it won't take long. " +
-                                    "\nDownload size approximately ±30MB"
+                                    "\nDownload size approximately ±70MB"
                         ) {
                             if (it) DownloadService.startDownloadTranslatorService(activity)
                             else {
@@ -71,6 +71,9 @@ class SettingsUtils @Inject constructor(
                         SettingsProcess.TranslationDownload.setCurrentProcess(false)
                     }
                 }
+        } else {
+            SettingsSwitch.TranslationSwitch.isChecked = false
+            SettingsProcess.TranslationDownload.setCurrentProcess(false)
         }
     }
 
@@ -85,7 +88,8 @@ class SettingsUtils @Inject constructor(
                 if (!isDownloaded) {
                     createDialog(
                         "This feature will need to download additional files, " +
-                                "this is a one-time download, and it won't take long."
+                                "this is a one-time download, and it won't take long. " +
+                                "\nDownload size approximately ±30MB"
                     ) {
                         if (it) DownloadService.startDownloadDrawDigitalInkService(activity)
                         else {
@@ -97,6 +101,9 @@ class SettingsUtils @Inject constructor(
                     SettingsProcess.DrawDownload.setCurrentProcess(false)
                 }
             }
+        } else {
+            SettingsSwitch.DrawSwitch.isChecked = false
+            SettingsProcess.DrawDownload.setCurrentProcess(false)
         }
     }
 
@@ -109,6 +116,7 @@ class SettingsUtils @Inject constructor(
                 checkPostNotificationForFloatingBubble()
             } else checkDrawOverlayForFloatingBubble()
         } else {
+            SettingsProcess.FloatingBubbleSetUp.setCurrentProcess(false)
             NotificationFloatingBubbleService.stopService(activity)
         }
     }
@@ -199,7 +207,9 @@ class SettingsUtils @Inject constructor(
                 onClick.invoke(false)
             }
         }.create()
-        alertDialog.show()
+        if (!activity.isFinishing) {
+            alertDialog.show()
+        }
     }
 
 }

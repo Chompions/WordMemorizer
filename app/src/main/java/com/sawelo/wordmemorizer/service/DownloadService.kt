@@ -55,6 +55,7 @@ class DownloadService : Service() {
                     NOTIFICATION_DOWNLOAD_DRAW_DIGITAL_INK -> createDrawDigitalInkNotification()
                 }
             }
+            else -> stopSelf()
         }
         return START_STICKY
     }
@@ -89,10 +90,10 @@ class DownloadService : Service() {
         downloadForDrawDigitalInk()
     }
 
-
     private fun downloadForTranslator() {
         showToast("Downloading Japanese translator, please wait")
         SettingsSwitch.TranslationSwitch.isChecked = false
+        SettingsProcess.TranslationDownload.setCurrentProcess(true)
         val options = TranslatorOptions.Builder()
             .setSourceLanguage(TranslateLanguage.JAPANESE)
             .setTargetLanguage(TranslateLanguage.ENGLISH)
@@ -125,6 +126,7 @@ class DownloadService : Service() {
     private fun downloadForDrawDigitalInk() {
         showToast("Downloading character recognizer, please wait")
         SettingsSwitch.DrawSwitch.isChecked = false
+        SettingsProcess.DrawDownload.setCurrentProcess(true)
         val modelIdentifier = DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja-JP")
         val model = DigitalInkRecognitionModel.builder(modelIdentifier!!).build()
         RemoteModelManager.getInstance().download(model, DownloadConditions.Builder().build())

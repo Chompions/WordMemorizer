@@ -8,7 +8,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menuHome_reset"
-        android:title="@string/reset_word_count"
+        android:title="@string/reset_forgot_count"
         app:showAsAction="never" />
     <item
         android:id="@+id/menuHome_settings"

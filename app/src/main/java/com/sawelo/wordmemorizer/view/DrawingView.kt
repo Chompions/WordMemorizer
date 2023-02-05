@@ -1,6 +1,7 @@
 package com.sawelo.wordmemorizer.view
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -29,7 +30,12 @@ class DrawingView @JvmOverloads constructor(
     }
 
     private val textPaint: Paint = Paint().apply {
-        color = Color.WHITE
+        val modeFlags = context?.resources?.configuration
+            ?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)
+        when (modeFlags) {
+            Configuration.UI_MODE_NIGHT_YES -> color = Color.WHITE
+            Configuration.UI_MODE_NIGHT_NO -> color = Color.GRAY
+        }
         alpha = 100
         textAlign = Paint.Align.CENTER
         textSize = 60F

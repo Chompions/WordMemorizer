@@ -25,7 +25,6 @@ import com.sawelo.wordmemorizer.util.Constants.SERVICE_WRAP_FLOATING_BUBBLE_REQU
 import com.sawelo.wordmemorizer.util.FloatingBubbleProcess
 import com.sawelo.wordmemorizer.util.PreferencesUtils.getProcess
 import com.sawelo.wordmemorizer.util.PreferencesUtils.setProcess
-import com.sawelo.wordmemorizer.window.BaseWindow
 import com.sawelo.wordmemorizer.window.FloatingBubbleWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +32,7 @@ import kotlinx.coroutines.launch
 
 class NotificationFloatingBubbleService : Service() {
 
-    private var floatingBubbleWindow: BaseWindow? = null
+    private var floatingBubbleWindow: FloatingBubbleWindow? = null
     private var notificationManager: NotificationManager? = null
     private var coroutineScope: CoroutineScope? = null
 
@@ -43,12 +42,12 @@ class NotificationFloatingBubbleService : Service() {
         return null
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         coroutineScope = CoroutineScope(Dispatchers.Main)
 
-        when (intent.action) {
+        when (intent?.action) {
             NOTIFICATION_STOP_ACTION -> if (floatingBubbleWindow != null) stopSelf()
             NOTIFICATION_START_ACTION -> {
                 if (floatingBubbleWindow == null) {
@@ -205,6 +204,18 @@ class NotificationFloatingBubbleService : Service() {
                 serviceIntent.action = NOTIFICATION_START_ACTION
                 context.startForegroundService(serviceIntent)
             }
+        }
+
+        fun wrapBubbleService(context: Context) {
+            val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_WRAP_ACTION
+            context.startService(serviceIntent)
+        }
+
+        fun unwrapBubbleService(context: Context) {
+            val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_UNWRAP_ACTION
+            context.startService(serviceIntent)
         }
 
         fun hideBubbleService(context: Context) {
