@@ -8,6 +8,17 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('C:\\Users\\ASUS\\.android\\debug.keystore')
+        }
+        release {
+            storeFile file('C:\\Users\\ASUS\\ProgramLibrary\\AndroidApp\\WordMemorizer\\keystore.jks')
+            storePassword 'Android@Dennisht04'
+            keyPassword 'Android@Dennisht04'
+            keyAlias 'wordmemorizer'
+        }
+    }
     namespace 'com.sawelo.wordmemorizer'
     compileSdk 33
 
@@ -26,16 +37,22 @@ android {
             applicationIdSuffix ".clean"
             versionNameSuffix "-clean"
             debuggable true
+            signingConfig signingConfigs.debug
         }
         cleanRelease {
             applicationIdSuffix ".clean"
             versionNameSuffix "-clean"
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -54,11 +71,12 @@ android {
     hilt {
         enableAggregatingTask = true
     }
-
     packagingOptions {
-        exclude 'META-INF/CONTRIBUTORS.md'
-        exclude 'META-INF/LICENSE.md'
+        resources {
+            excludes += ['META-INF/CONTRIBUTORS.md', 'META-INF/LICENSE.md']
+        }
     }
+
 
     testOptions {
         unitTests.includeAndroidResources  = true

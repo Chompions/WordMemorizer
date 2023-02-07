@@ -49,9 +49,9 @@ class SettingsUtils @Inject constructor(
 
     suspend fun checkDownloadForTranslator() {
         if (SettingsSwitch.TranslationSwitch.isChecked &&
-            !SettingsProcess.TranslationDownload.getCurrentProcess()
+            !SettingsProcess.PreparingDownloadProcess.getCurrentProcess()
         ) {
-            SettingsProcess.TranslationDownload.setCurrentProcess(true)
+            SettingsProcess.PreparingDownloadProcess.setCurrentProcess(true)
             val japaneseModel = TranslateRemoteModel.Builder(TranslateLanguage.JAPANESE).build()
             remoteModelManager.isModelDownloaded(japaneseModel)
                 .addOnSuccessListener { isDownloaded ->
@@ -61,27 +61,31 @@ class SettingsUtils @Inject constructor(
                                     "this is a one-time download, and it won't take long. " +
                                     "\nDownload size approximately ±70MB"
                         ) {
-                            if (it) DownloadService.startDownloadTranslatorService(activity)
+                            if (it) {
+                                SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
+                                DownloadService.startDownloadTranslatorService(activity)
+                            }
                             else {
                                 SettingsSwitch.TranslationSwitch.isChecked = false
-                                SettingsProcess.TranslationDownload.setCurrentProcess(false)
+                                SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
                             }
                         }
                     } else {
-                        SettingsProcess.TranslationDownload.setCurrentProcess(false)
+                        SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
                     }
                 }
-        } else {
-            SettingsSwitch.TranslationSwitch.isChecked = false
-            SettingsProcess.TranslationDownload.setCurrentProcess(false)
+                .addOnFailureListener {
+                    SettingsSwitch.TranslationSwitch.isChecked = false
+                    SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
+                }
         }
     }
 
     suspend fun checkDownloadForDrawDigitalInk() {
         if (SettingsSwitch.DrawSwitch.isChecked &&
-            !SettingsProcess.DrawDownload.getCurrentProcess()
+            !SettingsProcess.PreparingDownloadProcess.getCurrentProcess()
         ) {
-            SettingsProcess.DrawDownload.setCurrentProcess(true)
+            SettingsProcess.PreparingDownloadProcess.setCurrentProcess(true)
             val modelIdentifier = DigitalInkRecognitionModelIdentifier.fromLanguageTag("ja-JP")
             val model = DigitalInkRecognitionModel.builder(modelIdentifier!!).build()
             remoteModelManager.isModelDownloaded(model).addOnSuccessListener { isDownloaded ->
@@ -91,19 +95,22 @@ class SettingsUtils @Inject constructor(
                                 "this is a one-time download, and it won't take long. " +
                                 "\nDownload size approximately ±30MB"
                     ) {
-                        if (it) DownloadService.startDownloadDrawDigitalInkService(activity)
+                        if (it) {
+                            SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
+                            DownloadService.startDownloadDrawDigitalInkService(activity)
+                        }
                         else {
                             SettingsSwitch.DrawSwitch.isChecked = false
-                            SettingsProcess.DrawDownload.setCurrentProcess(false)
+                            SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
                         }
                     }
                 } else {
-                    SettingsProcess.DrawDownload.setCurrentProcess(false)
+                    SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
                 }
+            }.addOnFailureListener {
+                SettingsSwitch.DrawSwitch.isChecked = false
+                SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
             }
-        } else {
-            SettingsSwitch.DrawSwitch.isChecked = false
-            SettingsProcess.DrawDownload.setCurrentProcess(false)
         }
     }
 
@@ -189,7 +196,7 @@ class SettingsUtils @Inject constructor(
 
     private var SettingsSwitch.isChecked: Boolean
         get() = sharedPreferences.getBoolean(switchKey, false)
-        set(value) = sharedPreferences.edit { putBoolean(switchKey, value) }
+        set(value) = sharedPreferences.edit(commit = true) { putBoolean(switchKey, value) }
 
     private fun createDialog(message: String, onClick: (Boolean) -> Unit) {
         val alertDialog = MaterialAlertDialogBuilder(activity).apply {

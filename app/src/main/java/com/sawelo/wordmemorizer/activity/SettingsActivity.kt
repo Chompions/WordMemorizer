@@ -2,6 +2,7 @@ package com.sawelo.wordmemorizer.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import com.sawelo.wordmemorizer.R
@@ -26,5 +27,9 @@ class SettingsActivity : AppCompatActivity() {
         supportFragmentManager.commit {
             replace<SettingsFragment>(R.id.activitySettings_fcv, Constants.SETTINGS_FRAGMENT_TAG)
         }
+    }
+
+    fun setProgress(isLoading: Boolean) {
+        binding.activitySettingsProgressBar.isVisible = isLoading
     }
 }

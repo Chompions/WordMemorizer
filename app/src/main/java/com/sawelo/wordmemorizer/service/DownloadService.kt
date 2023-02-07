@@ -49,7 +49,6 @@ class DownloadService : Service() {
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         when (intent?.action) {
             NOTIFICATION_START_ACTION -> {
-                createGeneralNotification()
                 when (intent.getStringExtra(NOTIFICATION_DOWNLOAD_EXTRA)) {
                     NOTIFICATION_DOWNLOAD_TRANSLATOR -> createTranslatorNotification()
                     NOTIFICATION_DOWNLOAD_DRAW_DIGITAL_INK -> createDrawDigitalInkNotification()
@@ -65,28 +64,23 @@ class DownloadService : Service() {
         notificationManager = null
     }
 
-    private fun createGeneralNotification() {
+    private fun createTranslatorNotification() {
         createChannel()
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("Adding features")
-            .setContentText("Downloading additional features")
-        startForeground(NOTIFICATION_GENERAL_ID, builder.build())
-    }
-
-    private fun createTranslatorNotification() {
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Downloading offline translation")
-        notificationManager?.notify(NOTIFICATION_TRANSLATOR_ID, builder.build())
+            .setContentText("Downloading offline translation")
+        startForeground(NOTIFICATION_TRANSLATOR_ID, builder.build())
         downloadForTranslator()
     }
 
     private fun createDrawDigitalInkNotification() {
+        createChannel()
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Downloading character recognition")
-        notificationManager?.notify(NOTIFICATION_DRAW_DIGITAL_INK_ID, builder.build())
+            .setContentTitle("Adding features")
+            .setContentText("Downloading character recognition")
+        startForeground(NOTIFICATION_DRAW_DIGITAL_INK_ID, builder.build())
         downloadForDrawDigitalInk()
     }
 
@@ -112,16 +106,16 @@ class DownloadService : Service() {
             .addOnCanceledListener {
                 SettingsProcess.TranslationDownload.setCurrentProcess(false)
                 japaneseEnglishTranslator.close()
-                notificationManager?.cancel(NOTIFICATION_TRANSLATOR_ID)
-                stopDownloadTranslatorService(this)
+                stopSelf()
             }
             .addOnCompleteListener {
                 SettingsProcess.TranslationDownload.setCurrentProcess(false)
                 japaneseEnglishTranslator.close()
-                notificationManager?.cancel(NOTIFICATION_TRANSLATOR_ID)
-                stopDownloadTranslatorService(this)
+                stopSelf()
             }
     }
+
+
 
     private fun downloadForDrawDigitalInk() {
         showToast("Downloading character recognizer, please wait")
@@ -141,13 +135,11 @@ class DownloadService : Service() {
             }
             .addOnCanceledListener {
                 SettingsProcess.DrawDownload.setCurrentProcess(false)
-                notificationManager?.cancel(NOTIFICATION_DRAW_DIGITAL_INK_ID)
-                stopDownloadDrawDigitalInkService(this)
+                stopSelf()
             }
             .addOnCompleteListener {
                 SettingsProcess.DrawDownload.setCurrentProcess(false)
-                notificationManager?.cancel(NOTIFICATION_DRAW_DIGITAL_INK_ID)
-                stopDownloadDrawDigitalInkService(this)
+                stopSelf()
             }
     }
 
@@ -176,7 +168,6 @@ class DownloadService : Service() {
 
     companion object {
         private const val CHANNEL_ID = "DOWNLOAD_CHANNEL_ID"
-        private const val NOTIFICATION_GENERAL_ID = 20
         private const val NOTIFICATION_TRANSLATOR_ID = 21
         private const val NOTIFICATION_DRAW_DIGITAL_INK_ID = 22
 
@@ -201,14 +192,6 @@ class DownloadService : Service() {
                 NOTIFICATION_DOWNLOAD_DRAW_DIGITAL_INK
             )
             context.startForegroundService(drawDigitalInkIntent)
-        }
-
-        fun stopDownloadTranslatorService(context: Context) {
-            context.stopService(translatorIntent)
-        }
-
-        fun stopDownloadDrawDigitalInkService(context: Context) {
-            context.stopService(drawDigitalInkIntent)
         }
     }
 }
