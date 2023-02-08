@@ -48,7 +48,11 @@
         </provider>
 
         <service
-            android:name=".service.DownloadService"
+            android:name=".service.DownloadDrawService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name=".service.DownloadTranslatorService"
             android:enabled="true"
             android:exported="false" />
         <service

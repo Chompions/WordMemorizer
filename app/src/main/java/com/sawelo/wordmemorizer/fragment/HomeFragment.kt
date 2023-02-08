@@ -7,9 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -55,22 +53,21 @@ class HomeFragment : Fragment() {
         viewPagerAdapter = CategoryAdapter(this)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getAllCategories().distinctUntilChangedBy {
-                    it.map { category ->
-                        category.categoryName
-                    }
-                }.collectLatest { categories ->
-                    currentCategoryList = categories
-                    viewPagerAdapter?.setCategoryList(categories)
-                    viewPager?.adapter = viewPagerAdapter
-                    if (tabLayout != null && viewPager != null) {
-                        TabLayoutMediator(tabLayout!!, viewPager!!) { tab, position ->
-                            tab.text = categories[position].categoryName
-                        }.attach()
-                    }
-                    viewPager?.offscreenPageLimit = (categories.size).coerceIn(1, 6)
+            viewModel.getAllCategories().distinctUntilChangedBy {
+                it.map { category ->
+                    category.categoryName
                 }
+            }.collectLatest { categories ->
+                currentCategoryList = categories
+                viewPagerAdapter?.setCategoryList(categories)
+                viewPager?.adapter = viewPagerAdapter
+                if (tabLayout != null && viewPager != null && categories.isNotEmpty()) {
+                    TabLayoutMediator(tabLayout!!, viewPager!!) { tab, position ->
+                        tab.text = categories[position].categoryName
+                    }.attach()
+                }
+                viewPager?.offscreenPageLimit = (categories.size).coerceIn(1, 6)
+                changeCurrentTab()
             }
         }
 
@@ -106,10 +103,10 @@ class HomeFragment : Fragment() {
         FloatingAddWordWindowReceiver.closeWindow(requireContext())
     }
 
-    fun setCurrentTab(categoryName: String) {
-        if (currentCategoryList != null) {
+    fun changeCurrentTab() {
+        if (viewModel.currentCategory != null) {
             viewPager?.currentItem = currentCategoryList!!.indexOfFirst {
-                it.categoryName == categoryName
+                it.categoryName == viewModel.currentCategory!!.categoryName
             }
         }
     }

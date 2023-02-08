@@ -123,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("KotlinConstantConditions")
     @SuppressLint("VisibleForTests")
     private fun setAds() {
         try {
@@ -194,7 +195,7 @@ class MainActivity : AppCompatActivity() {
         add(Menu.NONE, category.categoryId, position, text)
 
         val item = this.findItem(category.categoryId)
-        item.setClickListener(category.categoryName)
+        item.setClickListener(category)
         item.setActionView(R.layout.item_drawer_category)
         item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
             ?.setOnClickListener {
@@ -205,11 +206,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun MenuItem.setClickListener(categoryName: String) {
+    private fun MenuItem.setClickListener(category: Category) {
         setOnMenuItemClickListener {
+            viewModel.currentCategory = category
             val homeFragment = supportFragmentManager
                 .findFragmentByTag(HOME_FRAGMENT_TAG) as? HomeFragment
-            homeFragment?.setCurrentTab(categoryName)
+            homeFragment?.changeCurrentTab()
+
             binding.activityMainDrawerLayout.close()
             true
         }

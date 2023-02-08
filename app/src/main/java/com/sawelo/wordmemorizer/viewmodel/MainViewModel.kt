@@ -5,12 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.recyclerview.widget.AsyncDifferConfig
 import com.sawelo.wordmemorizer.data.WordRepository
 import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.data.data_class.Word
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
-import com.sawelo.wordmemorizer.util.callback.CategoryDiffUtilCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -20,7 +18,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val wordRepository: WordRepository
 ) : ViewModel() {
-    val asyncDifferConfig = AsyncDifferConfig.Builder(CategoryDiffUtilCallback).build()
     var currentCategory: Category? = null
 
     fun getAllCategories(): Flow<List<Category>> {

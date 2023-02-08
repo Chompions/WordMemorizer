@@ -7,9 +7,7 @@ import androidx.core.content.edit
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import com.sawelo.wordmemorizer.R
@@ -32,17 +30,15 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
     @Inject
     lateinit var settingsUtils: SettingsUtils
 
-    lateinit var floatingBubbleSwitchView: SwitchPreference
-    lateinit var drawCharacterSwitchView: SwitchPreference
-    lateinit var translateSwitchView: SwitchPreference
+    private lateinit var floatingBubbleSwitchView: SwitchPreference
+    private lateinit var drawCharacterSwitchView: SwitchPreference
+    private lateinit var translateSwitchView: SwitchPreference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preference_settings, rootKey)
 
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                settingsUtils.checkAllSettings()
-            }
+            settingsUtils.checkAllSettings()
         }
 
         floatingBubbleSwitchView =
@@ -78,8 +74,6 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                         (activity as SettingsActivity).setProgress(isLoading)
                     }
 
-                println("CURRENTLY ${SettingsSwitch.DrawSwitch.isChecked}")
-
                 floatingBubbleSwitchView.isEnabled =
                     !SettingsProcess.FloatingBubbleSetUp.getCurrentProcess(preferences)
                 drawCharacterSwitchView.isEnabled =
@@ -93,8 +87,6 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                     SettingsSwitch.DrawSwitch.isChecked
                 translateSwitchView.isChecked =
                     SettingsSwitch.TranslationSwitch.isChecked
-
-                println("CURRENTLY AGAIN ${SettingsSwitch.DrawSwitch.isChecked}")
             }
         }
     }

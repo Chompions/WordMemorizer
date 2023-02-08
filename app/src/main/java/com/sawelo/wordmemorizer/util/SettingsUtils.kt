@@ -25,7 +25,8 @@ import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.dataStore
 import com.sawelo.wordmemorizer.fragment.SettingsSwitch
-import com.sawelo.wordmemorizer.service.DownloadService
+import com.sawelo.wordmemorizer.service.DownloadDrawService
+import com.sawelo.wordmemorizer.service.DownloadTranslatorService
 import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
@@ -63,7 +64,7 @@ class SettingsUtils @Inject constructor(
                         ) {
                             if (it) {
                                 SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
-                                DownloadService.startDownloadTranslatorService(activity)
+                                DownloadTranslatorService.startService(activity)
                             }
                             else {
                                 SettingsSwitch.TranslationSwitch.isChecked = false
@@ -97,7 +98,7 @@ class SettingsUtils @Inject constructor(
                     ) {
                         if (it) {
                             SettingsProcess.PreparingDownloadProcess.setCurrentProcess(false)
-                            DownloadService.startDownloadDrawDigitalInkService(activity)
+                            DownloadDrawService.startService(activity)
                         }
                         else {
                             SettingsSwitch.DrawSwitch.isChecked = false
