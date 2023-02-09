@@ -12,7 +12,7 @@
         <!--        <item name="colorSecondaryVariant">@color/yellow_200</item>-->
         <!--        <item name="colorOnSecondary">@color/black</item>-->
         <!--        &lt;!&ndash; Status bar color. &ndash;&gt;-->
-        <item name="android:statusBarColor">@color/md_theme_dark_onPrimary</item>
+        <item name="android:statusBarColor">@color/md_theme_dark_background</item>
         <!--        &lt;!&ndash; Customize your theme here. &ndash;&gt;-->
         <!--        <item name="inverseColor">@color/lightSurface</item>-->
         <!--        <item name="errorTextColor">@color/red_200</item>-->
