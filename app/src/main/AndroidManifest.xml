@@ -38,7 +38,7 @@
             android:value="ca-app-pub-3161498246882165~1811137470" />
 
         <provider
-            android:name=".data.DatabaseFileProvider"
+            android:name=".data.database.DatabaseFileProvider"
             android:authorities="${applicationId}.file-provider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -83,10 +83,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
         </activity>
     </application>
 

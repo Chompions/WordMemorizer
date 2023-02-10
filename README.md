@@ -7,7 +7,7 @@ An android app to memorize words with emphasize on Japanese kanji
 * Save your kanji words and automatically find hiragana/furigana/definition with the support of Jisho.org
 * Find similar words when adding new words to avoid repeated entries 
 * Emphasize on forgotten counts to keep track of what you need to remember the most 
-* Sort words according to your category (Important, Names, etc.) or add your own category
+* Sort words according to your categoryWithInfo (Important, Names, etc.) or add your own categoryWithInfo
 * Designed with Material Design 3 for a beautiful design 
 * With floating bubble, you can add or search word wherever you are
 

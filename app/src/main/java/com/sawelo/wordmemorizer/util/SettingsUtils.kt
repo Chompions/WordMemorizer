@@ -28,6 +28,7 @@ import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.service.DownloadDrawService
 import com.sawelo.wordmemorizer.service.DownloadTranslatorService
 import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
+import com.sawelo.wordmemorizer.util.enum_class.SettingsProcess
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.first

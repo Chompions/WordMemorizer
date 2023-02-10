@@ -2,7 +2,6 @@ package com.sawelo.wordmemorizer.activity
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.viewModels
@@ -12,21 +11,21 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.button.MaterialButton
-import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithCategories
 import com.sawelo.wordmemorizer.databinding.ActivityEditWordBinding
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
-import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.UpdateWordViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class EditWordActivity : AppCompatActivity() {
     private val viewModel: UpdateWordViewModel by viewModels()
+
     private lateinit var binding: ActivityEditWordBinding
     private lateinit var wordWithCategories: WordWithCategories
-    private var categoryList: List<Category>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,9 +49,10 @@ class EditWordActivity : AppCompatActivity() {
 
                 try {
                     wordWithCategories = viewModel.getWordWithCategoriesById(wordIdExtra)
-                    binding.activityEditWordAddWordEt.setText(wordWithCategories.word.wordText)
-                    binding.activityEditWordAddFuriganaEt.setText(wordWithCategories.word.furiganaText)
-                    binding.activityEditWordAddDefinitionEt.setText(wordWithCategories.word.definitionText)
+                    val word = wordWithCategories.wordWithInfo.word
+                    binding.activityEditWordAddWordEt.setText(word.wordText)
+                    binding.activityEditWordAddFuriganaEt.setText(word.furiganaText)
+                    binding.activityEditWordAddDefinitionEt.setText(word.definitionText)
 
                     getCategoryList()
 
@@ -66,29 +66,21 @@ class EditWordActivity : AppCompatActivity() {
     }
 
     @Suppress("DEPRECATION")
-    private fun getCategoryList() {
-        categoryList = if (Build.VERSION.SDK_INT >= 33) {
-            intent.getParcelableArrayListExtra(EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA, Category::class.java)
-        } else {
-            intent.getParcelableArrayListExtra(EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA)
-        }
-
-        if (categoryList != null) {
-            for (category in categoryList!!) {
-                if (!category.isAll()) {
-                    val button = MaterialButton(
-                        this, null,
-                        com.google.android.material.R.attr.materialButtonOutlinedStyle
-                    ).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        text = category.categoryName
-                        id = category.categoryId
-                    }
-                    (binding.activityEditWordGroup as ViewGroup).addView(button)
+    private suspend fun getCategoryList() {
+        viewModel.getAllCategories().collectLatest { categoryWithInfoList ->
+            for (categoryWithInfo in categoryWithInfoList) {
+                val button = MaterialButton(
+                    this, null,
+                    com.google.android.material.R.attr.materialButtonOutlinedStyle
+                ).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    text = categoryWithInfo.category.categoryName
+                    id = categoryWithInfo.category.categoryId
                 }
+                (binding.activityEditWordGroup as ViewGroup).addView(button)
             }
             for (checkedCategory in wordWithCategories.categories) {
                 binding.activityEditWordGroup.check(checkedCategory.categoryId)
@@ -98,26 +90,31 @@ class EditWordActivity : AppCompatActivity() {
 
     private fun setUpdateButton() {
         binding.activityEditWordUpdateWordBtn.setOnClickListener {
-            val updatedWord = wordWithCategories.word.copy(
+            val updatedWord = wordWithCategories.wordWithInfo.word.copy(
                 wordText = binding.activityEditWordAddWordEt.text.toString(),
                 furiganaText = binding.activityEditWordAddFuriganaEt.text.toString(),
                 definitionText = binding.activityEditWordAddDefinitionEt.text.toString()
             )
-
-            val updatedWordWithCategories = WordWithCategories(
-                updatedWord,
-                categoryList!!.filter {
-                    it.categoryId in (binding.activityEditWordGroup.checkedButtonIds)
-                }
+            val updatedWordWithInfo = wordWithCategories.wordWithInfo.copy(
+                word = updatedWord
             )
 
             when {
-                wordWithCategories.word.wordText.isBlank() -> showToast("Word cannot be empty")
-                wordWithCategories.word.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
-                wordWithCategories.word.definitionText.isBlank() -> showToast("Definition cannot be empty")
+                updatedWord.wordText.isBlank() -> showToast("Word cannot be empty")
+                updatedWord.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
+                updatedWord.definitionText.isBlank() -> showToast("Definition cannot be empty")
                 else -> {
                     lifecycleScope.launch {
                         binding.activityEditWordProgressIndicator.isVisible = true
+
+                        val allCategories = viewModel.getAllCategories().first().map { it.category }
+                        val updatedWordWithCategories = WordWithCategories(
+                            updatedWordWithInfo,
+                            allCategories.filter {
+                                it.categoryId in (binding.activityEditWordGroup.checkedButtonIds)
+                            }
+                        )
+
                         try {
                             viewModel.updateWord(wordWithCategories, updatedWordWithCategories)
                             finish()
@@ -137,7 +134,7 @@ class EditWordActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 binding.activityEditWordProgressIndicator.isVisible = true
                 try {
-                    viewModel.deleteWord(wordWithCategories.word)
+                    viewModel.deleteWord(wordWithCategories.wordWithInfo.word)
                     finish()
                 } catch (e: Exception) {
                     this@EditWordActivity.showToast(e.message)
@@ -149,15 +146,13 @@ class EditWordActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun startActivity(context: Context?, wordId: Int, categoryList: List<Category>) {
+        fun startActivity(context: Context?, wordId: Int) {
             val intent = Intent(context, EditWordActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.putExtra(EDIT_WORD_ACTIVITY_ID_EXTRA, wordId)
-            intent.putExtra(EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA, ArrayList(categoryList))
             context?.startActivity(intent)
         }
 
         private const val EDIT_WORD_ACTIVITY_ID_EXTRA = "EDIT_WORD_ACTIVITY_ID_EXTRA"
-        private const val EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA = "EDIT_WORD_ACTIVITY_CATEGORY_LIST_EXTRA"
     }
 }

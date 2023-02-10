@@ -16,8 +16,7 @@ import com.google.android.material.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.textfield.TextInputLayout
-import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.util.WordUtils.isAll
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
 import com.sawelo.wordmemorizer.window.ToastWindow
 
 object ViewUtils {
@@ -66,23 +65,21 @@ object ViewUtils {
 
     fun MaterialButtonToggleGroup.addCategoryList(
         context: Context,
-        categoryList: List<Category>
+        categoryWithInfoList: List<Category>
     ) {
-        for (category in categoryList) {
-            if (!category.isAll()) {
-                val button = MaterialButton(
-                    context, null,
-                    R.attr.materialButtonOutlinedStyle
-                ).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                    text = category.categoryName
-                    id = category.categoryId
-                }
-                this.addView(button)
+        for (category in categoryWithInfoList) {
+            val button = MaterialButton(
+                context, null,
+                R.attr.materialButtonOutlinedStyle
+            ).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                text = category.categoryName
+                id = category.categoryId
             }
+            this.addView(button)
         }
     }
 

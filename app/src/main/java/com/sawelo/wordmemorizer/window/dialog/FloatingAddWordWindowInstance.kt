@@ -1,20 +1,21 @@
 package com.sawelo.wordmemorizer.window.dialog
 
 import android.content.Context
-import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
+import com.sawelo.wordmemorizer.util.FloatingDialogUtils
 
 class FloatingAddWordWindowInstance(
     private val context: Context,
-    private val wordRepository: WordRepository,
-    private val currentCategory: Category?,
+    private val floatingDialogUtils: FloatingDialogUtils,
+    private val selectedCategories: List<Category>? = null,
 ) {
     private var windowInstance: FloatingAddWordWindow? = null
+
     fun showInstance() {
         if (FloatingAddWordWindow.isAddWordWindowActive) {
             closeInstance()
         } else {
-            windowInstance = FloatingAddWordWindow(context, wordRepository, currentCategory)
+            windowInstance = FloatingAddWordWindow(context, floatingDialogUtils, selectedCategories)
             windowInstance?.showWindow()
         }
     }

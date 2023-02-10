@@ -13,8 +13,8 @@ import androidx.preference.SwitchPreference
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.activity.SettingsActivity
 import com.sawelo.wordmemorizer.dataStore
-import com.sawelo.wordmemorizer.util.SettingsProcess
 import com.sawelo.wordmemorizer.util.SettingsUtils
+import com.sawelo.wordmemorizer.util.enum_class.SettingsProcess
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

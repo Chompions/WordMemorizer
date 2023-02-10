@@ -17,6 +17,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
+    <TextView
+        android:id="@+id/fragmentCategory_selectCategories_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/please_select_your_categories"
+        app:layout_constraintTop_toTopOf="@id/fragmentCategory_mainWords_rv"
+        app:layout_constraintBottom_toBottomOf="@id/fragmentCategory_mainWords_rv"
+        app:layout_constraintStart_toStartOf="@id/fragmentCategory_mainWords_rv"
+        app:layout_constraintEnd_toEndOf="@id/fragmentCategory_mainWords_rv"
+        />
+
     <View
         android:id="@+id/fragmentCategory_line"
         android:layout_width="match_parent"

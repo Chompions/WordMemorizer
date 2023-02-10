@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.*
@@ -73,6 +74,7 @@ class DrawingView @JvmOverloads constructor(
         canvas.drawPath(currentStroke, currentStrokePaint)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val action = event.actionMasked
         val x = event.x

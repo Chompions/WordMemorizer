@@ -4,38 +4,28 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.appcompat.view.ContextThemeWrapper
 import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.data.data_class.Category
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_CLOSE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_FLOATING_DIALOG_REQUEST_CODE
+import com.sawelo.wordmemorizer.util.FloatingDialogUtils
 import com.sawelo.wordmemorizer.window.dialog.FloatingAddWordWindowInstance
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class FloatingAddWordWindowReceiver : BroadcastReceiver() {
-    @Inject
-    lateinit var wordRepository: WordRepository
 
+    @Inject lateinit var floatingDialogUtils: FloatingDialogUtils
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("FloatingAddWordWindowReceiver", "Receiver receive broadcast")
 
-        @Suppress("DEPRECATION")
-        val extra = if (Build.VERSION.SDK_INT >= 33) {
-            intent.getParcelableExtra(CURRENT_CATEGORY_EXTRA, Category::class.java)
-        } else {
-            intent.getParcelableExtra(CURRENT_CATEGORY_EXTRA)
-        }
         val contextThemeWrapper = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
-
         FloatingAddWordWindowInstance(
-            contextThemeWrapper, wordRepository, extra
+            contextThemeWrapper, floatingDialogUtils, null
         ).also { instance ->
             when (intent.action) {
                 RECEIVER_CLOSE_ACTION -> instance.closeInstance()
@@ -45,27 +35,19 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        private const val CURRENT_CATEGORY_EXTRA = "CURRENT_CATEGORY_EXTRA"
-
-        fun openWindowPendingIntent(context: Context, currentCategory: Category?): PendingIntent {
+        fun openWindowPendingIntent(context: Context): PendingIntent {
             val receiverIntent = Intent()
             receiverIntent.action = RECEIVER_OPEN_ACTION
             receiverIntent.`package` = MainApplication.PACKAGE_NAME
-            if (currentCategory != null) {
-                receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
-            }
             return PendingIntent.getBroadcast(
                 context, RECEIVER_OPEN_FLOATING_DIALOG_REQUEST_CODE, receiverIntent, PendingIntent.FLAG_IMMUTABLE
             )
         }
 
-        fun openWindow(context: Context, currentCategory: Category?) {
+        fun openWindow(context: Context) {
             val receiverIntent = Intent()
             receiverIntent.action = RECEIVER_OPEN_ACTION
             receiverIntent.`package` = MainApplication.PACKAGE_NAME
-            if (currentCategory != null) {
-                receiverIntent.putExtra(CURRENT_CATEGORY_EXTRA, currentCategory)
-            }
             context.sendBroadcast(receiverIntent)
         }
 

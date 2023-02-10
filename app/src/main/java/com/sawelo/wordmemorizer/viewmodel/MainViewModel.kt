@@ -5,36 +5,67 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
+import com.sawelo.wordmemorizer.data.data_class.entity.Word
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.CategoryWithInfo
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
+import com.sawelo.wordmemorizer.data.repository.LocalRepository
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val wordRepository: WordRepository
+    private val localRepository: LocalRepository
 ) : ViewModel() {
-    var currentCategory: Category? = null
 
-    fun getAllCategories(): Flow<List<Category>> {
-        return wordRepository.getAllCategories()
+    val selectedCategories = MutableStateFlow<List<Category>>(emptyList())
+
+    fun getAllCategory(): Flow<List<Category>> {
+        return localRepository.getAllCategory()
     }
 
-    fun getAllWordsPagingData(category: Category): Flow<PagingData<Word>> {
-        return wordRepository.getAllWordsPagingData(category).cachedIn(viewModelScope)
+    fun getAllCategoryWithInfo(): Flow<List<CategoryWithInfo>> {
+        return localRepository.getAllCategoryWithInfo()
     }
 
-    fun getAllForgottenWordsPagingData(category: Category): Flow<PagingData<Word>> {
-        return wordRepository.getAllForgottenWordsPagingData(category).cachedIn(viewModelScope)
-    }
-
-    fun addCategory(context: Context, category: Category) {
+    fun selectAllCategories() {
         viewModelScope.launch {
-            val resultId = wordRepository.addCategory(category)
+            selectedCategories.value = getAllCategory().first()
+        }
+    }
+
+    fun unselectAllCategories() {
+        selectedCategories.value = emptyList()
+    }
+
+    fun getAllWordsPagingData(): Flow<PagingData<WordWithInfo>> = callbackFlow {
+        selectedCategories.collectLatest { categoryList ->
+            localRepository.getWordsByCategories(categoryList, false)
+                .cachedIn(viewModelScope).collectLatest {
+                    send(it)
+                }
+        }
+        awaitClose { cancel() }
+    }
+
+    fun getAllForgottenWordsPagingData(): Flow<PagingData<WordWithInfo>> = callbackFlow {
+        selectedCategories.collectLatest { categoryList ->
+            localRepository.getWordsByCategories(categoryList, true)
+                .cachedIn(viewModelScope).collectLatest {
+                    send(it)
+                }
+        }
+        awaitClose { cancel() }
+    }
+
+    fun addCategory(context: Context, categoryWithInfo: CategoryWithInfo) {
+        viewModelScope.launch {
+            val resultId = localRepository.addCategory(categoryWithInfo)
             if (resultId == -1L) {
                 context.showToast("You already have a category with this name")
             }
@@ -43,25 +74,25 @@ class MainViewModel @Inject constructor(
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            wordRepository.deleteCategory(category)
+            localRepository.deleteCategory(category)
         }
     }
 
     fun updateShowForgotWord(word: Word) {
         viewModelScope.launch {
-            wordRepository.updateShowForgotWord(word)
+            localRepository.updateShowForgotWord(word)
         }
     }
 
     fun updateHideForgotWord(word: Word) {
         viewModelScope.launch {
-            wordRepository.updateHideForgotWord(word)
+            localRepository.updateHideForgotWord(word)
         }
     }
 
-    fun resetAllForgotCount() {
+    fun updateResetAllForgotCount() {
         viewModelScope.launch {
-            wordRepository.resetAllForgotCount()
+            localRepository.updateResetAllForgotCount()
         }
     }
 

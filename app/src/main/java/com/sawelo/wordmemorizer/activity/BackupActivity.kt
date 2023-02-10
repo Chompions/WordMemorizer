@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.DatabaseHelper
+import com.sawelo.wordmemorizer.data.database.DatabaseHelper
 
 class BackupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

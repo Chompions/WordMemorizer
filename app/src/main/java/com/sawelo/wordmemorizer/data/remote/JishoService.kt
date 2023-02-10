@@ -1,6 +1,6 @@
 package com.sawelo.wordmemorizer.data.remote
 
-import com.sawelo.wordmemorizer.data.data_class.JishoResponse
+import com.sawelo.wordmemorizer.data.data_class.api_response.JishoResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

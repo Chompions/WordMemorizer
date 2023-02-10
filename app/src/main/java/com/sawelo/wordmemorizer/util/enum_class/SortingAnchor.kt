@@ -1,12 +1,13 @@
-package com.sawelo.wordmemorizer.util.sorting_utils
+package com.sawelo.wordmemorizer.util.enum_class
 
 import android.content.Context
 import com.sawelo.wordmemorizer.R
+import com.sawelo.wordmemorizer.util.sorting_utils.BaseSorting
 
 enum class SortingAnchor: BaseSorting {
-    FORGOT_COUNT {
-        override fun obtainQueryString(): String = "forgotCount"
-        override fun obtainText(context: Context): String = context.getString(R.string.forgot_count)
+    REMEMBER_COUNT {
+        override fun obtainQueryString(): String = "rememberCount"
+        override fun obtainText(context: Context): String = context.getString(R.string.remember_count)
     },
     CREATED_TIME {
         override fun obtainQueryString(): String = "createdTimeMillis"

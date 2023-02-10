@@ -3,9 +3,10 @@ package com.sawelo.wordmemorizer.util
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import com.sawelo.wordmemorizer.dataStore
+import com.sawelo.wordmemorizer.util.enum_class.FloatingBubbleProcess
+import com.sawelo.wordmemorizer.util.enum_class.SortingAnchor
+import com.sawelo.wordmemorizer.util.enum_class.SortingOrder
 import com.sawelo.wordmemorizer.util.sorting_utils.BaseSorting
-import com.sawelo.wordmemorizer.util.sorting_utils.SortingAnchor
-import com.sawelo.wordmemorizer.util.sorting_utils.SortingOrder
 import kotlinx.coroutines.flow.first
 
 object PreferencesUtils {
@@ -40,23 +41,10 @@ object PreferencesUtils {
             }
             SortingAnchor::class.java -> {
                 val currentName = preferences[stringPreferencesKey(SORTING_ANCHOR)]
-                    ?: SortingAnchor.RANDOM.name
+                    ?: SortingAnchor.CREATED_TIME.name
                 SortingAnchor.valueOf(currentName)
             }
             else -> throw Exception("Invalid enum class parameter")
         }
     }
-}
-
-enum class SettingsProcess(val processKey: String) {
-    PreparingDownloadProcess("PROCESS_PREPARING_DOWNLOAD_KEY"),
-    FloatingBubbleSetUp("PROCESS_FLOATING_BUBBLE_SETTING_UP"),
-    TranslationDownload("PROCESS_OFFLINE_TRANSLATION_DOWNLOADING"),
-    DrawDownload("PROCESS_DRAW_CHARACTER_DOWNLOADING")
-}
-
-enum class FloatingBubbleProcess(val processKey: String) {
-    IsRunning("PROCESS_FLOATING_BUBBLE_IS_RUNNING"),
-    IsUnwrapped("PROCESS_FLOATING_BUBBLE_IS_UNWRAPPED"),
-    IsVisible("PROCESS_FLOATING_BUBBLE_IS_VISIBLE"),
 }

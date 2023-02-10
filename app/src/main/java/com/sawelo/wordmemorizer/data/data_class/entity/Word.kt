@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.data.data_class
+package com.sawelo.wordmemorizer.data.data_class.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -10,7 +10,4 @@ data class Word(
     val wordText: String,
     val furiganaText: String,
     val definitionText: String,
-    val isForgotten: Boolean = false,
-    val forgotCount: Int = 0,
-    val createdTimeMillis: Long,
 )

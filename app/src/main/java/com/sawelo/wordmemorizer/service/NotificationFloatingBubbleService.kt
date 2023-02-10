@@ -22,9 +22,9 @@ import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_UNWRAP_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_WRAP_ACTION
 import com.sawelo.wordmemorizer.util.Constants.SERVICE_CLOSE_FLOATING_BUBBLE_REQUEST_CODE
 import com.sawelo.wordmemorizer.util.Constants.SERVICE_WRAP_FLOATING_BUBBLE_REQUEST_CODE
-import com.sawelo.wordmemorizer.util.FloatingBubbleProcess
 import com.sawelo.wordmemorizer.util.PreferencesUtils.getProcess
 import com.sawelo.wordmemorizer.util.PreferencesUtils.setProcess
+import com.sawelo.wordmemorizer.util.enum_class.FloatingBubbleProcess
 import com.sawelo.wordmemorizer.window.FloatingBubbleWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -170,7 +170,7 @@ class NotificationFloatingBubbleService : Service() {
 
         val largeIcon = BitmapFactory.decodeResource(resources, R.drawable.ic_stat_name)
         val openDialogPendingIntent =
-            FloatingAddWordWindowReceiver.openWindowPendingIntent(this, null)
+            FloatingAddWordWindowReceiver.openWindowPendingIntent(this)
 
         // Create notification builder
         return NotificationCompat.Builder(this, CHANNEL_ID)

@@ -9,8 +9,8 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.util.Constants
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_TRANSLATOR_ID
-import com.sawelo.wordmemorizer.util.SettingsProcess
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
+import com.sawelo.wordmemorizer.util.enum_class.SettingsProcess
 
 class DownloadTranslatorService : BaseDownloadService(
     NOTIFICATION_TRANSLATOR_ID,

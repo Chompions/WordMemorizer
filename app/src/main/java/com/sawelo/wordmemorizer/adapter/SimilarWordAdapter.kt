@@ -8,13 +8,13 @@ import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
-import com.sawelo.wordmemorizer.util.callback.WordDiffUtilCallback
+import com.sawelo.wordmemorizer.util.diff_util.WordDiffUtilCallback
 
 class SimilarWordAdapter(
     private val itemCallback: ItemWordAdapterListener
-) : PagingDataAdapter<Word, SimilarWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
+) : PagingDataAdapter<WordWithInfo, SimilarWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
         val mainWord: TextView = itemView.findViewById(R.id.itemWord_mainWord_tv)
@@ -31,9 +31,9 @@ class SimilarWordAdapter(
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
         getItem(position)?.let { itemWord ->
             with(holder) {
-                mainWord.text = itemWord.wordText
-                furiganaWord.text = itemWord.furiganaText
-                definitionWord.text = itemWord.definitionText
+                mainWord.text = itemWord.word.wordText
+                furiganaWord.text = itemWord.word.furiganaText
+                definitionWord.text = itemWord.word.definitionText
 
                 hideBtn.setOnClickListener {
                     itemCallback.onItemHideBtnClickListener(itemWord)

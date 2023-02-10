@@ -6,38 +6,29 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sawelo.wordmemorizer.BuildConfig
 import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.DatabaseHelper
-import com.sawelo.wordmemorizer.data.data_class.Category
+import com.sawelo.wordmemorizer.data.database.DatabaseHelper
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
-import com.sawelo.wordmemorizer.fragment.AddCategoryDialogFragment
 import com.sawelo.wordmemorizer.fragment.HomeFragment
-import com.sawelo.wordmemorizer.fragment.SortingSettingsDialogFragment
+import com.sawelo.wordmemorizer.fragment.MainBottomSheetFragment
 import com.sawelo.wordmemorizer.util.Constants.HOME_FRAGMENT_TAG
 import com.sawelo.wordmemorizer.util.SettingsUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
-import com.sawelo.wordmemorizer.util.WordUtils.isAll
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,9 +37,8 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var settingsUtils: SettingsUtils
-
-    private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,10 +51,11 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             settingsUtils.checkAllSettings()
+            viewModel.getAllCategory().first()
+                .also { viewModel.selectedCategories.value += it}
         }
 
         setAds()
-        setCategories()
         setNavigationListener()
     }
 
@@ -140,44 +131,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setCategories() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.getAllCategories().collectLatest { categories ->
-                    val menu = binding.activityMainNavigationView.menu
-                    menu.clear()
-                    categories.forEachIndexed { index, it ->
-                        menu.createTab(it, index)
-                    }
-                }
-            }
-        }
-    }
-
     private fun setNavigationListener() {
-        binding.activityMainToolbar.setNavigationOnClickListener {
-            binding.activityMainDrawerLayout.open()
-        }
-
-        binding.activityMainNavigationView.setNavigationItemSelectedListener {
-            binding.activityMainDrawerLayout.close()
-            true
-        }
-
-        val header = binding.activityMainNavigationView.getHeaderView(0)
-        header.findViewById<MaterialButton>(R.id.drawerNavigationHeader_addCategory_btn)
-            .setOnClickListener {
-                AddCategoryDialogFragment().show(supportFragmentManager, null)
-            }
+        val mainBottomSheetFragment = MainBottomSheetFragment()
 
         binding.activityMainToolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.menuHome_reset -> {
-                    viewModel.resetAllForgotCount()
-                    true
-                }
-                R.id.menuHome_sort -> {
-                    SortingSettingsDialogFragment().show(supportFragmentManager, null)
+                R.id.menuHome_filter -> {
+                    mainBottomSheetFragment.show(supportFragmentManager, MainBottomSheetFragment.TAG)
                     true
                 }
                 R.id.menuHome_settings -> {
@@ -187,34 +147,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 else -> false
             }
-        }
-    }
-
-    private fun Menu.createTab(category: Category, position: Int) {
-        val text = "${category.categoryName} (${category.wordCount})"
-        add(Menu.NONE, category.categoryId, position, text)
-
-        val item = this.findItem(category.categoryId)
-        item.setClickListener(category)
-        item.setActionView(R.layout.item_drawer_category)
-        item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)
-            ?.setOnClickListener {
-                viewModel.deleteCategory(category)
-            }
-        if (category.isAll()) {
-            item.actionView?.findViewById<Button>(R.id.itemDrawer_btn)?.isVisible = false
-        }
-    }
-
-    private fun MenuItem.setClickListener(category: Category) {
-        setOnMenuItemClickListener {
-            viewModel.currentCategory = category
-            val homeFragment = supportFragmentManager
-                .findFragmentByTag(HOME_FRAGMENT_TAG) as? HomeFragment
-            homeFragment?.changeCurrentTab()
-
-            binding.activityMainDrawerLayout.close()
-            true
         }
     }
 

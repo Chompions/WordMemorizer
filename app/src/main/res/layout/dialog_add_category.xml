@@ -6,27 +6,55 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <EditText
-        android:id="@+id/dialog_addCategory_et"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dialog_addCategory_name_til"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
-        android:hint="@string/category"
-        android:importantForAutofill="no"
-        android:inputType="text"
+        app:endIconMode="clear_text"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dialog_addCategory_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/category_name"
+            android:importantForAutofill="no"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dialog_addCategory_desc_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        app:helperTextEnabled="true"
+        app:helperText="@string/optional"
+        app:endIconMode="clear_text"
+        app:layout_constraintTop_toBottomOf="@id/dialog_addCategory_name_til"
+        >
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dialog_addCategory_desc_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/desc_optional"
+            android:importantForAutofill="no"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/dialog_addCategory_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginVertical="4dp"
+        android:layout_marginVertical="8dp"
         android:layout_marginHorizontal="4dp"
         android:text="@string/add_category"
-        app:layout_constraintTop_toBottomOf="@id/dialog_addCategory_et"
+        app:layout_constraintTop_toBottomOf="@id/dialog_addCategory_desc_til"
         app:layout_constraintEnd_toEndOf="parent"/>
 
 

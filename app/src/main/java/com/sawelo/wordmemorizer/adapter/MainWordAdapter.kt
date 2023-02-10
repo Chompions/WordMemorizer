@@ -8,17 +8,17 @@ import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
-import com.sawelo.wordmemorizer.util.callback.WordDiffUtilCallback
+import com.sawelo.wordmemorizer.util.diff_util.WordDiffUtilCallback
 
 class MainWordAdapter(
     private val itemCallback: ItemWordAdapterListener
-) : PagingDataAdapter<Word, MainWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
+) : PagingDataAdapter<WordWithInfo, MainWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
         val mainWord: TextView = itemView.findViewById(R.id.itemWord_mainWord_tv)
-        val forgotCount: TextView = itemView.findViewById(R.id.itemWord_forgotCount_tv)
+        val rememberCount: TextView = itemView.findViewById(R.id.itemWord_rememberCount_tv)
         val forgotBtn: Button = itemView.findViewById(R.id.itemWord_forgot_btn)
     }
 
@@ -30,9 +30,9 @@ class MainWordAdapter(
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
         getItem(position)?.let { wordItem ->
             with(holder) {
-                mainWord.text = wordItem.wordText
-                forgotCount.text = wordItem.forgotCount.toString()
-                forgotBtn.isEnabled = !wordItem.isForgotten
+                mainWord.text = wordItem.word.wordText
+                rememberCount.text = wordItem.wordInfo.rememberCount.toString()
+                forgotBtn.isEnabled = !wordItem.wordInfo.isForgotten
 
                 forgotBtn.setOnClickListener {
                     itemCallback.onItemForgotBtnClickListener(wordItem)

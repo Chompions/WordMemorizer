@@ -68,7 +68,7 @@ class FloatingBubbleWindow(
                 val endClickDuration = System.currentTimeMillis() - startClickDuration
                 if (endClickDuration < maxClickDuration) {
                     mView!!.performClick()
-                    FloatingAddWordWindowReceiver.openWindow(context, null)
+                    FloatingAddWordWindowReceiver.openWindow(context)
                 }
             }
         }

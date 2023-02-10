@@ -16,11 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.textfield.TextInputLayout
 import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.AddWordAdapter
-import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.data.data_class.BaseWord
-import com.sawelo.wordmemorizer.data.data_class.Category
-import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
+import com.sawelo.wordmemorizer.data.data_class.entity.Word
+import com.sawelo.wordmemorizer.data.data_class.entity.WordInfo
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithCategories
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.databinding.WindowAddWordFloatingBinding
 import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
@@ -38,15 +38,13 @@ import java.util.*
 
 class FloatingAddWordWindow(
     private val context: Context,
-    private val wordRepository: WordRepository,
-    private val currentCategory: Category?,
+    private val floatingDialogUtils: FloatingDialogUtils,
+    private val selectedCategories: List<Category>? = null,
 ) : DialogWindow(context), ItemWordAdapterListener {
 
     private var binding: WindowAddWordFloatingBinding? = null
     private var searchJob: Job? = null
     private var adapter: AddWordAdapter? = null
-    private var floatingDialogUtils: FloatingDialogUtils? = null
-    private var categoryList: List<Category>? = null
 
     private val sharedPreferences =
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -64,8 +62,6 @@ class FloatingAddWordWindow(
     }
 
     override fun beforeShowWindow() {
-        floatingDialogUtils = FloatingDialogUtils(wordRepository)
-
         if (isDrawBtnOn) binding?.dialogDrawWordBtn?.isVisible = true
         if (isTranslateBtnOn) binding?.dialogSearchWordTranslateBtn?.isVisible = true
 
@@ -82,8 +78,7 @@ class FloatingAddWordWindow(
     }
 
     override fun beforeCloseWindow() {
-        floatingDialogUtils?.destroyUtils()
-        floatingDialogUtils = null
+        floatingDialogUtils.destroyUtils()
         binding = null
 
         NotificationFloatingBubbleService.revealBubbleService(context)
@@ -112,7 +107,7 @@ class FloatingAddWordWindow(
     private fun TextInputLayout.setListener(inputType: FloatingDialogUtils.InputType) {
         editText?.setOnFocusChangeListener { _, isFocused ->
             resetWordRecommendation()
-            floatingDialogUtils?.focusedTextInput = inputType
+            floatingDialogUtils.focusedTextInput = inputType
             binding?.dialogSearchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
             if (isTranslateBtnOn)
                 binding?.dialogSearchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
@@ -122,7 +117,7 @@ class FloatingAddWordWindow(
 
         editText?.doOnTextChanged { text, _, _, _ ->
             resetWordRecommendation()
-            floatingDialogUtils?.setWordFlow(inputType, text.toString())
+            floatingDialogUtils.setWordFlow(inputType, text.toString())
             binding?.dialogSearchWordJishoBtn?.isEnabled = !editText?.text.isNullOrBlank()
             if (isTranslateBtnOn)
                 binding?.dialogSearchWordTranslateBtn?.isEnabled = !editText?.text.isNullOrBlank()
@@ -166,7 +161,7 @@ class FloatingAddWordWindow(
         binding?.dialogAddDefinitionIl?.setListener(FloatingDialogUtils.InputType.DEFINITION_INPUT)
 
         windowCoroutineScope.launch {
-            floatingDialogUtils?.getAllWordsByTextFlow()?.collectLatest {
+            floatingDialogUtils.getAllWordsByTextFlow().collectLatest {
                 binding?.dialogSimilarWordTv?.isVisible = it.isEmpty()
                 adapter?.submitList(it)
             }
@@ -175,12 +170,11 @@ class FloatingAddWordWindow(
 
     private fun setCategoryList() {
         runBlocking {
-            categoryList = floatingDialogUtils?.getAllCategories()
-            if (categoryList != null) {
-                binding?.dialogAddCategoryGroup?.addCategoryList(context, categoryList!!)
+            floatingDialogUtils.getAllCategories().let {
+                binding?.dialogAddCategoryGroup?.addCategoryList(context, it)
             }
-            if (currentCategory != null) {
-                binding?.dialogAddCategoryGroup?.check(currentCategory.categoryId)
+            selectedCategories?.forEach {
+                binding?.dialogAddCategoryGroup?.check(it.categoryId)
             }
         }
     }
@@ -193,7 +187,7 @@ class FloatingAddWordWindow(
         binding?.dialogProgressIndicator?.isVisible = true
     }
 
-    private fun showSearch(baseWord: BaseWord) {
+    private fun showSearch(baseWord: Word) {
         binding?.dialogAddWordEt?.setText(baseWord.wordText)
         binding?.dialogAddFuriganaEt?.setText(baseWord.furiganaText)
         binding?.dialogAddDefinitionEt?.setText(baseWord.definitionText)
@@ -219,9 +213,9 @@ class FloatingAddWordWindow(
         prepareSearch()
         searchJob = windowCoroutineScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) { floatingDialogUtils?.getTranslatedWord() }
+                val result = withContext(Dispatchers.IO) { floatingDialogUtils.getTranslatedWord() }
                 binding?.dialogProgressIndicator?.isVisible = false
-                result?.let { showSearch(it) }
+                showSearch(result)
             } catch (_: CancellationException) {
             } catch (e: Exception) {
                 context.showToast("Obtaining translated word failed: ${e.message}")
@@ -238,8 +232,8 @@ class FloatingAddWordWindow(
         prepareSearch()
         searchJob = windowCoroutineScope.launch {
             try {
-                val result = floatingDialogUtils?.getRecommendationsWords()
-                if (result?.isEmpty() == true) {
+                val result = floatingDialogUtils.getRecommendationsWords()
+                if (result.isEmpty()) {
                     resetWordRecommendation()
                     return@launch
                 }
@@ -250,7 +244,7 @@ class FloatingAddWordWindow(
                 binding?.dialogRecommendationLayout?.addButtonInLayout(context, "Back") {
                     resetWordRecommendation()
                 }
-                result?.forEach { baseWord ->
+                result.forEach { baseWord ->
                     val fixedBaseWord = baseWord.copy(
                         wordText = baseWord.wordText.ifBlank { baseWord.furiganaText }
                     )
@@ -282,25 +276,32 @@ class FloatingAddWordWindow(
 
     private fun setActionButton() {
         binding?.dialogAddWordBtn?.setOnClickListener {
-            val wordWithCategories = WordWithCategories(
-                Word(
-                    wordText = binding?.dialogAddWordEt?.text.toString(),
-                    furiganaText = binding?.dialogAddFuriganaEt?.text.toString(),
-                    definitionText = binding?.dialogAddDefinitionEt?.text.toString(),
-                    createdTimeMillis = System.currentTimeMillis(),
-                ),
-                categoryList!!.filter {
-                    it.categoryId in (binding?.dialogAddCategoryGroup?.checkedButtonIds ?: emptyList())
-                }
-            )
-            when {
-                wordWithCategories.word.wordText.isBlank() -> context.showToast( "Word cannot be empty")
-                wordWithCategories.word.furiganaText.isBlank() -> context.showToast("Furigana cannot be empty")
-                wordWithCategories.word.definitionText.isBlank() -> context.showToast("Definition cannot be empty")
-                else -> {
-                    windowCoroutineScope.launch {
-                        floatingDialogUtils?.addWord(wordWithCategories)
-                        closeWindow()
+            windowCoroutineScope.launch {
+                val wordWithCategories = WordWithCategories(
+                    WordWithInfo(
+                        Word(
+                            wordText = binding?.dialogAddWordEt?.text.toString(),
+                            furiganaText = binding?.dialogAddFuriganaEt?.text.toString(),
+                            definitionText = binding?.dialogAddDefinitionEt?.text.toString(),
+                        ),
+                        WordInfo(
+                            createdTimeMillis = System.currentTimeMillis(),
+                        )
+                    ),
+                    floatingDialogUtils.getAllCategories().filter {
+                        it.categoryId in (binding?.dialogAddCategoryGroup?.checkedButtonIds ?: emptyList())
+                    }
+                )
+                val word = wordWithCategories.wordWithInfo.word
+                when {
+                    word.wordText.isBlank() -> context.showToast( "Word cannot be empty")
+                    word.furiganaText.isBlank() -> context.showToast("Furigana cannot be empty")
+                    word.definitionText.isBlank() -> context.showToast("Definition cannot be empty")
+                    else -> {
+                        windowCoroutineScope.launch {
+                            floatingDialogUtils.addWord(wordWithCategories)
+                            closeWindow()
+                        }
                     }
                 }
             }
@@ -310,21 +311,19 @@ class FloatingAddWordWindow(
         }
     }
 
-    override fun onItemClickListener(item: Word) {
+    override fun onItemClickListener(item: WordWithInfo) {
         windowCoroutineScope.launch {
-            floatingDialogUtils?.updateShowForgotWord(item)
-            FloatingInfoWordWindow(context, wordRepository, item).showWindow()
+            floatingDialogUtils.updateShowForgotWord(item.word)
+            FloatingInfoWordWindow(context, item.word).showWindow()
             closeWindow()
         }
     }
 
-    override fun onItemLongClickListener(item: Word) {
+    override fun onItemLongClickListener(item: WordWithInfo) {
         windowCoroutineScope.launch {
-            if (categoryList != null) {
-                EditWordActivity.startActivity(
-                    context, item.wordId, categoryList!!
-                )
-            }
+            EditWordActivity.startActivity(
+                context, item.word.wordId,
+            )
             closeWindow()
         }
     }

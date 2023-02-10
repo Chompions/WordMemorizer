@@ -5,10 +5,10 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
-import com.sawelo.wordmemorizer.data.WordRepository
-import com.sawelo.wordmemorizer.data.data_class.BaseWord
-import com.sawelo.wordmemorizer.data.data_class.Word
-import com.sawelo.wordmemorizer.data.data_class.WordWithCategories
+import com.sawelo.wordmemorizer.data.data_class.entity.Word
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithCategories
+import com.sawelo.wordmemorizer.data.repository.LocalRepository
+import com.sawelo.wordmemorizer.data.repository.RemoteRepository
 import dev.esnault.wanakana.core.Wanakana
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -18,7 +18,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class FloatingDialogUtils(
-    private val wordRepository: WordRepository,
+    private val localRepository: LocalRepository,
+    private val remoteRepository: RemoteRepository,
 ) {
     private val wordTextFlow = MutableStateFlow("")
     private val furiganaTextFlow = MutableStateFlow("")
@@ -48,15 +49,16 @@ class FloatingDialogUtils(
         merge(
             wordTextFlow, furiganaTextFlow, definitionTextFlow
         ).collectLatest {
-            send(
-                wordRepository.getAllWordsByText(
-                    wordTextFlow.value, furiganaTextFlow.value, definitionTextFlow.value
-                )
+            val word = Word(
+                wordText =  wordTextFlow.value,
+                furiganaText = furiganaTextFlow.value,
+                definitionText = definitionTextFlow.value
             )
+            send(localRepository.getAllWordsByText(word))
         }
     }
 
-    suspend fun getTranslatedWord(): BaseWord = suspendCancellableCoroutine { continuation ->
+    suspend fun getTranslatedWord(): Word = suspendCancellableCoroutine { continuation ->
         val tokenizer = Tokenizer()
         val focusedText = getFocusedWordText()
         if (focusedText.isNotBlank()) {
@@ -72,10 +74,10 @@ class FloatingDialogUtils(
                             tokenizer.tokenize(focusedText)
                                 .joinToString(",") { it.reading }
                         } else focusedText
-                        val baseWord = BaseWord(
-                            focusedText,
-                            Wanakana.toHiragana(readingText),
-                            translatedText
+                        val baseWord = Word(
+                            wordText = focusedText,
+                            furiganaText = Wanakana.toHiragana(readingText),
+                            definitionText = translatedText
                         )
                         continuation.resume(baseWord)
                     }
@@ -94,10 +96,10 @@ class FloatingDialogUtils(
                             tokenizer.tokenize(focusedText)
                                 .joinToString(",") { it.reading }
                         } else focusedText
-                        val baseWord = BaseWord(
-                            translatedText,
-                            Wanakana.toHiragana(readingText),
-                            focusedText
+                        val baseWord = Word(
+                            wordText = translatedText,
+                            furiganaText = Wanakana.toHiragana(readingText),
+                            definitionText = focusedText
                         )
                         continuation.resume(baseWord)
                     }
@@ -117,22 +119,22 @@ class FloatingDialogUtils(
         translatorClient = null
     }
 
-    suspend fun getAllCategories() = wordRepository.getAllCategories().first()
+    suspend fun getAllCategories() = localRepository.getAllCategory().first()
 
-    suspend fun getRecommendationsWords(): List<BaseWord> = withContext(Dispatchers.IO) {
+    suspend fun getRecommendationsWords(): List<Word> = withContext(Dispatchers.IO) {
         val focusedText = getFocusedWordText()
         return@withContext if (focusedText.isNotBlank()) {
-            val baseWordList = mutableListOf<BaseWord>()
-            wordRepository.searchWordFromJisho(focusedText)?.data?.forEach { data ->
+            val baseWordList = mutableListOf<Word>()
+            remoteRepository.searchWordFromJisho(focusedText)?.data?.forEach { data ->
                 val wordText = data.japanese?.first()?.word
                 val furiganaText = data.japanese?.first()?.reading
                 val definitionText =
                     data.senses?.first()?.englishDefinitions?.joinToString(" / ")
 
-                val baseWord = BaseWord(
-                    wordText ?: "",
-                    furiganaText ?: "",
-                    definitionText ?: ""
+                val baseWord = Word(
+                    wordText = wordText ?: "",
+                    furiganaText = furiganaText ?: "",
+                    definitionText = definitionText ?: ""
                 )
                 baseWordList.add(baseWord)
             }
@@ -144,14 +146,14 @@ class FloatingDialogUtils(
 
     suspend fun addWord(wordWithCategories: WordWithCategories) {
         try {
-            wordRepository.addWordWithCategories(wordWithCategories)
+            localRepository.addWordWithCategories(wordWithCategories)
         } catch (e: Exception) {
             throw Exception("Unable to add your word: ${e.message}")
         }
     }
 
     suspend fun updateShowForgotWord(word: Word) {
-        wordRepository.updateShowForgotWord(word)
+        localRepository.updateShowForgotWord(word)
     }
 
     enum class InputType {

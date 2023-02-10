@@ -1,12 +1,14 @@
-package com.sawelo.wordmemorizer.data.data_class
+package com.sawelo.wordmemorizer.data.data_class.relation_ref
 
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
+import com.sawelo.wordmemorizer.data.data_class.entity_cross_ref.WordCategoryMap
 
 data class WordWithCategories(
     @Embedded
-    val word: Word,
+    val wordWithInfo: WordWithInfo,
     @Relation(
         entity = Category::class,
         parentColumn = "wordId",

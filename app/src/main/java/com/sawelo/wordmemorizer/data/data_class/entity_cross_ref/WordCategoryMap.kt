@@ -1,8 +1,10 @@
-package com.sawelo.wordmemorizer.data.data_class
+package com.sawelo.wordmemorizer.data.data_class.entity_cross_ref
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
+import com.sawelo.wordmemorizer.data.data_class.entity.Word
 
 @Entity(
     primaryKeys = ["wordIdMap", "categoryIdMap"],

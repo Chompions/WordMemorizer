@@ -6,7 +6,7 @@
     <string name="kanji_word">Kanji word</string>
     <string name="hiragana_word">Hiragana word</string>
     <string name="definition">Definition</string>
-    <string name="add_word">Add word</string>
+    <string name="add_word">Add Word</string>
     <string name="forgot">Forgot</string>
     <string name="hide">Hide</string>
     <string name="reload">reload</string>
@@ -15,14 +15,14 @@
     <string name="word">Word</string>
     <string name="addWord_noSimilarWords">You have no similar words to this word</string>
     <string name="furigana">Furigana</string>
-    <string name="toolbar_title">memorizing</string>
-    <string name="header_title">category list</string>
+    <string name="toolbar_title">Memorizer</string>
+    <string name="header_title">categoryWithInfo list</string>
     <string name="header_text">set your categories</string>
-    <string name="add_category">Add category</string>
-    <string name="category">Category</string>
+    <string name="add_category">Add Category</string>
+    <string name="categoryWithInfo">Category</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
-    <string name="forgot_count">Forgot Count</string>
+    <string name="remember_count">Remember Count</string>
     <string name="created_time">Created Time</string>
     <string name="random">Random</string>
     <string name="delete_word">Delete word</string>
@@ -52,4 +52,16 @@
     <string name="preference_offline_translation_key">SETTINGS_PREFERENCE_OFFLINE_TRANSLATION_KEY</string>
     <string name="preference_draw_character_key">SETTINGS_PREFERENCE_DRAW_CHARACTER_KEY</string>
     <string name="reset_forgot_count">Reset forgot count</string>
+    <string name="select_all">Select all</string>
+    <string name="unselect_all">Unselect all</string>
+    <string name="category_label">Category label</string>
+    <string name="filter">Filter</string>
+    <string name="apply">Apply</string>
+    <string name="start_flashcards">Start flashcards</string>
+    <string name="desc_optional">Description</string>
+    <string name="category_name">Name</string>
+    <string name="optional">Optional</string>
+    <string name="required">Required</string>
+    <string name="sort_word">Sort word</string>
+    <string name="please_select_your_categories">Please select your categories</string>
 </resources>

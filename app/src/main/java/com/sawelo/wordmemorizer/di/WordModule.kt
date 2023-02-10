@@ -3,10 +3,12 @@ package com.sawelo.wordmemorizer.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
-import com.sawelo.wordmemorizer.data.AppDatabase
-import com.sawelo.wordmemorizer.data.WordRepository
+import com.sawelo.wordmemorizer.data.database.AppDatabase
 import com.sawelo.wordmemorizer.data.remote.JishoService
+import com.sawelo.wordmemorizer.data.repository.LocalRepository
+import com.sawelo.wordmemorizer.data.repository.RemoteRepository
 import com.sawelo.wordmemorizer.dataStore
+import com.sawelo.wordmemorizer.util.FloatingDialogUtils
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,13 +22,26 @@ import retrofit2.converter.gson.GsonConverterFactory
 class WordModule {
 
     @Provides
-    fun provideWordRepository(
+    fun provideFloatingDialogUtils(
+        localRepository: LocalRepository,
+        remoteRepository: RemoteRepository
+    ): FloatingDialogUtils {
+        return FloatingDialogUtils(localRepository, remoteRepository)
+    }
+
+    @Provides
+    fun provideLocalRepository(
         @ApplicationContext context: Context
-    ): WordRepository {
+    ): LocalRepository {
         val appDatabase = AppDatabase.getInstance(context)
         val dataStore = context.dataStore
+        return LocalRepository(appDatabase, dataStore)
+    }
+
+    @Provides
+    fun provideRemoteRepository(): RemoteRepository {
         val jishoService = provideJishoService()
-        return WordRepository(appDatabase, dataStore, jishoService)
+        return RemoteRepository(jishoService)
     }
 
     @Provides

@@ -1,9 +1,6 @@
 package com.sawelo.wordmemorizer.util
 
-import com.sawelo.wordmemorizer.data.data_class.Category
-
 object WordUtils {
-    fun Category.isAll(): Boolean = this.categoryName == "All"
 
     val hiraganaTable = listOf(
         'あ', 'い', 'う', 'え', 'お',

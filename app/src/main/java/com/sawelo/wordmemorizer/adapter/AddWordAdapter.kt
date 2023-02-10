@@ -7,17 +7,17 @@ import android.widget.TextView
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.data.data_class.Word
+import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
-import com.sawelo.wordmemorizer.util.callback.WordDiffUtilCallback
+import com.sawelo.wordmemorizer.util.diff_util.WordDiffUtilCallback
 
 class AddWordAdapter(
     private val itemCallback: ItemWordAdapterListener
-) : ListAdapter<Word, AddWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
+) : ListAdapter<WordWithInfo, AddWordAdapter.WordViewHolder>(WordDiffUtilCallback) {
 
     inner class WordViewHolder(itemView: View) : ViewHolder(itemView) {
         val similarWord: TextView = itemView.findViewById(R.id.itemWord_similarWord_tv)
-        val forgotCount: TextView = itemView.findViewById(R.id.itemWord_forgotCount_tv)
+        val rememberCount: TextView = itemView.findViewById(R.id.itemWord_rememberCount_tv)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -28,8 +28,8 @@ class AddWordAdapter(
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
         val itemWord = getItem(position)
         with(holder) {
-            similarWord.text = itemWord.wordText
-            forgotCount.text = itemWord.forgotCount.toString()
+            similarWord.text = itemWord.word.wordText
+            rememberCount.text = itemWord.wordInfo.rememberCount.toString()
 
             itemView.setOnClickListener {
                 itemCallback.onItemClickListener(itemWord)

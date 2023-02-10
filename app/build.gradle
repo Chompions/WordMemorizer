@@ -34,9 +34,14 @@ android {
 
     buildTypes {
         cleanDebug {
-            applicationIdSuffix ".clean"
-            versionNameSuffix "-clean"
+            applicationIdSuffix ".debug.clean"
+            versionNameSuffix "-debug.clean"
             debuggable true
+            signingConfig signingConfigs.debug
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
             signingConfig signingConfigs.debug
         }
         cleanRelease {
@@ -50,9 +55,6 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-        }
-        debug {
-            signingConfig signingConfigs.debug
         }
     }
 

@@ -1,4 +1,4 @@
-package com.sawelo.wordmemorizer.data
+package com.sawelo.wordmemorizer.data.database
 
 import android.content.Context
 import android.content.pm.PackageManager
