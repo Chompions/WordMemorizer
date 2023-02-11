@@ -45,7 +45,9 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
         setPreferencesFromResource(R.xml.preference_settings, rootKey)
 
         lifecycleScope.launch {
+            preferenceScreen.isEnabled = false
             settingsUtils.checkAllSettings()
+            preferenceScreen.isEnabled = true
         }
 
         floatingBubbleSwitchView =

@@ -43,21 +43,21 @@ abstract class AppDatabase : RoomDatabase() {
         private val DEFAULT_CATEGORY_LIST = listOf(
             CategoryWithInfo(
                 Category(
-                    categoryName = "Important",
-                    categoryDesc = "Where you place your most important words"
+                    categoryName = "Daily",
+                    categoryDesc = "For daily conversation"
                 ),
                 CategoryInfo()
             ),
             CategoryWithInfo(
                 Category(
-                    categoryName = "Names",
-                    categoryDesc = "Just names"
+                    categoryName = "Fun",
+                    categoryDesc = "Fun words to remember"
                 ),
                 CategoryInfo()
             ),
         )
 
-        private fun defaultWord(categoryId: Int) = WordWithCategories(
+        private fun defaultDailyWord(categoryId: Int) = WordWithCategories(
             WordWithInfo(
                 Word(
                     wordText = "お早うございます",
@@ -70,7 +70,25 @@ abstract class AppDatabase : RoomDatabase() {
             ),
             listOf(
                 Category(
-                    categoryId, "Important"
+                    categoryId, "Daily"
+                )
+            )
+        )
+
+        private fun defaultFunWord(categoryId: Int) = WordWithCategories(
+            WordWithInfo(
+                Word(
+                    wordText = "映画",
+                    furiganaText = "えいが",
+                    definitionText = "movie"
+                ),
+                WordInfo(
+                    createdTimeMillis = System.currentTimeMillis()
+                )
+            ),
+            listOf(
+                Category(
+                    categoryId, "Fun"
                 )
             )
         )
@@ -98,14 +116,19 @@ abstract class AppDatabase : RoomDatabase() {
                         DEFAULT_CATEGORY_LIST.forEach {
                             getInstance(context).insertDao().insertCategoryWithInfo(it)
                                 .let { categoryId ->
-                                    if (it.category.categoryName == "Important") {
+                                    if (it.category.categoryName == "Daily") {
                                         getInstance(context).insertDao().insertWordWithCategories(
-                                            defaultWord(categoryId.toInt())
-                                        )
-                                        getInstance(context).updateDao().updateWordCountCategory(
-                                            categoryId.toInt(), 1
+                                            defaultDailyWord(categoryId.toInt())
                                         )
                                     }
+                                    if (it.category.categoryName == "Fun") {
+                                        getInstance(context).insertDao().insertWordWithCategories(
+                                            defaultFunWord(categoryId.toInt())
+                                        )
+                                    }
+                                    getInstance(context).updateDao().updateWordCountCategory(
+                                        categoryId.toInt(), 1
+                                    )
                                 }
                         }
                     }

@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.appcompat.view.ContextThemeWrapper
 import com.google.android.material.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
@@ -32,10 +33,15 @@ object ViewUtils {
     }
 
     fun Context.showToast(toast: String?) {
-        if (Settings.canDrawOverlays(this)) {
-            toast?.let { ToastWindow(this, it) }
-        } else {
-            Toast.makeText(this, toast, Toast.LENGTH_SHORT).show()
+        ContextThemeWrapper(
+            this,
+            com.sawelo.wordmemorizer.R.style.Theme_WordMemorizer
+        ).also { themeContext ->
+            if (Settings.canDrawOverlays(themeContext)) {
+                toast?.let { ToastWindow(themeContext, it) }
+            } else {
+                Toast.makeText(themeContext, toast, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
