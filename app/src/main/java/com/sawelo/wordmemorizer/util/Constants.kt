@@ -1,6 +1,8 @@
 package com.sawelo.wordmemorizer.util
 
 import com.sawelo.wordmemorizer.BuildConfig
+import com.sawelo.wordmemorizer.data.data_class.entity.Category
+import kotlinx.coroutines.flow.MutableStateFlow
 
 object Constants {
 
@@ -29,4 +31,7 @@ object Constants {
     const val RECEIVER_OPEN_FLOATING_DIALOG_REQUEST_CODE = 1
     const val SERVICE_CLOSE_FLOATING_BUBBLE_REQUEST_CODE = 2
     const val SERVICE_WRAP_FLOATING_BUBBLE_REQUEST_CODE = 3
+
+    var floatingBubbleIsWrappedOnNotif = false
+    val selectedCategories = MutableStateFlow<List<Category>>(emptyList())
 }

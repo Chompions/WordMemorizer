@@ -48,7 +48,6 @@ abstract class BaseWindow(private val context: Context) {
         } catch (e: Exception) {
             Log.e("BaseWindow", "Exception in openWindow: ${e.message}")
         }
-
     }
 
     fun hideWindow() {
@@ -74,5 +73,4 @@ abstract class BaseWindow(private val context: Context) {
     abstract fun setParams(params: WindowManager.LayoutParams): WindowManager.LayoutParams
     abstract fun beforeShowWindow()
     abstract fun beforeCloseWindow()
-
 }

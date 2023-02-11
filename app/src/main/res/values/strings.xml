@@ -64,4 +64,9 @@
     <string name="required">Required</string>
     <string name="sort_word">Sort word</string>
     <string name="please_select_your_categories">Please select your categories</string>
+    <string name="show_answer">Show Answer</string>
+    <string name="_0">0</string>
+    <string name="SETTINGS_PREFERENCE_RESET_REMEMBER_COUNT_KEY">SETTINGS_PREFERENCE_RESET_REMEMBER_COUNT_KEY</string>
+    <string name="add1">+1</string>
+    <string name="subtract1">-1</string>
 </resources>

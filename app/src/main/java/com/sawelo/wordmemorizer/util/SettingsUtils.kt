@@ -24,11 +24,11 @@ import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
 import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.dataStore
-import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.service.DownloadDrawService
 import com.sawelo.wordmemorizer.service.DownloadTranslatorService
 import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
 import com.sawelo.wordmemorizer.util.enum_class.SettingsProcess
+import com.sawelo.wordmemorizer.util.enum_class.SettingsSwitch
 import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.first
@@ -138,7 +138,7 @@ class SettingsUtils @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private suspend fun checkPostNotificationForFloatingBubble() {
+    private fun checkPostNotificationForFloatingBubble() {
         if (ActivityCompat.checkSelfPermission(
                 activity,
                 android.Manifest.permission.POST_NOTIFICATIONS
@@ -158,7 +158,7 @@ class SettingsUtils @Inject constructor(
         } else checkDrawOverlayForFloatingBubble()
     }
 
-    private suspend fun checkDrawOverlayForFloatingBubble() {
+    private fun checkDrawOverlayForFloatingBubble() {
         if (!Settings.canDrawOverlays(activity)) {
             createDialog(
                 "To make sure floating bubble is visible anywhere, " +

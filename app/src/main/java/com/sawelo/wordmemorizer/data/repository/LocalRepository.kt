@@ -44,6 +44,7 @@ class LocalRepository(
                 "${sortingAnchorEnum.obtainQueryString()} ${sortingOrderEnum.obtainQueryString()}"
 
             val categoryIdList = categoryList.map { it.categoryId }
+
             val query = if (!getForgotten) {
                 SimpleSQLiteQuery(
                     "SELECT DISTINCT * FROM Word " +
@@ -81,6 +82,10 @@ class LocalRepository(
             ?: throw Exception("This word doesn't exist")
     }
 
+    suspend fun getWordWithInfoForFlashcards(categoryList: List<Category>): List<WordWithInfo> {
+        return database.queryDao().getWordWithInfoForFlashcards(categoryList.map { it.categoryId })
+    }
+
     suspend fun getAllWordsByText(word: Word): List<WordWithInfo> {
         return database.queryDao().getWordsWithInfoByText(
             wordInput = word.wordText.filter { it.isLetter() && !it.isWhitespace() },
@@ -102,7 +107,8 @@ class LocalRepository(
         oldData: WordWithCategories,
         newData: WordWithCategories
     ) {
-        database.updateDao().updateWord(oldData.wordWithInfo.word)
+        database.updateDao().updateWord(newData.wordWithInfo.word)
+        database.updateDao().updateWordInfo(newData.wordWithInfo.wordInfo)
         oldData.categories.forEach { category ->
             database.deleteDao().deleteWordCategoryMap(
                 WordCategoryMap(
@@ -120,6 +126,14 @@ class LocalRepository(
             )
         }
         checkAndUpdateWordCount()
+    }
+
+    suspend fun updateIncreaseRememberCount(word: Word) {
+        database.updateDao().updateIncreaseRememberCountById(word.wordId)
+    }
+
+    suspend fun updateDecreaseRememberCount(word: Word) {
+        database.updateDao().updateDecreaseRememberCountById(word.wordId)
     }
 
     suspend fun updateShowForgotWord(word: Word) {

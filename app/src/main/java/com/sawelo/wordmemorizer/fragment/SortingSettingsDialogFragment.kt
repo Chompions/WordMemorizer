@@ -13,7 +13,7 @@ import com.google.android.material.radiobutton.MaterialRadioButton
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.dataStore
 import com.sawelo.wordmemorizer.util.PreferencesUtils
-import com.sawelo.wordmemorizer.util.sorting_utils.BaseSorting
+import com.sawelo.wordmemorizer.util.enum_class.BaseSorting
 import com.sawelo.wordmemorizer.util.enum_class.SortingAnchor
 import com.sawelo.wordmemorizer.util.enum_class.SortingOrder
 import kotlinx.coroutines.flow.first

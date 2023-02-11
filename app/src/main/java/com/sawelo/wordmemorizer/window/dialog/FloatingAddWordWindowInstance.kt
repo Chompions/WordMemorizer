@@ -12,7 +12,7 @@ class FloatingAddWordWindowInstance(
     private var windowInstance: FloatingAddWordWindow? = null
 
     fun showInstance() {
-        if (FloatingAddWordWindow.isAddWordWindowActive) {
+        if (FloatingAddWordWindow.isWindowActive) {
             closeInstance()
         } else {
             windowInstance = FloatingAddWordWindow(context, floatingDialogUtils, selectedCategories)

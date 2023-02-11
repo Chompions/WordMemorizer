@@ -10,11 +10,15 @@ import com.sawelo.wordmemorizer.data.data_class.entity.Word
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.CategoryWithInfo
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.data.repository.LocalRepository
+import com.sawelo.wordmemorizer.util.Constants.selectedCategories
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,8 +26,6 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val localRepository: LocalRepository
 ) : ViewModel() {
-
-    val selectedCategories = MutableStateFlow<List<Category>>(emptyList())
 
     fun getAllCategory(): Flow<List<Category>> {
         return localRepository.getAllCategory()
@@ -63,6 +65,12 @@ class MainViewModel @Inject constructor(
         awaitClose { cancel() }
     }
 
+    suspend fun getWordWithInfoForFlashcards(): List<WordWithInfo> {
+        return localRepository.getWordWithInfoForFlashcards(
+            selectedCategories.value
+        )
+    }
+
     fun addCategory(context: Context, categoryWithInfo: CategoryWithInfo) {
         viewModelScope.launch {
             val resultId = localRepository.addCategory(categoryWithInfo)
@@ -75,6 +83,18 @@ class MainViewModel @Inject constructor(
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
             localRepository.deleteCategory(category)
+        }
+    }
+
+    fun updateRemember(word: Word) {
+        viewModelScope.launch {
+            localRepository.updateIncreaseRememberCount(word)
+        }
+    }
+
+    fun updateForgot(word: Word) {
+        viewModelScope.launch {
+            localRepository.updateDecreaseRememberCount(word)
         }
     }
 

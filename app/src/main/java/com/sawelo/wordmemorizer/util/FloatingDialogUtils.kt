@@ -117,6 +117,9 @@ class FloatingDialogUtils(
     fun destroyUtils() {
         translatorClient?.close()
         translatorClient = null
+        wordTextFlow.value = ""
+        furiganaTextFlow.value = ""
+        definitionTextFlow.value = ""
     }
 
     suspend fun getAllCategories() = localRepository.getAllCategory().first()

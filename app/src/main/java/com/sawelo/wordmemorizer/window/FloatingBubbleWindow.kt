@@ -40,9 +40,13 @@ class FloatingBubbleWindow(
         return mParams as LayoutParams
     }
 
-    override fun beforeShowWindow() {}
+    override fun beforeShowWindow() {
+        isWindowActive = true
+    }
 
-    override fun beforeCloseWindow() {}
+    override fun beforeCloseWindow() {
+        isWindowActive = false
+    }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels / 2
@@ -75,4 +79,8 @@ class FloatingBubbleWindow(
         return false
     }
 
+    companion object {
+        var isWindowActive = false
+            private set
+    }
 }

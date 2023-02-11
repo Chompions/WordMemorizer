@@ -23,7 +23,7 @@ data class WordInfo(
     @PrimaryKey(autoGenerate = true)
     val wordInfoId: Int = 0,
     val wordId: Int = 0,
-    val isForgotten: Boolean = false,
-    val rememberCount: Int = 0,
+    var isForgotten: Boolean = false,
+    var rememberCount: Int = 0,
     val createdTimeMillis: Long,
 )

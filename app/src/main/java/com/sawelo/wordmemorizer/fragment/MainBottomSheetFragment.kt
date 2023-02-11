@@ -13,6 +13,7 @@ import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.adapter.CategoryAdapter
 import com.sawelo.wordmemorizer.data.data_class.entity.Category
 import com.sawelo.wordmemorizer.databinding.FragmentMainBottomSheetBinding
+import com.sawelo.wordmemorizer.util.Constants.selectedCategories
 import com.sawelo.wordmemorizer.util.callback.ItemCategoryAdapterListener
 import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -50,7 +51,7 @@ class MainBottomSheetFragment : BottomSheetDialogFragment(), ItemCategoryAdapter
 
     private fun observeCategories() {
         lifecycleScope.launch {
-            viewModel.selectedCategories.collectLatest {
+            selectedCategories.collectLatest {
                 adapter?.setSelectedCategory(it)
             }
         }
@@ -87,11 +88,11 @@ class MainBottomSheetFragment : BottomSheetDialogFragment(), ItemCategoryAdapter
 
     override fun onCheckedChangedListener(isSelected: Boolean, item: Category) {
         if (isSelected) {
-            if (item !in viewModel.selectedCategories.value)
-                viewModel.selectedCategories.value += item
+            if (item !in selectedCategories.value)
+                selectedCategories.value += item
         } else {
-            if (item in viewModel.selectedCategories.value)
-                viewModel.selectedCategories.value -= item
+            if (item in selectedCategories.value)
+                selectedCategories.value -= item
         }
     }
 

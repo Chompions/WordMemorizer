@@ -42,6 +42,12 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
         setListFromCategory()
     }
 
+    override fun onStart() {
+        super.onStart()
+        mainWordAdapter?.refresh()
+        similarWordAdapter?.refresh()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
@@ -104,10 +110,8 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
     }
 
     override fun onItemLongClickListener(item: WordWithInfo) {
-        lifecycleScope.launch {
-            EditWordActivity.startActivity(
-                activity, item.word.wordId
-            )
-        }
+        EditWordActivity.startActivity(
+            activity, item.word.wordId
+        )
     }
 }

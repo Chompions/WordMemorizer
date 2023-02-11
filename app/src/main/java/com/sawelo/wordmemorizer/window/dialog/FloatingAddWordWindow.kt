@@ -22,7 +22,6 @@ import com.sawelo.wordmemorizer.data.data_class.entity.WordInfo
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithCategories
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.databinding.WindowAddWordFloatingBinding
-import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
 import com.sawelo.wordmemorizer.util.FloatingDialogUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.addButtonInLayout
@@ -30,6 +29,7 @@ import com.sawelo.wordmemorizer.util.ViewUtils.addCategoryList
 import com.sawelo.wordmemorizer.util.ViewUtils.checkCopyOrPaste
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
+import com.sawelo.wordmemorizer.util.enum_class.SettingsSwitch
 import com.sawelo.wordmemorizer.window.DialogWindow
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
@@ -73,8 +73,7 @@ class FloatingAddWordWindow(
         setActionButton()
 
         NotificationFloatingBubbleService.hideBubbleService(context)
-
-        isAddWordWindowActive = true
+        isWindowActive = true
     }
 
     override fun beforeCloseWindow() {
@@ -82,8 +81,7 @@ class FloatingAddWordWindow(
         binding = null
 
         NotificationFloatingBubbleService.revealBubbleService(context)
-
-        isAddWordWindowActive = false
+        isWindowActive = false
     }
 
     private fun setAdapter() {
@@ -297,6 +295,7 @@ class FloatingAddWordWindow(
                     word.wordText.isBlank() -> context.showToast( "Word cannot be empty")
                     word.furiganaText.isBlank() -> context.showToast("Furigana cannot be empty")
                     word.definitionText.isBlank() -> context.showToast("Definition cannot be empty")
+                    wordWithCategories.categories.isEmpty() -> context.showToast("Category cannot be empty")
                     else -> {
                         windowCoroutineScope.launch {
                             floatingDialogUtils.addWord(wordWithCategories)
@@ -330,7 +329,7 @@ class FloatingAddWordWindow(
 
     companion object {
         private const val TAG = "FloatingAddWordWindow"
-        var isAddWordWindowActive = false
+        var isWindowActive = false
             private set
     }
 

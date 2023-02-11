@@ -16,7 +16,6 @@ import com.sawelo.wordmemorizer.databinding.ActivityEditWordBinding
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.viewmodel.UpdateWordViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -67,7 +66,7 @@ class EditWordActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     private suspend fun getCategoryList() {
-        viewModel.getAllCategories().collectLatest { categoryWithInfoList ->
+        viewModel.getAllCategories().first().let { categoryWithInfoList ->
             for (categoryWithInfo in categoryWithInfoList) {
                 val button = MaterialButton(
                     this, null,
@@ -90,31 +89,32 @@ class EditWordActivity : AppCompatActivity() {
 
     private fun setUpdateButton() {
         binding.activityEditWordUpdateWordBtn.setOnClickListener {
-            val updatedWord = wordWithCategories.wordWithInfo.word.copy(
-                wordText = binding.activityEditWordAddWordEt.text.toString(),
-                furiganaText = binding.activityEditWordAddFuriganaEt.text.toString(),
-                definitionText = binding.activityEditWordAddDefinitionEt.text.toString()
-            )
-            val updatedWordWithInfo = wordWithCategories.wordWithInfo.copy(
-                word = updatedWord
-            )
+            lifecycleScope.launch {
+                val updatedWord = wordWithCategories.wordWithInfo.word.copy(
+                    wordText = binding.activityEditWordAddWordEt.text.toString(),
+                    furiganaText = binding.activityEditWordAddFuriganaEt.text.toString(),
+                    definitionText = binding.activityEditWordAddDefinitionEt.text.toString()
+                )
+                val updatedWordWithInfo = wordWithCategories.wordWithInfo.copy(
+                    word = updatedWord
+                )
 
-            when {
-                updatedWord.wordText.isBlank() -> showToast("Word cannot be empty")
-                updatedWord.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
-                updatedWord.definitionText.isBlank() -> showToast("Definition cannot be empty")
-                else -> {
-                    lifecycleScope.launch {
+                val allCategories = viewModel.getAllCategories().first().map { it.category }
+                val updatedWordWithCategories = WordWithCategories(
+                    updatedWordWithInfo,
+                    allCategories.filter {
+                        it.categoryId in (binding.activityEditWordGroup.checkedButtonIds)
+                    }
+                )
+
+                when {
+                    updatedWord.wordText.isBlank() -> showToast("Word cannot be empty")
+                    updatedWord.furiganaText.isBlank() -> showToast("Furigana cannot be empty")
+                    updatedWord.definitionText.isBlank() -> showToast("Definition cannot be empty")
+                    updatedWordWithCategories.categories.isEmpty() -> showToast("Category cannot be empty")
+
+                    else -> {
                         binding.activityEditWordProgressIndicator.isVisible = true
-
-                        val allCategories = viewModel.getAllCategories().first().map { it.category }
-                        val updatedWordWithCategories = WordWithCategories(
-                            updatedWordWithInfo,
-                            allCategories.filter {
-                                it.categoryId in (binding.activityEditWordGroup.checkedButtonIds)
-                            }
-                        )
-
                         try {
                             viewModel.updateWord(wordWithCategories, updatedWordWithCategories)
                             finish()
@@ -126,6 +126,7 @@ class EditWordActivity : AppCompatActivity() {
                     }
                 }
             }
+
         }
     }
 

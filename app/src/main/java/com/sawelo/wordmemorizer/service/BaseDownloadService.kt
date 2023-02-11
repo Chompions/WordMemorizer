@@ -13,9 +13,9 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.dataStore
-import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
 import com.sawelo.wordmemorizer.util.enum_class.SettingsProcess
+import com.sawelo.wordmemorizer.util.enum_class.SettingsSwitch
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

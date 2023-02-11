@@ -2,7 +2,6 @@ package com.sawelo.wordmemorizer.util.enum_class
 
 import android.content.Context
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.util.sorting_utils.BaseSorting
 
 enum class SortingAnchor: BaseSorting {
     REMEMBER_COUNT {

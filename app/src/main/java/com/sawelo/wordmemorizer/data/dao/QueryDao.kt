@@ -5,6 +5,7 @@ import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.sawelo.wordmemorizer.data.data_class.entity.Category
 import com.sawelo.wordmemorizer.data.data_class.entity.Word
+import com.sawelo.wordmemorizer.data.data_class.entity.WordInfo
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.CategoryWithInfo
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithCategories
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
@@ -21,7 +22,8 @@ interface QueryDao {
     fun getCategoriesWithInfo(): Flow<List<CategoryWithInfo>>
 
     @Transaction
-    @RawQuery(observedEntities = [Word::class])
+    @RewriteQueriesToDropUnusedColumns
+    @RawQuery(observedEntities = [Word::class, WordInfo::class])
     fun getWordsPagingData(query: SupportSQLiteQuery): PagingSource<Int, WordWithInfo>
 
     @Transaction
@@ -35,8 +37,22 @@ interface QueryDao {
     suspend fun getWordWithCategoriesById(wordId: Int): WordWithCategories?
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM word WHERE " +
+        "SELECT DISTINCT * FROM word " +
+                "LEFT JOIN WordInfo ON WordInfo.wordId = Word.wordId " +
+                "LEFT JOIN WordCategoryMap ON WordCategoryMap.wordIdMap = Word.wordId " +
+                "WHERE categoryIdMap IN (:categoryIdList) " +
+                "GROUP BY Word.wordId " +
+                "ORDER BY rememberCount DESC " +
+                "LIMIT 20"
+    )
+    suspend fun getWordWithInfoForFlashcards(categoryIdList: List<Int>): List<WordWithInfo>
+
+    @Transaction
+    @RewriteQueriesToDropUnusedColumns
+    @Query(
+        "SELECT DISTINCT * FROM word WHERE " +
                 "(wordText LIKE '%' || :wordInput || '%' AND :wordInput != '') OR " +
                 "(furiganaText LIKE '%' || :furiganaInput || '%' AND :furiganaInput != '') OR " +
                 "(definitionText LIKE '%' || :definitionInput || '%' AND :definitionInput != '')"

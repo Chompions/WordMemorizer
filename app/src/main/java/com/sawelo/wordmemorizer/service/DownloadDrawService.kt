@@ -7,11 +7,11 @@ import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModel
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
-import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.util.Constants
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_DRAW_DIGITAL_INK_ID
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.enum_class.SettingsProcess
+import com.sawelo.wordmemorizer.util.enum_class.SettingsSwitch
 
 class DownloadDrawService : BaseDownloadService(
     NOTIFICATION_DRAW_DIGITAL_INK_ID,

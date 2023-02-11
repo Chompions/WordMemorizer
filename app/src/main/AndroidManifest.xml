@@ -24,12 +24,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WordMemorizer"
         tools:targetApi="31">
-
         <activity
             android:name=".activity.BackupActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="${applicationId}.action.CREATE_BACKUP_DB"/>
+                <action android:name="${applicationId}.action.CREATE_BACKUP_DB" />
             </intent-filter>
         </activity>
 
@@ -69,6 +68,9 @@
             </intent-filter>
         </receiver>
 
+        <activity
+            android:name=".activity.FlashcardActivity"
+            android:exported="false" />
         <activity
             android:name=".activity.SettingsActivity"
             android:exported="false" />

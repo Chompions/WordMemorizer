@@ -4,13 +4,13 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.appcompat.view.ContextThemeWrapper
 import com.sawelo.wordmemorizer.MainApplication
 import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_CLOSE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_ACTION
 import com.sawelo.wordmemorizer.util.Constants.RECEIVER_OPEN_FLOATING_DIALOG_REQUEST_CODE
+import com.sawelo.wordmemorizer.util.Constants.selectedCategories
 import com.sawelo.wordmemorizer.util.FloatingDialogUtils
 import com.sawelo.wordmemorizer.window.dialog.FloatingAddWordWindowInstance
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,11 +21,9 @@ class FloatingAddWordWindowReceiver : BroadcastReceiver() {
 
     @Inject lateinit var floatingDialogUtils: FloatingDialogUtils
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("FloatingAddWordWindowReceiver", "Receiver receive broadcast")
-
         val contextThemeWrapper = ContextThemeWrapper(context, R.style.Theme_WordMemorizer)
         FloatingAddWordWindowInstance(
-            contextThemeWrapper, floatingDialogUtils, null
+            contextThemeWrapper, floatingDialogUtils, selectedCategories.value
         ).also { instance ->
             when (intent.action) {
                 RECEIVER_CLOSE_ACTION -> instance.closeInstance()

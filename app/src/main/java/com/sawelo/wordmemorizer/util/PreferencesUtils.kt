@@ -3,10 +3,10 @@ package com.sawelo.wordmemorizer.util
 import android.content.Context
 import androidx.datastore.preferences.core.*
 import com.sawelo.wordmemorizer.dataStore
+import com.sawelo.wordmemorizer.util.enum_class.BaseSorting
 import com.sawelo.wordmemorizer.util.enum_class.FloatingBubbleProcess
 import com.sawelo.wordmemorizer.util.enum_class.SortingAnchor
 import com.sawelo.wordmemorizer.util.enum_class.SortingOrder
-import com.sawelo.wordmemorizer.util.sorting_utils.BaseSorting
 import kotlinx.coroutines.flow.first
 
 object PreferencesUtils {

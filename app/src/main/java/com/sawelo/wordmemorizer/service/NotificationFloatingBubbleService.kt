@@ -12,8 +12,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.sawelo.wordmemorizer.R
-import com.sawelo.wordmemorizer.fragment.SettingsSwitch
 import com.sawelo.wordmemorizer.receiver.FloatingAddWordWindowReceiver
+import com.sawelo.wordmemorizer.util.Constants
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_HIDE_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_REVEAL_ACTION
 import com.sawelo.wordmemorizer.util.Constants.NOTIFICATION_START_ACTION
@@ -25,10 +25,12 @@ import com.sawelo.wordmemorizer.util.Constants.SERVICE_WRAP_FLOATING_BUBBLE_REQU
 import com.sawelo.wordmemorizer.util.PreferencesUtils.getProcess
 import com.sawelo.wordmemorizer.util.PreferencesUtils.setProcess
 import com.sawelo.wordmemorizer.util.enum_class.FloatingBubbleProcess
+import com.sawelo.wordmemorizer.util.enum_class.SettingsSwitch
 import com.sawelo.wordmemorizer.window.FloatingBubbleWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class NotificationFloatingBubbleService : Service() {
 
@@ -50,18 +52,23 @@ class NotificationFloatingBubbleService : Service() {
         when (intent?.action) {
             NOTIFICATION_STOP_ACTION -> if (floatingBubbleWindow != null) stopSelf()
             NOTIFICATION_START_ACTION -> {
-                if (floatingBubbleWindow == null) {
+                if (floatingBubbleWindow == null && !FloatingBubbleWindow.isWindowActive) {
+                    runBlocking {
+                        startForeground(NOTIFICATION_ID, createNotificationBuilder().build())
+                    }
                     coroutineScope?.launch {
                         FloatingBubbleProcess.IsRunning.setProcess(service, true)
                         FloatingBubbleProcess.IsUnwrapped.setProcess(service, true)
                         FloatingBubbleProcess.IsVisible.setProcess(service, true)
-                        startForeground(NOTIFICATION_ID, createNotificationBuilder().build())
                     }
                     floatingBubbleWindow = FloatingBubbleWindow(service)
                     floatingBubbleWindow?.showWindow()
                 }
             }
             NOTIFICATION_UNWRAP_ACTION -> {
+                if (intent.getBooleanExtra(IS_SENT_FROM_NOTIF, false)) {
+                    Constants.floatingBubbleIsWrappedOnNotif = false
+                }
                 if (floatingBubbleWindow != null) {
                     coroutineScope?.launch {
                         FloatingBubbleProcess.IsUnwrapped.setProcess(service, true)
@@ -75,6 +82,10 @@ class NotificationFloatingBubbleService : Service() {
                 }
             }
             NOTIFICATION_WRAP_ACTION -> {
+
+                if (intent.getBooleanExtra(IS_SENT_FROM_NOTIF, false)) {
+                    Constants.floatingBubbleIsWrappedOnNotif = true
+                }
                 if (floatingBubbleWindow != null) {
                     coroutineScope?.launch {
                         FloatingBubbleProcess.IsUnwrapped.setProcess(service, false)
@@ -117,7 +128,6 @@ class NotificationFloatingBubbleService : Service() {
             }
             else -> throw Exception("Intent action is not recognizable")
         }
-
         return START_STICKY
     }
 
@@ -152,11 +162,12 @@ class NotificationFloatingBubbleService : Service() {
         val wrapServiceIntent = Intent(this, NotificationFloatingBubbleService::class.java)
         wrapServiceIntent.action = if (FloatingBubbleProcess.IsUnwrapped.getProcess(this))
             NOTIFICATION_WRAP_ACTION else NOTIFICATION_UNWRAP_ACTION
+        wrapServiceIntent.putExtra(IS_SENT_FROM_NOTIF, true)
         val wrapServicePendingIntent = PendingIntent.getService(
             this,
             SERVICE_WRAP_FLOATING_BUBBLE_REQUEST_CODE,
             wrapServiceIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val stopServiceIntent = Intent(this, NotificationFloatingBubbleService::class.java)
@@ -197,13 +208,12 @@ class NotificationFloatingBubbleService : Service() {
     companion object {
         private const val CHANNEL_ID = "FLOATING_BUBBLE_CHANNEL_ID"
         private const val NOTIFICATION_ID = 1
+        private const val IS_SENT_FROM_NOTIF = "IS_SENT_FROM_NOTIF"
 
-        suspend fun startService(context: Context) {
-            if (!FloatingBubbleProcess.IsRunning.getProcess(context)) {
-                val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
-                serviceIntent.action = NOTIFICATION_START_ACTION
-                context.startForegroundService(serviceIntent)
-            }
+        fun startService(context: Context) {
+            val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_START_ACTION
+            context.startForegroundService(serviceIntent)
         }
 
         fun wrapBubbleService(context: Context) {
@@ -230,12 +240,10 @@ class NotificationFloatingBubbleService : Service() {
             context.startService(serviceIntent)
         }
 
-        suspend fun stopService(context: Context) {
-            if (FloatingBubbleProcess.IsRunning.getProcess(context)) {
-                val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
-                serviceIntent.action = NOTIFICATION_STOP_ACTION
-                context.stopService(serviceIntent)
-            }
+        fun stopService(context: Context) {
+            val serviceIntent = Intent(context, NotificationFloatingBubbleService::class.java)
+            serviceIntent.action = NOTIFICATION_STOP_ACTION
+            context.stopService(serviceIntent)
         }
     }
 }

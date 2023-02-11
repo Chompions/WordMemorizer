@@ -7,7 +7,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.commit
@@ -23,12 +22,11 @@ import com.sawelo.wordmemorizer.data.database.DatabaseHelper
 import com.sawelo.wordmemorizer.databinding.ActivityMainBinding
 import com.sawelo.wordmemorizer.fragment.HomeFragment
 import com.sawelo.wordmemorizer.fragment.MainBottomSheetFragment
+import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
 import com.sawelo.wordmemorizer.util.Constants.HOME_FRAGMENT_TAG
 import com.sawelo.wordmemorizer.util.SettingsUtils
 import com.sawelo.wordmemorizer.util.ViewUtils.showToast
-import com.sawelo.wordmemorizer.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,7 +35,6 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var settingsUtils: SettingsUtils
-    private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,8 +48,7 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             settingsUtils.checkAllSettings()
-            viewModel.getAllCategory().first()
-                .also { viewModel.selectedCategories.value += it}
+            NotificationFloatingBubbleService.wrapBubbleService(this@MainActivity)
         }
 
         setAds()
@@ -62,6 +58,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         checkForOtherPackageDb()
+        NotificationFloatingBubbleService.wrapBubbleService(this)
     }
 
     private val otherExportedDbLauncher = registerForActivityResult(

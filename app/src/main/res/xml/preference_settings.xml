@@ -6,6 +6,10 @@
             android:key="@string/preference_floating_bubble_key"
             android:summary="Use the floating bubble to open Add Word dialog anywhere. Also accessible from notification bar"
             android:title="Activate floating bubble" />
+        <Preference
+            android:key="@string/SETTINGS_PREFERENCE_RESET_REMEMBER_COUNT_KEY"
+            android:summary="Press to reset remember count for all words globally"
+            android:title="Reset remember count"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Dialog">

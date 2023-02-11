@@ -113,6 +113,9 @@ dependencies {
     implementation 'dev.esnault.wanakana:wanakana-android:1.1.1'
     implementation 'com.atilika.kuromoji:kuromoji-ipadic:0.9.0'
 
+    implementation "androidx.lifecycle:lifecycle-process:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-common:2.5.1"
+
     kapt 'androidx.room:room-compiler:2.5.0'
     kapt 'com.google.dagger:hilt-compiler:2.44.2'
 
