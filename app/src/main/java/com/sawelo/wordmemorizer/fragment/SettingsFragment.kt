@@ -44,9 +44,14 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preference_settings, rootKey)
 
+        /**
+         * Do not call floating bubble check in here,
+         * it risks ForegroundServiceDidNotStartInTimeException
+         */
         lifecycleScope.launch {
             preferenceScreen.isEnabled = false
-            settingsUtils.checkAllSettings()
+            settingsUtils.checkDownloadForDrawDigitalInk()
+            settingsUtils.checkDownloadForTranslator()
             preferenceScreen.isEnabled = true
         }
 

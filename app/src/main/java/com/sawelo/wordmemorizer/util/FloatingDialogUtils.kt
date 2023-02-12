@@ -1,5 +1,6 @@
 package com.sawelo.wordmemorizer.util
 
+import android.text.InputType
 import com.atilika.kuromoji.ipadic.Tokenizer
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
@@ -50,7 +51,7 @@ class FloatingDialogUtils(
             wordTextFlow, furiganaTextFlow, definitionTextFlow
         ).collectLatest {
             val word = Word(
-                wordText =  wordTextFlow.value,
+                wordText = wordTextFlow.value,
                 furiganaText = furiganaTextFlow.value,
                 definitionText = definitionTextFlow.value
             )
@@ -58,59 +59,61 @@ class FloatingDialogUtils(
         }
     }
 
-    suspend fun getTranslatedWord(): Word = suspendCancellableCoroutine { continuation ->
-        val tokenizer = Tokenizer()
-        val focusedText = getFocusedWordText()
-        if (focusedText.isNotBlank()) {
-            if (Wanakana.isJapanese(focusedText)) {
-                val options = TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.JAPANESE)
-                    .setTargetLanguage(TranslateLanguage.ENGLISH)
-                    .build()
-                translatorClient = Translation.getClient(options)
-                translatorClient?.translate(focusedText)
-                    ?.addOnSuccessListener { translatedText ->
-                        val readingText = if (!Wanakana.isKatakana(focusedText)) {
-                            tokenizer.tokenize(focusedText)
-                                .joinToString(",") { it.reading }
-                        } else focusedText
-                        val baseWord = Word(
-                            wordText = focusedText,
-                            furiganaText = Wanakana.toHiragana(readingText),
-                            definitionText = translatedText
-                        )
-                        continuation.resume(baseWord)
-                    }
-                    ?.addOnFailureListener {
-                        continuation.resumeWithException(it)
-                    }
+    suspend fun getTranslatedWord(): Word = withContext(Dispatchers.IO) {
+        suspendCancellableCoroutine { continuation ->
+            val tokenizer = Tokenizer()
+            val focusedText = getFocusedWordText()
+            if (focusedText.isNotBlank()) {
+                if (Wanakana.isJapanese(focusedText)) {
+                    val options = TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.JAPANESE)
+                        .setTargetLanguage(TranslateLanguage.ENGLISH)
+                        .build()
+                    translatorClient = Translation.getClient(options)
+                    translatorClient?.translate(focusedText)
+                        ?.addOnSuccessListener { translatedText ->
+                            val readingText = if (!Wanakana.isKatakana(focusedText)) {
+                                tokenizer.tokenize(focusedText)
+                                    .joinToString(",") { it.reading }
+                            } else focusedText
+                            val baseWord = Word(
+                                wordText = focusedText,
+                                furiganaText = Wanakana.toHiragana(readingText),
+                                definitionText = translatedText
+                            )
+                            continuation.resume(baseWord)
+                        }
+                        ?.addOnFailureListener {
+                            continuation.resumeWithException(it)
+                        }
+                } else {
+                    val options = TranslatorOptions.Builder()
+                        .setSourceLanguage(TranslateLanguage.ENGLISH)
+                        .setTargetLanguage(TranslateLanguage.JAPANESE)
+                        .build()
+                    translatorClient = Translation.getClient(options)
+                    translatorClient?.translate(focusedText)
+                        ?.addOnSuccessListener { translatedText ->
+                            val readingText = if (!Wanakana.isKatakana(focusedText)) {
+                                tokenizer.tokenize(focusedText)
+                                    .joinToString(",") { it.reading }
+                            } else focusedText
+                            val baseWord = Word(
+                                wordText = translatedText,
+                                furiganaText = Wanakana.toHiragana(readingText),
+                                definitionText = focusedText
+                            )
+                            continuation.resume(baseWord)
+                        }
+                        ?.addOnFailureListener {
+                            continuation.resumeWithException(it)
+                        }
+                }
             } else {
-                val options = TranslatorOptions.Builder()
-                    .setSourceLanguage(TranslateLanguage.ENGLISH)
-                    .setTargetLanguage(TranslateLanguage.JAPANESE)
-                    .build()
-                translatorClient = Translation.getClient(options)
-                translatorClient?.translate(focusedText)
-                    ?.addOnSuccessListener { translatedText ->
-                        val readingText = if (!Wanakana.isKatakana(focusedText)) {
-                            tokenizer.tokenize(focusedText)
-                                .joinToString(",") { it.reading }
-                        } else focusedText
-                        val baseWord = Word(
-                            wordText = translatedText,
-                            furiganaText = Wanakana.toHiragana(readingText),
-                            definitionText = focusedText
-                        )
-                        continuation.resume(baseWord)
-                    }
-                    ?.addOnFailureListener {
-                        continuation.resumeWithException(it)
-                    }
+                continuation.resumeWithException(
+                    Throwable("Focused text is empty")
+                )
             }
-        } else {
-            continuation.resumeWithException(
-                Throwable("Focused text is empty")
-            )
         }
     }
 

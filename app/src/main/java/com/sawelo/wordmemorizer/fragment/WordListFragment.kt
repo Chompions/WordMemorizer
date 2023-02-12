@@ -1,15 +1,20 @@
 package com.sawelo.wordmemorizer.fragment
 
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ImageSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.sawelo.wordmemorizer.R
 import com.sawelo.wordmemorizer.activity.EditWordActivity
 import com.sawelo.wordmemorizer.adapter.MainWordAdapter
 import com.sawelo.wordmemorizer.adapter.SimilarWordAdapter
@@ -37,6 +42,7 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setEmptyString()
         setAdapter()
         setRecyclerView()
         setListFromCategory()
@@ -55,6 +61,20 @@ class WordListFragment : Fragment(), ItemWordAdapterListener {
         mainWordRv = null
         similarWordAdapter = null
         similarWordRv = null
+    }
+
+    private fun setEmptyString() {
+        val string = "Please select your categories\nby clicking the @ icon"
+        val spannableString = SpannableString(string)
+        val iconIndex = spannableString.indexOf("@")
+        val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.baseline_filter_list_24)
+        spannableString.setSpan(
+            ImageSpan(requireContext(), R.drawable.baseline_filter_list_24),
+            iconIndex,
+            iconIndex + 1,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        binding?.fragmentCategorySelectCategoriesTv?.text = spannableString
     }
 
     private fun setAdapter() {

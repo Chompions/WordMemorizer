@@ -31,8 +31,11 @@ import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.callback.ItemWordAdapterListener
 import com.sawelo.wordmemorizer.util.enum_class.SettingsSwitch
 import com.sawelo.wordmemorizer.window.DialogWindow
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -211,8 +214,7 @@ class FloatingAddWordWindow(
         prepareSearch()
         searchJob = windowCoroutineScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) { floatingDialogUtils.getTranslatedWord() }
-                binding?.dialogProgressIndicator?.isVisible = false
+                val result = floatingDialogUtils.getTranslatedWord()
                 showSearch(result)
             } catch (_: CancellationException) {
             } catch (e: Exception) {
@@ -237,7 +239,8 @@ class FloatingAddWordWindow(
                 }
                 binding?.dialogProgressIndicator?.isVisible = false
                 binding?.dialogSearchWordJishoBtn?.visibility = View.INVISIBLE
-                if (isTranslateBtnOn) binding?.dialogSearchWordTranslateBtn?.visibility = View.INVISIBLE
+                if (isTranslateBtnOn) binding?.dialogSearchWordTranslateBtn?.visibility =
+                    View.INVISIBLE
 
                 binding?.dialogRecommendationLayout?.addButtonInLayout(context, "Back") {
                     resetWordRecommendation()
