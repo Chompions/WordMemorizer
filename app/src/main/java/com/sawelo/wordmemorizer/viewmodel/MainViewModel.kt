@@ -10,8 +10,8 @@ import com.sawelo.wordmemorizer.data.data_class.entity.Word
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.CategoryWithInfo
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.data.repository.LocalRepository
+import com.sawelo.wordmemorizer.ui.ui_util.ViewUtils.showToast
 import com.sawelo.wordmemorizer.util.Constants.selectedCategories
-import com.sawelo.wordmemorizer.util.ViewUtils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
@@ -27,17 +27,13 @@ class MainViewModel @Inject constructor(
     private val localRepository: LocalRepository
 ) : ViewModel() {
 
-    fun getAllCategory(): Flow<List<Category>> {
-        return localRepository.getAllCategory()
-    }
-
     fun getAllCategoryWithInfo(): Flow<List<CategoryWithInfo>> {
         return localRepository.getAllCategoryWithInfo()
     }
 
     fun selectAllCategories() {
         viewModelScope.launch {
-            selectedCategories.value = getAllCategory().first()
+            selectedCategories.value = localRepository.getAllCategory().first()
         }
     }
 

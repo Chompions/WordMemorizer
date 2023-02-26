@@ -8,7 +8,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.sawelo.wordmemorizer.service.NotificationFloatingBubbleService
+import com.sawelo.wordmemorizer.service.notification.NotificationFloatingBubbleService
 import com.sawelo.wordmemorizer.util.Constants
 import dagger.hilt.android.HiltAndroidApp
 

@@ -22,26 +22,14 @@ class UpdateWordViewModel @Inject constructor(
         oldData: WordWithCategories,
         newData: WordWithCategories
     ) {
-        try {
-            localRepository.updateWordWithCategories(oldData, newData)
-        } catch (e: Exception) {
-            throw Exception("Unable to update your word: ${e.message}")
-        }
+        localRepository.updateWordWithCategories(oldData, newData)
     }
 
     suspend fun deleteWord(word: Word) {
-        try {
-            localRepository.deleteWord(word)
-        } catch (e: Exception) {
-            throw Exception("Unable to delete your word: ${e.message}")
-        }
+        localRepository.deleteWord(word)
     }
 
     suspend fun getWordWithCategoriesById(wordId: Int): WordWithCategories {
-        try {
-            return localRepository.getWordWithCategoriesById(wordId)
-        } catch (e: Exception) {
-            throw Exception("Unable to get word details: ${e.message}")
-        }
+        return localRepository.getWordWithCategoriesById(wordId)
     }
 }

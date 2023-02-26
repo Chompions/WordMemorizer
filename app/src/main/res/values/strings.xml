@@ -69,4 +69,6 @@
     <string name="SETTINGS_PREFERENCE_RESET_REMEMBER_COUNT_KEY">SETTINGS_PREFERENCE_RESET_REMEMBER_COUNT_KEY</string>
     <string name="add1">+1</string>
     <string name="subtract1">-1</string>
+    <string name="jisho_search">Jisho search</string>
+    <string name="translate">Translate</string>
 </resources>

@@ -7,7 +7,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.FileProvider.getUriForFile
 import com.sawelo.wordmemorizer.MainApplication
-import com.sawelo.wordmemorizer.util.ViewUtils.showToast
+import com.sawelo.wordmemorizer.ui.ui_util.ViewUtils.showToast
 import java.io.File
 import java.io.FileOutputStream
 

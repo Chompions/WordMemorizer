@@ -25,7 +25,7 @@
         android:theme="@style/Theme.WordMemorizer"
         tools:targetApi="31">
         <activity
-            android:name=".activity.BackupActivity"
+            android:name=".ui.activity.BackupActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="${applicationId}.action.CREATE_BACKUP_DB" />
@@ -47,15 +47,15 @@
         </provider>
 
         <service
-            android:name=".service.DownloadDrawService"
+            android:name=".service.download.DownloadDrawService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.DownloadTranslatorService"
+            android:name=".service.download.DownloadTranslatorService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.NotificationFloatingBubbleService"
+            android:name=".service.notification.NotificationFloatingBubbleService"
             android:enabled="true"
             android:exported="false" />
 
@@ -69,16 +69,16 @@
         </receiver>
 
         <activity
-            android:name=".activity.FlashcardActivity"
+            android:name=".ui.activity.FlashcardActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name=".ui.activity.SettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.EditWordActivity"
+            android:name=".ui.activity.EditWordActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".ui.activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

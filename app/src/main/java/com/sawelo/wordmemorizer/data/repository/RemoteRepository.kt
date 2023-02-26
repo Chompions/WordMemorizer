@@ -1,6 +1,6 @@
 package com.sawelo.wordmemorizer.data.repository
 
-import com.sawelo.wordmemorizer.data.data_class.api_response.JishoResponse
+import com.sawelo.wordmemorizer.data.data_class.json_response.JishoResponse
 import com.sawelo.wordmemorizer.data.remote.JishoService
 
 class RemoteRepository(

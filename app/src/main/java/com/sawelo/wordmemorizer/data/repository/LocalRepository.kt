@@ -1,7 +1,5 @@
 package com.sawelo.wordmemorizer.data.repository
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -13,16 +11,13 @@ import com.sawelo.wordmemorizer.data.data_class.relation_ref.CategoryWithInfo
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithCategories
 import com.sawelo.wordmemorizer.data.data_class.relation_ref.WordWithInfo
 import com.sawelo.wordmemorizer.data.database.AppDatabase
-import com.sawelo.wordmemorizer.util.PreferencesUtils
-import com.sawelo.wordmemorizer.util.enum_class.SortingAnchor
-import com.sawelo.wordmemorizer.util.enum_class.SortingOrder
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 
 class LocalRepository(
     private val database: AppDatabase,
-    private val dataStore: DataStore<Preferences>,
+    private val preferenceRepository: PreferenceRepository,
 ) {
 
     fun getAllCategory(): Flow<List<Category>> =
@@ -35,14 +30,7 @@ class LocalRepository(
         categoryList: List<Category>,
         getForgotten: Boolean,
     ): Flow<PagingData<WordWithInfo>> = callbackFlow {
-        dataStore.data.cancellable().collectLatest { preferences ->
-            val sortingAnchorEnum =
-                PreferencesUtils.obtainCurrentSortingFromPreferences<SortingAnchor>(preferences)
-            val sortingOrderEnum =
-                PreferencesUtils.obtainCurrentSortingFromPreferences<SortingOrder>(preferences)
-            val sortingString =
-                "${sortingAnchorEnum.obtainQueryString()} ${sortingOrderEnum.obtainQueryString()}"
-
+        preferenceRepository.getCurrentSQLSortingStringFlow().collectLatest { sortingString ->
             val categoryIdList = categoryList.map { it.categoryId }
 
             val query = if (!getForgotten) {
