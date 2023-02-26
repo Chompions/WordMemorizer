@@ -1,6 +1,6 @@
 # WordMemorizer Android App
 
-An android app to memorize words with emphasize on Japanese kanji 
+An android app to memorize words with emphasize on Japanese kanji. App is available in [Play Store](https://play.google.com/store/apps/details?id=com.sawelo.wordmemorizer)
 
 ## Features
 
@@ -17,13 +17,6 @@ An android app to memorize words with emphasize on Japanese kanji
   <img src="https://i.ibb.co/cts7YyZ/Screenshot-2023-01-01-13-38-02-66-c4fb6d173a1a2b1a5902d48f6b3c8cac.jpg" width="200"/>
   <img src="https://i.ibb.co/BwKQsFJ/Screenshot-2023-01-01-13-38-59-00-c4fb6d173a1a2b1a5902d48f6b3c8cac.jpg" width="200"/>
 </p>
-
-## Upcoming features
-
-* Save more information per words, such as radical count, is-common check, JLPT level, etc. 
-* Add word entry in floating bubble just by copy/paste
-* Add word by drawing and character recognition
-* More features 
 
 **Note**: If you have any ideas on what other features I should add, feel free to contact me or file an issue
 
